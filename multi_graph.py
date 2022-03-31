@@ -27,7 +27,7 @@ def list_node():
         node = np.random.randint(3, 7)
         list_node.append(node)
     #print('list_node:', list_node)
-    return list_node
+    return list_node , layer_n
 
 
 def list_struc(list_node):
@@ -158,7 +158,7 @@ def create_matrix(list_node):
 
 def Create_List_of_Nodes(List_Struct):
     list_of_Node = []
-    for n in list_Struct:
+    for n in List_Struct:
         for m in range(n[1]):
             peer = []
             peer.append(n[0])
@@ -166,16 +166,6 @@ def Create_List_of_Nodes(List_Struct):
             list_of_Node.append(peer)
     print('list of nodes:', list_of_Node)
     return list_of_Node
-
-
-def node_Mapping (list_of_Node):
-    i = 0
-    map_dic = {}
-    for node in list_of_Node:
-        map_dic[i] = node
-        i = i+1
-    print('**************map_dic', map_dic , 'i:', i)
-    return map_dic , i
 
 
 def Create_Huristic_Atthck_Nodes(list_of_nodes ):
@@ -194,7 +184,7 @@ def attacked_node_struct(attacked_nodes):
         node_struct_temp = []
         layer = node[0]
         node_num = node[1]# index of attacked node in its layer
-        Struct = list_Struct[layer]# get struct if the layer that belongs to attacked node
+        Struct = List_Struct[layer]# get struct if the layer that belongs to attacked node
         layer_Node_Number = Struct[1]# getting Node_Number and wide of adjacency matrix
         node_struct_temp.append(layer)
         node_struct_temp.append(node_num)
@@ -248,7 +238,7 @@ def complex_disintegration_bipart(attacked_node_struct, total_matrix):
             print('p[0]:', p[0],  'n[1]', n[1])
             if p[0] == n[1]:# p= attacked node layer. n= a comp, n[1]: first layer in comb
                 print('first condition by:','p[0]:', p[0],  'n[1]', n[1] )
-                print('len(list_Struct): ', len(list_Struct))
+                print('len(list_Struct): ', len(List_Struct))
                 print('p0:', p[0],'p1: ', p[1], 'n[6]:', n[6], 'n[3]:', n[3])
                 bi_matrix = total_matrix[n[1],n[3]]
                 for j in range(n[6]):
@@ -270,7 +260,7 @@ def complex_disintegration_bipart(attacked_node_struct, total_matrix):
             else:
                 if p[0] == n[3]:
                     print('secound condition by:', 'p[0]:', p[0],  'n[3]', n[3])
-                    print('len(list_Struct): ', len(list_Struct))
+                    print('len(list_Struct): ', len(List_Struct))
                     print('p0:', p[0],'p1: ', p[1], 'n[6]:', n[6], 'n[3]:', n[3])
                     bi_matrix = total_matrix[n[1],n[3]]
                     for j in range(n[6]):
@@ -349,18 +339,65 @@ def complex_disintegrate(attacked_nodes , totla_matrix):
     return step_history , totla_matrix_final
 
 
-def create_major_matrix():
+def node_Mapping (list_of_Node):
+    i = 0
+    map_dic = {}
+    for node in list_of_Node:
+        map_dic[i] = node
+        i = i+1
+    print('**************map_dic', map_dic , 'i:', i)
+    return map_dic , i
+
+
+def create_index_list(i , total_node):
+    index_list = []
+    for a in range(total_node):
+        temp_node = Map_dic[a]
+        if temp_node[0] == i:
+            index_list.append(a)
+    return index_list
+
+
+def create_major_matrix(Total_Matrix, Layer_Count):
+    # Map_dic, Total_Node = node_Mapping(list_of_nodes) / Inha ro darim
+    # list_node_initial , Layen_Count = list_node()
+    main_matrix = np.zeros((Total_Node, Total_Node), dtype="object", order='c')
+    index_list = []
+    temp_node = []
+    z = 0
+    for i in range(Layer_Count):
+        for j in range(Layer_Count):
+            matrix = Total_Matrix[i][j]
+            if i == j:
+                index_list = create_index_list(i, Total_Node)
+                print ('temp_node___________', temp_node)
+                print ('index_list________', index_list)
+                print ('matrix_____', matrix)
+                for b in range(len(index_list)):
+                    for c in range(len(index_list)):
+                        print('index b ', index_list[b] , '-- index c' , index_list[c])
+                        print('matrix[b][c]___ ', matrix[b][c])
+                        print('main_matrix[index_list[b]][index_list[c]]___ ', main_matrix[index_list[b]][index_list[c]])
+                        main_matrix[index_list[b]][index_list[c]] = matrix[b][c]
+                    print ('main_martix+++++++++++++++', main_matrix)
+
+            else:
+                print('bipitart%%%%%%%')
+
+
+    return main_matrix
 
 
 # main
-list_node_initial = list_node()
+list_node_initial , Layen_Count = list_node()
 Total_Matrix = create_matrix(list_node_initial)
-list_Struct= list_struc(list_node_initial)
+List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
-list_of_nodes = Create_List_of_Nodes(list_Struct)
+list_of_nodes = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
 Huristic_Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
-complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
+#complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
+Major_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 
 
 
