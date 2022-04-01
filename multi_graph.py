@@ -370,20 +370,37 @@ def create_major_matrix(Total_Matrix, Layer_Count):
             matrix = Total_Matrix[i][j]
             if i == j:
                 index_list = create_index_list(i, Total_Node)
-                print ('temp_node___________', temp_node)
-                print ('index_list________', index_list)
+                # print ('temp_node___________', temp_node)
+                # print ('index_list________', index_list)
                 print ('matrix_____', matrix)
                 for b in range(len(index_list)):
                     for c in range(len(index_list)):
-                        print('index b ', index_list[b] , '-- index c' , index_list[c])
-                        print('matrix[b][c]___ ', matrix[b][c])
-                        print('main_matrix[index_list[b]][index_list[c]]___ ', main_matrix[index_list[b]][index_list[c]])
+                        #print('index b ', index_list[b] , '-- index c' , index_list[c])
+                        #print('matrix[b][c]___ ', matrix[b][c])
+                        #print('main_matrix[index_list[b]][index_list[c]]___ ', main_matrix[index_list[b]][index_list[c]])
                         main_matrix[index_list[b]][index_list[c]] = matrix[b][c]
-                    print ('main_martix+++++++++++++++', main_matrix)
+                print ('main_martix+++++++++++++++', main_matrix)
 
             else:
-                print('bipitart%%%%%%%')
+                print('bimatrix____', matrix)
+                bi_index_list = []
+                index_list1 = create_index_list(i , Total_Node)
+                index_list2 = create_index_list(j , Total_Node)
+                print('index1^^^^^', index_list1)
+                print('index2^^^^^', index_list2)
+                for mp in index_list2:
+                    index_list1.append(mp)
+                    bi_index_list = index_list1
+                print('bi_index_list$$$$$$$$$$$', bi_index_list)
 
+                for bi in range(len(bi_index_list)):
+                    for ci in range(len(bi_index_list)):
+                        # print('index bi ', bi_index_list[bi] , '-- index ci' , bi_index_list[ci])
+                        # print('matrix[bi][ci]___ ', matrix[bi][ci])
+                        # print('main_matrix[index_list[bi]][index_list[ci]]___ ', main_matrix[bi_index_list[bi]][bi_index_list[ci]])
+                        if matrix[bi][ci]==1:
+                            main_matrix[bi_index_list[bi]][bi_index_list[ci]] = matrix[bi][ci]
+                print('bi_main_matrix"""""""""""""', main_matrix )
 
     return main_matrix
 
