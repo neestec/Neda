@@ -12,6 +12,7 @@ import networkx as nx
 from itertools import combinations
 from scipy.sparse import csr_matrix
 import math
+import matplotlib.pyplot as plt
 
 
 def list_node():
@@ -24,7 +25,7 @@ def list_node():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(3, 7)
+        node = np.random.randint(10, 40)
         list_node.append(node)
     #print('list_node:', list_node)
     return list_node , layer_n
@@ -63,6 +64,7 @@ def random_weighted_graph(n):
     # print('type of g: ', type(g))
     # print(igraph.Graph(uw_edges))
     return  adj#igraph.Graph(uw_edges)
+
 
 def create_comb_array(list_node):
     strc = list_struc(list_node) # create a list of layer number and number of nodes in each layer
@@ -158,6 +160,7 @@ def create_matrix(list_node):
 
 def Create_List_of_Nodes(List_Struct):
     list_of_Node = []
+    list_of_Node_lables = []
     for n in List_Struct:
         for m in range(n[1]):
             peer = []
@@ -165,7 +168,11 @@ def Create_List_of_Nodes(List_Struct):
             peer.append(m)
             list_of_Node.append(peer)
     print('list of nodes:', list_of_Node)
-    return list_of_Node
+    for i in range(len(list_of_Node)):
+        list_of_Node_lables.append(i)
+
+
+    return list_of_Node , list_of_Node_lables
 
 
 def Create_Huristic_Atthck_Nodes(list_of_nodes ):
@@ -191,6 +198,7 @@ def attacked_node_struct(attacked_nodes):
         node_struct_temp.append(layer_Node_Number)
         node_struct.append(node_struct_temp)
     return node_struct #for each node in node_struct as a p: p[0]=layer, p[1]=node_num, p[2]=layer_lenth
+
 
 def complex_disintegration_diagonal(attacked_node_struct, total_matrix):
     step_history = []
@@ -225,6 +233,7 @@ def complex_disintegration_diagonal(attacked_node_struct, total_matrix):
     print('step_history of diag: ' , step_history)
     print('@@@@@@diag_dis finished')
     return step_history, total_matrix
+
 
 def complex_disintegration_bipart(attacked_node_struct, total_matrix):
     # each node in node_struct as a p: p[0]=layer, p[1]=node_num, p[2]=layer_lenth
@@ -400,9 +409,40 @@ def create_major_matrix(Total_Matrix, Layer_Count):
                         # print('main_matrix[index_list[bi]][index_list[ci]]___ ', main_matrix[bi_index_list[bi]][bi_index_list[ci]])
                         if matrix[bi][ci]==1:
                             main_matrix[bi_index_list[bi]][bi_index_list[ci]] = matrix[bi][ci]
-                print('bi_main_matrix"""""""""""""', main_matrix )
 
-    return main_matrix
+                print('bi_main_matrix"""""""""""""', main_matrix )
+    main = np.matrix(np.array(main_matrix))
+    print('mmmmmmmmmmmmmmainxxxxxxxxx:', main)
+    print('main.type' , type(main))
+    print('main_matrix_type##########', type(main_matrix))
+    return main
+
+
+# def create_main_graph(main_matrix):
+#     gr = nx.Graph()
+#     gr= nx.from_numpy_matrix(main_matrix)
+#     print("graph has been created")
+#     plt.show(gr)
+#     return gr
+
+
+def create_main_graph(adjacency_matrix, labels):
+    rows, cols = np.where(adjacency_matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    nx.draw(gr, node_size=500,  with_labels=True)
+    plt.show()
+    return gr
+
+
+def closeness_counting(main_graph):
+    btw = nx.betweenness_centrality(main_graph, normalized= False )
+    #deg = nx.degree_centrality(main_graph)
+    deg = nx.degree(main_graph)
+    print('betweenneess: ', btw)
+    print ('degree: ', deg)
+    return btw , deg
 
 
 # main
@@ -410,11 +450,16 @@ list_node_initial , Layen_Count = list_node()
 Total_Matrix = create_matrix(list_node_initial)
 List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
-list_of_nodes = Create_List_of_Nodes(List_Struct)
+list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
 Huristic_Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
 #complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
-Major_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
+Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
+print ('Main_Matrix_Type:', type(Main_Matrix))
+Main_Graph = create_main_graph(Main_Matrix, Label)
+BTW = {}
+DEG = {}
+BTW , DEG = closeness_counting(Main_Graph)
 
 
 
