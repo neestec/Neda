@@ -418,15 +418,7 @@ def create_major_matrix(Total_Matrix, Layer_Count):
     return main
 
 
-# def create_main_graph(main_matrix):
-#     gr = nx.Graph()
-#     gr= nx.from_numpy_matrix(main_matrix)
-#     print("graph has been created")
-#     plt.show(gr)
-#     return gr
-
-
-def create_main_graph(adjacency_matrix, labels):
+def show_main_graph(adjacency_matrix, labels):
     rows, cols = np.where(adjacency_matrix == 1)
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
@@ -445,6 +437,24 @@ def closeness_counting(main_graph):
     return btw , deg
 
 
+
+def attack_Node_Mapping (attack_list):
+    index_list = []
+    for a in range(Total_Node):
+        temp_node = Map_dic[a]
+        for node in attack_list:
+            if temp_node == node:
+                index_list.append(a)
+
+    print('Attack_list_map_index: ', index_list )
+    return index_list
+
+
+def attack_Node_Ordering(attack_index, sort_type):
+    for node in attack_index:
+        if node in BTW:
+            print ('Node in BTW' , node)
+
 # main
 list_node_initial , Layen_Count = list_node()
 Total_Matrix = create_matrix(list_node_initial)
@@ -452,14 +462,16 @@ List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
 list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
-Huristic_Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
+Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
 #complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
-Main_Graph = create_main_graph(Main_Matrix, Label)
+Main_Graph = show_main_graph(Main_Matrix, Label)
 BTW = {}
 DEG = {}
 BTW , DEG = closeness_counting(Main_Graph)
+Attack_Map_Index = attack_Node_Mapping(Atthck_Nodes)
+Attack_List_Order =  attack_Node_Ordering(Attack_Map_Index, 1)
 
 
 
