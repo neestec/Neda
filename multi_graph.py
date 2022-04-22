@@ -26,7 +26,7 @@ def list_node():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(3, 7)
+        node = np.random.randint(10, 30)
         list_node.append(node)
     #print('list_node:', list_node)
     return list_node , layer_n
@@ -47,7 +47,8 @@ def random_weighted_graph(n):
     """" create a random graph by n= nodes number, p = probability , lower and upper wight"""
 
     #print('in create weighted graph n: ', n)
-    p = np.random.uniform(0.2, 1)
+    p = np.random.uniform(0.1, 0.3)
+    #p = 0.1
     z = nx.erdos_renyi_graph(n, p)
     g = nx.gnp_random_graph(n,p)
     m = g.number_of_edges()
@@ -434,20 +435,20 @@ def show_main_graph(adjacency_matrix, labels):
     return gr
 
 
-def closeness_counting(main_graph):
+def closeness_btw(main_graph):
     # closeness ha ro mohasebe mikone
     btw = nx.betweenness_centrality(main_graph, normalized= False )
-    #deg = nx.degree_centrality(main_graph)
+    print('betweenneess: ', btw)
+    return btw
+
+
+def closeness_deg(main_graph):
     deg_temp = nx.degree(main_graph)
     deg = {}
     for pair in deg_temp:
         deg[pair[0]] = pair[1]
-    #deg1 = dict.fromkeys(deg)
-    print('betweenneess: ', btw)
     print ('degree: ', deg)
-    return btw , deg
-
-
+    return deg
 
 def attack_Node_Mapping (attack_list):
     # node haye attack ro be shomare haye jadid map mikone
@@ -462,32 +463,45 @@ def attack_Node_Mapping (attack_list):
     return index_list
 
 
-def attack_Node_Ordering(attack_index, base_List):
+def type_def(number):
+        switcher={
+                0:RND,
+                1:BTW,
+                2:DEG,
+                3:WEGH
+             }
+        return switcher.get(number,"Invalid type")
+
+def attack_Node_Ordering(attack_list, base_List):
+    # attack_list: list of nodes which are attacked and mapped
+    # base_list : BTW or DEG, which determines criterion of ordering
     # list ro bar asase meyare morede barresi moratab mikone
-    if len(base_List)!= 0:
+    if len(attack_list)!= 0:
         order_dic = {}
-        for node in attack_index:
+        for node in attack_list:
             order_dic[node] = base_List[node]
         print('order_dic_______________', order_dic)
         sort_order = sorted(order_dic.items(), key=lambda x: x[1], reverse=True)
         print('sort_order', sort_order)
         print ('first_node____________', sort_order[0] )
         print('Rand_Node_______',sort_order[np.random.randint(0, len(sort_order))] )
-        return sort_order, sort_order[0], sort_order[np.random.randint(0, len(sort_order))]
+        return sort_order, sort_order[0] # sort_order[np.random.randint(0, len(sort_order))]
     else:
-        return [], [], []
+        return [], []
 
 
 
-def disintegration (node, main_matrix, attack_list , type):
+def disintegration (node, main_matrix, attack_list):
     # node: the first index of attack node list
     # main_matrix: matrix should updated by each disintegration step
     # attack_List: should update by each disintegration step
     # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
+    print('type of main_matrix in disintegrat....', type(main_matrix))
     print ('node', node , 'attack_list', attack_list)
     print ('main_matrix_initial', main_matrix , main_matrix.shape, main_matrix.ndim)
     neigh = []
     for i in range(Total_Node):
+        print(i , node )
         if main_matrix[i][node] == 1:
             neigh.append(i)
             main_matrix[i][node] = 0
@@ -506,7 +520,29 @@ def disintegration (node, main_matrix, attack_list , type):
     return final_attack_list , main_matrix
 
 
-def  
+def recursive_dis(type):
+    # aval bayad ye peygham neshoon bedim ke in che noe disi hast
+    #print('recur--------',Main_Matrix)
+    #print('rec_main matrix type: ..........', type(Main_Matrix))
+    show_main_graph(Main_Matrix, Label)
+    attack_list = Attack_Map
+    main_matrix = Main_Matrix
+    main_graph = Main_Graph
+    while len(attack_list) != 0:
+        switcher={
+                1: closeness_btw(main_graph),
+                2: closeness_deg(main_graph),
+            }
+        closeness = switcher.get(type,"Invalid type")
+        print('closeness type------', closeness)
+        print('attack_list recurmmmmmmmmm', attack_list)
+        sort_order , max_order = attack_Node_Ordering(attack_list, closeness )
+        max_order_node = max_order[0]
+        attack_list , main_matrix = disintegration(max_order_node, main_matrix, attack_list)
+
+        main_graph = show_main_graph(main_matrix, Label)
+    show_main_graph(main_matrix, Label)
+
 
 
 
@@ -522,14 +558,22 @@ Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
 Main_Graph = show_main_graph(Main_Matrix, Label)
+Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 BTW = {}
 DEG = {}
-BTW , DEG = closeness_counting(Main_Graph)
-Attack_Map = attack_Node_Mapping(Atthck_Nodes)
-Sort_Order_BTW , Max_Node_BTW, Rand_Node_BTW=  attack_Node_Ordering(Attack_Map, BTW )
-Sort_Order_DEG, Max_Node_DEG , Rand_Node_DEG = attack_Node_Ordering(Attack_Map, DEG)
+RND = {}
+WEGH = {}
+recursive_dis(1)
+recursive_dis(2)
+#recursive_dis(Main_Graph, Attack_Map, 2)
 
- disintegration(Max_Node_BTW[0], Main_Matrix, Attack_Map , 3)
+#BTW = closeness_btw(Main_Graph)
+#DEG = closeness_deg(Main_Graph)
+
+#Sort_Order_BTW , Max_Node_BTW = attack_Node_Ordering(Attack_Map, BTW )
+#Sort_Order_DEG, Max_Node_DEG = attack_Node_Ordering(Attack_Map, DEG)
+
+#disintegration(Max_Node_BTW[0], Main_Matrix, Attack_Map)
 #recursive_dis(Max_Node_DEG[0], Main_Matrix, Attack_Map, 2 )
 #recursive_dis(Rand_Node_BTW[0], Main_Matrix, Attack_Map, 1)
 
