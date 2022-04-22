@@ -5,6 +5,7 @@ Created on Tue Nov 30 00:51:38 2021
 @author: Neda
 """
 
+
 import numpy as np
 import random
 import itertools
@@ -25,7 +26,7 @@ def list_node():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(10, 40)
+        node = np.random.randint(3, 7)
         list_node.append(node)
     #print('list_node:', list_node)
     return list_node , layer_n
@@ -368,9 +369,10 @@ def create_index_list(i , total_node):
 
 
 def create_major_matrix(Total_Matrix, Layer_Count):
+    # main graph ro misaze
     # Map_dic, Total_Node = node_Mapping(list_of_nodes) / Inha ro darim
     # list_node_initial , Layen_Count = list_node()
-    main_matrix = np.zeros((Total_Node, Total_Node), dtype="object", order='c')
+    main_matrix = np.zeros((Total_Node, Total_Node), dtype="int", order='c')
     index_list = []
     temp_node = []
     z = 0
@@ -414,11 +416,15 @@ def create_major_matrix(Total_Matrix, Layer_Count):
     main = np.matrix(np.array(main_matrix))
     print('mmmmmmmmmmmmmmainxxxxxxxxx:', main)
     print('main.type' , type(main))
-    print('main_matrix_type##########', type(main_matrix))
-    return main
+    print('main_matrix_type##########', type(main_matrix) , main_matrix , len(main_matrix))
+    print( len(main_matrix[1]), type(main_matrix[1]))
+    print ("IIIIIIIIIIIIIIIIII: ", main_matrix[3][2], main_matrix[1][2])
+    #print ("uuuuuuuuuuuu: ", main[3][2], main[1][2])
+    return main_matrix
 
 
 def show_main_graph(adjacency_matrix, labels):
+    # main graph ro namayesh midim
     rows, cols = np.where(adjacency_matrix == 1)
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
@@ -429,9 +435,14 @@ def show_main_graph(adjacency_matrix, labels):
 
 
 def closeness_counting(main_graph):
+    # closeness ha ro mohasebe mikone
     btw = nx.betweenness_centrality(main_graph, normalized= False )
     #deg = nx.degree_centrality(main_graph)
-    deg = nx.degree(main_graph)
+    deg_temp = nx.degree(main_graph)
+    deg = {}
+    for pair in deg_temp:
+        deg[pair[0]] = pair[1]
+    #deg1 = dict.fromkeys(deg)
     print('betweenneess: ', btw)
     print ('degree: ', deg)
     return btw , deg
@@ -439,6 +450,7 @@ def closeness_counting(main_graph):
 
 
 def attack_Node_Mapping (attack_list):
+    # node haye attack ro be shomare haye jadid map mikone
     index_list = []
     for a in range(Total_Node):
         temp_node = Map_dic[a]
@@ -450,10 +462,53 @@ def attack_Node_Mapping (attack_list):
     return index_list
 
 
-def attack_Node_Ordering(attack_index, sort_type):
-    for node in attack_index:
-        if node in BTW:
-            print ('Node in BTW' , node)
+def attack_Node_Ordering(attack_index, base_List):
+    # list ro bar asase meyare morede barresi moratab mikone
+    if len(base_List)!= 0:
+        order_dic = {}
+        for node in attack_index:
+            order_dic[node] = base_List[node]
+        print('order_dic_______________', order_dic)
+        sort_order = sorted(order_dic.items(), key=lambda x: x[1], reverse=True)
+        print('sort_order', sort_order)
+        print ('first_node____________', sort_order[0] )
+        print('Rand_Node_______',sort_order[np.random.randint(0, len(sort_order))] )
+        return sort_order, sort_order[0], sort_order[np.random.randint(0, len(sort_order))]
+    else:
+        return [], [], []
+
+
+
+def disintegration (node, main_matrix, attack_list , type):
+    # node: the first index of attack node list
+    # main_matrix: matrix should updated by each disintegration step
+    # attack_List: should update by each disintegration step
+    # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
+    print ('node', node , 'attack_list', attack_list)
+    print ('main_matrix_initial', main_matrix , main_matrix.shape, main_matrix.ndim)
+    neigh = []
+    for i in range(Total_Node):
+        if main_matrix[i][node] == 1:
+            neigh.append(i)
+            main_matrix[i][node] = 0
+            main_matrix[node][i] = 0
+
+    print ('main_matrix_after', main_matrix , main_matrix.shape, main_matrix.ndim)
+    attack_list.remove(node)
+    print('attack_list after deleting', attack_list)
+    print('neigh:____ ', neigh)
+    for n in neigh:
+        attack_list.append(n)
+    print('new_attack_list after append neigh :-----', attack_list)
+    final_attack_list = []
+    final_attack_list = list(set(attack_list))
+    print('new_attack_list after removing redundants :-----', final_attack_list)
+    return final_attack_list , main_matrix
+
+
+def  
+
+
 
 # main
 list_node_initial , Layen_Count = list_node()
@@ -470,8 +525,14 @@ Main_Graph = show_main_graph(Main_Matrix, Label)
 BTW = {}
 DEG = {}
 BTW , DEG = closeness_counting(Main_Graph)
-Attack_Map_Index = attack_Node_Mapping(Atthck_Nodes)
-Attack_List_Order =  attack_Node_Ordering(Attack_Map_Index, 1)
+Attack_Map = attack_Node_Mapping(Atthck_Nodes)
+Sort_Order_BTW , Max_Node_BTW, Rand_Node_BTW=  attack_Node_Ordering(Attack_Map, BTW )
+Sort_Order_DEG, Max_Node_DEG , Rand_Node_DEG = attack_Node_Ordering(Attack_Map, DEG)
+
+ disintegration(Max_Node_BTW[0], Main_Matrix, Attack_Map , 3)
+#recursive_dis(Max_Node_DEG[0], Main_Matrix, Attack_Map, 2 )
+#recursive_dis(Rand_Node_BTW[0], Main_Matrix, Attack_Map, 1)
+
 
 
 
