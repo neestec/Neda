@@ -237,118 +237,21 @@ def complex_disintegration_diagonal(attacked_node_struct, total_matrix):
     return step_history, total_matrix
 
 
-# def complex_disintegration_bipart(attacked_node_struct, total_matrix):
-#     # each node in node_struct as a p: p[0]=layer, p[1]=node_num, p[2]=layer_lenth
-#     #for each member of comb_dis: 0.comb, 1.B0, 2.B1, 3.B2, 4.B3, 5.R(edge_number), 6.n(lenth)
-#     print('attacked_nodes_struct which passed to bipart:' , attacked_node_struct)
-#     print('comb_dis:',comb_dis)
-#     step_history = []
-#     for p in attacked_node_struct:
-#         bipart_peer = []
-#         for n in comb_dis:
-#             print('p[0]:', p[0],  'n[1]', n[1])
-#             if p[0] == n[1]:# p= attacked node layer. n= a comp, n[1]: first layer in comb
-#                 print('first condition by:','p[0]:', p[0],  'n[1]', n[1] )
-#                 print('len(list_Struct): ', len(List_Struct))
-#                 print('p0:', p[0],'p1: ', p[1], 'n[6]:', n[6], 'n[3]:', n[3])
-#                 bi_matrix = total_matrix[n[1],n[3]]
-#                 for j in range(n[6]):
-#                     peer_temp = []
-#                     print('n6:', n[6], 'p1:' , p[1], 'j:', j ,'n2', n[2])
-#                     if bi_matrix[j][p[1]]==1:
-#                         print ('is 1')
-#                         peer_temp.append(n[3])
-#                         if j > (n[2]-1):
-#                                 a = j-n[2]
-#                                 peer_temp.append(a) # dar sakhte peer bayad j ro B0 , B3 moghayese konim va order dorost ro barash mohasebe konim
-#                                 #bi_matrix[j][p[1]] = 0
-#                                 #bi_matrix[p[1]][j] = 0
-#                         else:
-#                                 peer_temp.append(j)
-#
-#                         print('peer_temp:', peer_temp)
-#                         step_history.append(peer_temp)
-#             else:
-#                 if p[0] == n[3]:
-#                     print('secound condition by:', 'p[0]:', p[0],  'n[3]', n[3])
-#                     print('len(list_Struct): ', len(List_Struct))
-#                     print('p0:', p[0],'p1: ', p[1], 'n[6]:', n[6], 'n[3]:', n[3])
-#                     bi_matrix = total_matrix[n[1],n[3]]
-#                     for j in range(n[6]):
-#                         peer_temp = []
-#                         print('n6:', n[6], 'p1:' , p[1], 'j:', j, 'n4', n[4])
-#                         index = p[1]+(n[2]-1)
-#                         if bi_matrix[j][index]==1:
-#                             print ('is 1')
-#                             peer_temp.append(n[1])
-#                             if j > (n[4]-1):
-#                                 j = index
-#                                 peer_temp.append(j) # dar sakhte peer bayad j ro B0 , B3 moghayese konim va order dorost ro barash mohasebe konim
-#                                 #bi_matrix[j][p[1]] = 0
-#                                 #bi_matrix[p[1]][j] = 0
-#                             else:
-#                                 peer_temp.append(j)
-#                             print('peer_temp:', peer_temp)
-#                             step_history.append(peer_temp)
-#
-#
-#
-#
-#
-#     return step_history, total_matrix
-
-
 def delete_redundant(step_dic, new_list, step):
     is_in = False
     list_recall = []
-    # print ('____steps: ', step_dic)
-    # print('---new_list: ', new_list)
-    # print('step: ', step)
     step_temp = []
     for s in range(step):
         step_temp = step_dic[s]
-        #print('____step_temp: ', step_temp)
 
         for n in new_list:
             if n in step_temp:
                index = step_temp.index(n)
                new_list.pop(index)
         list_recall = new_list
-        #print('__Final list: ', new_list)
-
 
     return list_recall
 
-
-#def complex_disintegrate(attacked_nodes , totla_matrix):
-    # print('attecked_Nodes_in_dis********: ', attacked_nodes)
-    # step_history = {}
-    # step = 0
-    # step_history[step] = attacked_nodes
-    # attacked_node_step = attacked_nodes
-    # while attacked_node_step != []:
-    #
-    #     # print('attacked_node_step' ,attacked_node_step)
-    #     # print ('--------------------------------attacked_nodes: ', len( attacked_nodes))
-    #
-    #     attacked_node_temp = []
-    #     attacked_node_struc = attacked_node_struct(attacked_node_step)
-    #     step_node_diag , totla_matrix_internal = complex_disintegration_diagonal(attacked_node_struc, totla_matrix)
-    #     for p in step_node_diag:
-    #         attacked_node_temp.append(p)
-    #
-    #     step_node_bipart,totla_matrix_final= complex_disintegration_bipart(attacked_node_struc, totla_matrix)
-    #     for p in step_node_bipart:
-    #         attacked_node_temp.append(p)
-    #
-    #     step = step+1
-    #     attacked_node_step = delete_redundant(step_history, attacked_node_temp, step)
-    #
-    #     step_history[step]= attacked_node_step
-    #     #print('step_history: ', step_history)
-    #     #print('totla_matrix_final: ', totla_matrix_final)
-    #     #print(len(attacked_node_step))
-    # return step_history , totla_matrix_final
 
 
 def node_Mapping (list_of_Node):
@@ -357,7 +260,6 @@ def node_Mapping (list_of_Node):
     for node in list_of_Node:
         map_dic[i] = node
         i = i+1
-    #print('**************map_dic', map_dic , 'i:', i)
     return map_dic , i
 
 
@@ -383,36 +285,23 @@ def create_major_matrix(Total_Matrix, Layer_Count):
             matrix = Total_Matrix[i][j]
             if i == j:
                 index_list = create_index_list(i, Total_Node)
-                # print ('temp_node___________', temp_node)
-                # print ('index_list________', index_list)
-                #print ('matrix_____', matrix)
                 for b in range(len(index_list)):
                     for c in range(len(index_list)):
-                        #print('index b ', index_list[b] , '-- index c' , index_list[c])
-                        #print('matrix[b][c]___ ', matrix[b][c])
-                        #print('main_matrix[index_list[b]][index_list[c]]___ ', main_matrix[index_list[b]][index_list[c]])
                         main_matrix[index_list[b]][index_list[c]] = matrix[b][c]
-                #print ('main_martix+++++++++++++++', main_matrix)
+
 
             else:
-                #print('bimatrix____', matrix)
                 bi_index_list = []
                 index_list1 = create_index_list(i , Total_Node)
                 index_list2 = create_index_list(j , Total_Node)
-                # print('index1^^^^^', index_list1)
-                # print('index2^^^^^', index_list2)
                 for mp in index_list2:
                     index_list1.append(mp)
                     bi_index_list = index_list1
-                #print('bi_index_list$$$$$$$$$$$', bi_index_list)
 
                 for bi in range(len(bi_index_list)):
                     for ci in range(len(bi_index_list)):
-                        # print('index bi ', bi_index_list[bi] , '-- index ci' , bi_index_list[ci])
-                        # print('matrix[bi][ci]___ ', matrix[bi][ci])
-                        # print('main_matrix[index_list[bi]][index_list[ci]]___ ', main_matrix[bi_index_list[bi]][bi_index_list[ci]])
-                        if matrix[bi][ci]==1:
-                            main_matrix[bi_index_list[bi]][bi_index_list[ci]] = matrix[bi][ci]
+                            if matrix[bi][ci]==1:
+                                main_matrix[bi_index_list[bi]][bi_index_list[ci]] = matrix[bi][ci]
 
 
     main = np.matrix(np.array(main_matrix))
@@ -460,14 +349,13 @@ def attack_Node_Ordering(attack_list:list, base_List):
     # base_list : BTW or DEG, which determines criterion of ordering
     # list ro bar asase meyare morede barresi moratab mikone
     if len(attack_list)!= 0:
-    #if attack_list:
         order_dic = {}
         for node in attack_list:
             order_dic[node] = base_List[node]
         sort_order = sorted(order_dic.items(), key=lambda x: x[1], reverse=True)
-        return sort_order, sort_order[0]
+        return sort_order, sort_order[0], attack_list[np.random.randint(0, len(attack_list))]
     else:
-        return [], []
+        return [], [], []
 
 
 
@@ -479,7 +367,6 @@ def disintegration (node, main_matrix, attack_list):
 
     neigh = []
     for i in range(Total_Node):
-        #print(i , node )
         if main_matrix[i][node] == 1:
             neigh.append(i)
             main_matrix[i][node] = 0
@@ -494,12 +381,8 @@ def disintegration (node, main_matrix, attack_list):
     return final_attack_list , main_matrix
 
 
-def attack_random (attack_list):
-    rand_node = attack_list[np.random.randint(0, len(attack_list))]
-    return rand_node
 
-
-def closeness_recursive_dis(type , main_matrix , main_graph):
+def closeness_recursive_dis(type , main_matrix):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     main_graph = show_main_graph(main_matrix, Label)
     attack_list = Attack_Map
@@ -507,7 +390,7 @@ def closeness_recursive_dis(type , main_matrix , main_graph):
         switcher={
                 1: closeness_btw(main_graph),
                 2: closeness_deg(main_graph),
-            }
+                }
         closeness = switcher.get(type,"Invalid type")
         print('closeness type------', closeness)
         print('attack_list recurmmmmmmmmm', attack_list)
@@ -539,20 +422,40 @@ def closeness_recursive_dis(type , main_matrix , main_graph):
             main_graph = show_main_graph(main_matrix, Label)
 
 
-def random_recursive_dis( main_matrix, main_graph):
+def random_recursive_dis( main_matrix):
     main_graph = show_main_graph(main_matrix, Label)
     attack_list = Attack_Map
-
     while len(attack_list) != 0:
-
-        if len() == 0:
+        closeness = closeness_deg(main_graph)
+        print('closeness type------', closeness)
+        print('initial attack_list', attack_list)
+        if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
             print ('Network has disintegrated successfuly')
             return
+        else:
+            for node in attack_list:
+                    if node in closeness:
+                        flag = "true"
+                    else:
+                        index = attack_list.index(node)
+                        attack_list.pop(index)
+                        print('alone node hase deleted: ', node)
 
-        target_node = attack_random(attack_list)
-        attack_list , main_matrix = disintegration(target_node, main_matrix, attack_list)
-        main_graph = show_main_graph(main_matrix, Label)
+            sort_order , max_order , random_node = attack_Node_Ordering(attack_list, closeness )
+            print('random_node', random_node)
+            #max_order_node = random_node[0]
+            print('target node: ', random_node)
+            attack_list , main_matrix = disintegration(random_node, main_matrix, attack_list)
+
+            for node in attack_list:
+                if node in closeness:
+                    flag = "true"
+                else:
+                    index = attack_list.index(node)
+                    attack_list.pop(index)
+                    print('alone node 2 has deleted: ', node)
+            main_graph = show_main_graph(main_matrix, Label)
 
 
 
@@ -577,13 +480,14 @@ Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
 Main_Graph = show_main_graph(Main_Matrix, Label)
 Attack_Map = attack_Node_Mapping(Atthck_Nodes)
-BTW = {}
-DEG = {}
-RND = {}
-WEGH = {}
+# BTW = {}
+# DEG = {}
+# RND = {}
+# WEGH = {}
 
-closeness_recursive_dis(1, Main_Matrix, Main_Graph)
-closeness_recursive_dis(2, Main_Matrix , Main_Graph)
+#closeness_recursive_dis(1, Main_Matrix)
+#closeness_recursive_dis(2, Main_Matrix)
+random_recursive_dis(Main_Matrix)
 
 
 
