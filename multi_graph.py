@@ -456,6 +456,59 @@ def random_recursive_dis(main_matrix):
             attack_list , main_matrix = disintegration(rand_order_node, main_matrix, attack_list)
             main_graph = show_main_graph(main_matrix, Label)
 
+def weight_def (main_matrix):
+    list_of_weight = []
+    pair = []
+    for i in range(Total_Node):
+        for j in range(Total_Node):
+            node1 = []
+            node2 = []
+
+            if main_matrix[i][j] ==1:
+                internal_pair = []
+                internal_pair.append(i)
+                internal_pair.append(j)
+
+                if internal_pair in pair:
+                    is_in = True
+                else:
+                    pair.append(internal_pair)
+                    print('internal_pair:' , internal_pair , 'pair:' , pair)
+                    weight = np.random.randint(1, 20)
+                    node1.append(i)
+                    node1.append(j)
+                    node1.append(weight)
+                    list_of_weight.append(node1)
+                    node2.append(j)
+                    node2.append(i)
+                    node2.append(weight)
+                    list_of_weight.append(node2)
+
+
+    print('list of weight :: ' , list_of_weight)
+    return list_of_weight
+
+def weight_account(list_of_weight):
+
+    count = 0
+    weight_sum = 0
+    node_and_weights = []
+    for node_number in range(Total_Node):
+        internal_node_and_weight = []
+        for node in list_of_weight:
+            if node_number == node[0]:
+                count = count+1
+                weight_sum = weight_sum+ node[2]
+            print('node_number ', node_number , 'node ' , node , 'count:', count , 'weight_sum: ', weight_sum)
+            weight_avr = (weight_sum/count)
+        internal_node_and_weight.append(node_number)
+        internal_node_and_weight.append(weight_avr)
+        node_and_weights.append(internal_node_and_weight)
+        count = 0
+        weight_sum = 0
+    print ('node and weights: ' , node_and_weights)
+
+
 
 
 # main
@@ -479,6 +532,10 @@ Main_Graph = show_main_graph(Main_Matrix, Label)
 #closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
+
+List_of_Weight = weight_def (Main_Matrix)
+#weight_account(List_of_Weight)
+
 
 
 
