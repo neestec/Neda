@@ -16,6 +16,7 @@ import math
 import matplotlib.pyplot as plt
 
 
+
 def list_node():
     """gets layers count as an int variation layer_n
     for each layer creates a random int number of nodes as a member of list_node
@@ -344,18 +345,18 @@ def attack_Node_Mapping (attack_list):
     return index_list
 
 
-def attack_Node_Ordering(attack_list:list, base_List):
-    # attack_list: list of nodes which are attacked and mapped
-    # base_list : BTW or DEG, which determines criterion of ordering
-    # list ro bar asase meyare morede barresi moratab mikone
-    if len(attack_list)!= 0:
-        order_dic = {}
-        for node in attack_list:
-            order_dic[node] = base_List[node]
-        sort_order = sorted(order_dic.items(), key=lambda x: x[1], reverse=True)
-        return sort_order, sort_order[0], attack_list[np.random.randint(0, len(attack_list))]
-    else:
-        return [], [], []
+# def attack_Node_Ordering(attack_list:list, base_list):
+#     # attack_list: list of nodes which are attacked and mapped
+#     # base_list : BTW or DEG, which determines criterion of ordering
+#     # list ro bar asase meyare morede barresi moratab mikone
+#     if len(base_list)!= 0:
+#         order_dic = {}
+#         for node in base_list:
+#             order_dic[node] = base_list[node]
+#         sort_order = sorted(order_dic.items(), key=lambda x: x[1], reverse=True)
+#         return sort_order, sort_order[0], attack_list[np.random.randint(0, len(attack_list))]
+#     else:
+#         return [], [], []
 
 
 
@@ -371,8 +372,8 @@ def disintegration (node, main_matrix, attack_list):
             neigh.append(i)
             main_matrix[i][node] = 0
             main_matrix[node][i] = 0
-    index = attack_list.index(node)
-    attack_list.pop(index)
+    #index = attack_list.index(node)
+    #attack_list.pop(index)
 
     for n in neigh:
         attack_list.append(n)
@@ -385,85 +386,75 @@ def disintegration (node, main_matrix, attack_list):
 def closeness_recursive_dis(type , main_matrix):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     main_graph = show_main_graph(main_matrix, Label)
-    attack_list = Attack_Map
-    while len(attack_list) != 0:
+    #attack_list = Attack_Map
+    attack_list = []
+    switcher={
+                1: closeness_btw(main_graph),
+                2: closeness_deg(main_graph),
+                }
+    closeness = switcher.get(type,"Invalid type")
+    print('closeness type------', closeness)
+    print('attack_list recurmmmmmmmmm', attack_list)
+    while len(closeness) != 0:
         switcher={
                 1: closeness_btw(main_graph),
                 2: closeness_deg(main_graph),
                 }
         closeness = switcher.get(type,"Invalid type")
-        print('closeness type------', closeness)
-        print('attack_list recurmmmmmmmmm', attack_list)
+        print('closeness before sorting: ', closeness)
+        sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+        print ('sorted:::', sort_order)
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
             print ('Network has disintegrated successfuly')
             return
         else:
             for node in attack_list:
-                    if node in closeness:
-                        flag = "true"
-                    else:
-                        index = attack_list.index(node)
-                        attack_list.pop(index)
-                        print('alone node hase deleted: ', node)
+                if node in closeness:
+                    flag = "true"
+                else:
+                    index = attack_list.index(node)
+                    attack_list.pop(index)
+                    print('alone node hase deleted: ', node)
+            #sort_order , max_order, attack_list_rand = attack_Node_Ordering(attack_list, closeness )
+            max_order_node = sort_order[0][0]
 
-            sort_order , max_order = attack_Node_Ordering(attack_list, closeness )
-            max_order_node = max_order[0]
             print('target node: ', max_order_node)
             attack_list , main_matrix = disintegration(max_order_node, main_matrix, attack_list)
-
-            for node in attack_list:
-                if node in closeness:
-                    flag = "true"
-                else:
-                    index = attack_list.index(node)
-                    attack_list.pop(index)
-                    print('alone node 2 has deleted: ', node)
             main_graph = show_main_graph(main_matrix, Label)
 
 
-def random_recursive_dis( main_matrix):
-    main_graph = show_main_graph(main_matrix, Label)
-    attack_list = Attack_Map
-    while len(attack_list) != 0:
-        closeness = closeness_deg(main_graph)
-        print('closeness type------', closeness)
-        print('initial attack_list', attack_list)
+def random_recursive_dis(main_matrix):
+     main_graph = show_main_graph(main_matrix, Label)
+    #attack_list = Attack_Map
+     attack_list = []
+     closeness = closeness_deg(main_graph)
+     print('closeness type------', closeness)
+     print('attack_list recurmmmmmmmmm', attack_list)
+     while len(closeness) != 0:
+        closeness =  closeness_deg(main_graph)
+        print('closeness before sorting: ', closeness)
+        sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+        print ('sorted:::', sort_order)
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
             print ('Network has disintegrated successfuly')
             return
         else:
             for node in attack_list:
-                    if node in closeness:
-                        flag = "true"
-                    else:
-                        index = attack_list.index(node)
-                        attack_list.pop(index)
-                        print('alone node hase deleted: ', node)
-
-            sort_order , max_order , random_node = attack_Node_Ordering(attack_list, closeness )
-            print('random_node', random_node)
-            #max_order_node = random_node[0]
-            print('target node: ', random_node)
-            attack_list , main_matrix = disintegration(random_node, main_matrix, attack_list)
-
-            for node in attack_list:
                 if node in closeness:
                     flag = "true"
                 else:
                     index = attack_list.index(node)
                     attack_list.pop(index)
-                    print('alone node 2 has deleted: ', node)
+                    print('alone node hase deleted: ', node)
+            #sort_order , max_order, attack_list_rand = attack_Node_Ordering(attack_list, closeness )
+
+            rand_order_node = sort_order[np.random.randint(0, len(sort_order))][0]
+
+            print('target node: ', rand_order_node)
+            attack_list , main_matrix = disintegration(rand_order_node, main_matrix, attack_list)
             main_graph = show_main_graph(main_matrix, Label)
-
-
-
-
-
-
-
-
 
 
 
@@ -474,12 +465,12 @@ List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
 list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
-Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
+#Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
 #complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
 Main_Graph = show_main_graph(Main_Matrix, Label)
-Attack_Map = attack_Node_Mapping(Atthck_Nodes)
+#Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 # BTW = {}
 # DEG = {}
 # RND = {}
@@ -487,7 +478,7 @@ Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 
 #closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
-random_recursive_dis(Main_Matrix)
+#random_recursive_dis(Main_Matrix)
 
 
 
