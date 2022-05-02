@@ -485,19 +485,21 @@ def weight_def (main_matrix):
 
 def weight_account(list_of_weight , active_nodes ):
     node_and_weights = []
-    for node_number in active_nodes:
+    for i in range(len(active_nodes)):
         for node in list_of_weight:
             internal_node_and_weight = []
             count = 0
             weight_sum = 0
-            if node_number == node[0]:
-                print('//////////////////////')
+            while i == node[0]:
+                print('i', i , node[0])
+                #print('//////////////////////')
                 count = count+1
                 weight_sum = weight_sum+ node[2]
-            print('node_number ', node_number ,'node[0]' , node[0] , 'node ',  node , 'count:', count , 'weight_sum: ', weight_sum)
+                print('node_number ', i ,'node[0]' , node[0] , 'node ',  node , 'count:', count , 'weight_sum: ', weight_sum)
             weight_avr = (weight_sum/count)
+            print('node number', i , 'weight_sum: ', weight_sum , 'count: ', count)
 
-        internal_node_and_weight.append(node_number)
+        internal_node_and_weight.append(i)
         internal_node_and_weight.append(weight_avr)
         node_and_weights.append(internal_node_and_weight)
 
