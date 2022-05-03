@@ -403,6 +403,7 @@ def closeness_recursive_dis(type , main_matrix):
         closeness = switcher.get(type,"Invalid type")
         print('closeness before sorting: ', closeness)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+
         print ('sorted:::', sort_order)
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
@@ -469,14 +470,14 @@ def weight_def (main_matrix):
                 node1.append(j)
                 node1.append(weight)
                 list_of_weight.append(node1)
-    print('list of weight :: ' , list_of_weight)
+    #print('list of weight :: ' , list_of_weight)
     for node in list_of_weight:
         i = node[0]
         j = node[1]
         for n in list_of_weight:
             if n[0] == j and n[1] == i:
                 n[2] = node[2]
-    print('list of weight correct:: ' , list_of_weight)
+    #print('list of weight correct:: ' , list_of_weight)
     active_node_list = []
     for node in list_of_weight:
         if node[0] not in active_node_list:
@@ -486,15 +487,15 @@ def weight_def (main_matrix):
 
 
 def average_count(list_node):
-    print ('list_node_out: ', list_node)
+    #print ('list_node_out: ', list_node)
     count = 0
     sum = 0
     for node in list_node:
         count = count+1
         sum = sum + node[2]
-    print('node: ', node, 'count:', count , 'sum:', sum )
+    #print('node: ', node, 'count:', count , 'sum:', sum )
     weight_avr = (sum/count)
-    print(sum , '/', count, '=' , weight_avr)
+    #print(sum , '/', count, '=' , weight_avr)
 
     return weight_avr
 
@@ -510,42 +511,64 @@ def weight_account(list_of_weight , active_nodes ):
                 list_node_internal.append(node)
         #print('list_node_internal:',list_node_internal)
         node_avr = average_count(list_node_internal)
-        node_and_avr_temp.append(i)
         node_and_avr_temp.append(node_avr)
+        node_and_avr_temp.append(i)
         node_and_avr_list.append(node_and_avr_temp)
-    print('node_and_avr_list:',node_and_avr_list)
 
+    node_and_avr_list.sort()
+        #= sorted(node_and_avr_list)
+    node_and_avr_list.reverse()
+    print('node_and_avr_list:',node_and_avr_list)
     return node_and_avr_list
+
+
+def attack_weight_sort(attack_node , node_avrg):
+    attack_sort = []
+    for node in attack_node:
+        internal_node = []
+        for nd in node_avrg:
+            if node==nd[1]:
+                internal_node.append(nd[1])
+                internal_node.append(node)
+                attack_sort.append(internal_node)
+            else:
+                print('Neda nemitoonam in node ro peyda konam: ', node)
+    sorted(attack_sort)
+    print('attack_sort: ',attack_sort)
+    return
 
 
 def weight_recursive_dis(main_matrix):
      main_graph = show_main_graph(main_matrix, Label)
      attack_list = []
+
      list_of_weight , active_nodes = weight_def (main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
-     while len(node_averg) != 0:
-        
-        sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
-        print ('sorted:::', sort_order)
-        if len(closeness) == 0:
-            print('final main matrix for other methodes: ', Main_Matrix)
-            print ('Network has disintegrated successfuly')
+     #attack_list.append(node_averg[0][1])
+     print('attack_list : ',attack_list)
+     attack_list.append(node_averg[0][1])
+     print('attack_list : ',attack_list)
+     while len(active_nodes) != 0:
+        if len(active_nodes) == 0:
+            print ('Network has disintegrated successfuly by wight method ')
             return
         else:
             for node in attack_list:
-                if node in closeness:
-                    flag = "true"
-                else:
+                if node not in active_nodes:
                     index = attack_list.index(node)
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
-            #sort_order , max_order, attack_list_rand = attack_Node_Ordering(attack_list, closeness )
 
-            rand_order_node = sort_order[np.random.randint(0, len(sort_order))][0]
-
-            print('target node: ', rand_order_node)
-            attack_list , main_matrix = disintegration(rand_order_node, main_matrix, attack_list)
+            target_node = attack_list[0]
+            print('target node: ', target_node)
+            attack_list , main_matrix = disintegration(target_node, main_matrix, attack_list)
             main_graph = show_main_graph(main_matrix, Label)
+            print('attack_list', attack_list)
+            list_of_weight , active_nodes = weight_def (main_matrix)
+            node_averg = weight_account(list_of_weight, active_nodes)
+            attack_list = attack_weight_sort(attack_list , node_averg)
+
+
 
 
 
@@ -562,14 +585,13 @@ Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
 Main_Graph = show_main_graph(Main_Matrix, Label)
 #Attack_Map = attack_Node_Mapping(Atthck_Nodes)
-# BTW = {}
-# DEG = {}
-# RND = {}
-# WEGH = {}
+
 
 #closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
+weight_recursive_dis(Main_Matrix)
+
 
 
 
