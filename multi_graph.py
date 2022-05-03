@@ -523,19 +523,28 @@ def weight_account(list_of_weight , active_nodes ):
 
 
 def attack_weight_sort(attack_node , node_avrg):
+    print('attack_nodes in attack weight sort: ', attack_node)
+    print ('node_avrg in attack weight sort: ', node_avrg)
     attack_sort = []
     for node in attack_node:
         internal_node = []
         for nd in node_avrg:
-            if node==nd[1]:
-                internal_node.append(nd[1])
+            print('-------', node , '==============',nd )
+            if node == nd[1]:
+
+                internal_node.append(nd[0])
                 internal_node.append(node)
                 attack_sort.append(internal_node)
-            else:
-                print('Neda nemitoonam in node ro peyda konam: ', node)
-    sorted(attack_sort)
+                print('gdfhgsdfhgdfheg' , attack_sort)
+
+    attack_sort.sort()
+    attack_sort.reverse()
     print('attack_sort: ',attack_sort)
-    return
+    final_sorted_attack_node = []
+    for node in attack_sort:
+        final_sorted_attack_node.append(node[1])
+    print('final_sorted_attack_node: ', final_sorted_attack_node)
+    return final_sorted_attack_node
 
 
 def weight_recursive_dis(main_matrix):
@@ -549,24 +558,24 @@ def weight_recursive_dis(main_matrix):
      attack_list.append(node_averg[0][1])
      print('attack_list : ',attack_list)
      while len(active_nodes) != 0:
-        if len(active_nodes) == 0:
+        for node in attack_list:
+            if node not in active_nodes:
+                index = attack_list.index(node)
+                attack_list.pop(index)
+                print('alone node hase deleted: ', node)
+
+        target_node = attack_list[0]
+        print('target node: ', target_node)
+        attack_list , main_matrix = disintegration(target_node, main_matrix, attack_list)
+        main_graph = show_main_graph(main_matrix, Label)
+        print('attack_list', attack_list)
+        list_of_weight , active_nodes = weight_def (main_matrix)
+        node_averg = weight_account(list_of_weight, active_nodes)
+        attack_list = attack_weight_sort(attack_list , node_averg)
+     if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly by wight method ')
             return
-        else:
-            for node in attack_list:
-                if node not in active_nodes:
-                    index = attack_list.index(node)
-                    attack_list.pop(index)
-                    print('alone node hase deleted: ', node)
 
-            target_node = attack_list[0]
-            print('target node: ', target_node)
-            attack_list , main_matrix = disintegration(target_node, main_matrix, attack_list)
-            main_graph = show_main_graph(main_matrix, Label)
-            print('attack_list', attack_list)
-            list_of_weight , active_nodes = weight_def (main_matrix)
-            node_averg = weight_account(list_of_weight, active_nodes)
-            attack_list = attack_weight_sort(attack_list , node_averg)
 
 
 
