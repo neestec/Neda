@@ -14,6 +14,7 @@ from itertools import combinations
 from scipy.sparse import csr_matrix
 import math
 import matplotlib.pyplot as plt
+from copy import copy , deepcopy
 
 
 
@@ -385,7 +386,8 @@ def disintegration (node, main_matrix, attack_list):
 
 def closeness_recursive_dis(type , main_matrix):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
-    main_graph = show_main_graph(main_matrix, Label)
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = show_main_graph(iner_matrix, Label)
     #attack_list = Attack_Map
     attack_list = []
     switcher={
@@ -411,9 +413,7 @@ def closeness_recursive_dis(type , main_matrix):
             return
         else:
             for node in attack_list:
-                if node in closeness:
-                    flag = "true"
-                else:
+                if node not in closeness:
                     index = attack_list.index(node)
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
@@ -421,12 +421,13 @@ def closeness_recursive_dis(type , main_matrix):
             max_order_node = sort_order[0][0]
 
             print('target node: ', max_order_node)
-            attack_list , main_matrix = disintegration(max_order_node, main_matrix, attack_list)
-            main_graph = show_main_graph(main_matrix, Label)
+            attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
+            main_graph = show_main_graph(iner_matrix, Label)
 
 
 def random_recursive_dis(main_matrix):
-     main_graph = show_main_graph(main_matrix, Label)
+     iner_matrix = deepcopy(main_matrix)
+     main_graph = show_main_graph(iner_matrix, Label)
     #attack_list = Attack_Map
      attack_list = []
      closeness = closeness_deg(main_graph)
@@ -454,8 +455,8 @@ def random_recursive_dis(main_matrix):
             rand_order_node = sort_order[np.random.randint(0, len(sort_order))][0]
 
             print('target node: ', rand_order_node)
-            attack_list , main_matrix = disintegration(rand_order_node, main_matrix, attack_list)
-            main_graph = show_main_graph(main_matrix, Label)
+            attack_list , iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
+            main_graph = show_main_graph(iner_matrix, Label)
 
 
 def weight_def (main_matrix):
@@ -548,10 +549,13 @@ def attack_weight_sort(attack_node , node_avrg):
 
 
 def weight_recursive_dis(main_matrix):
-     main_graph = show_main_graph(main_matrix, Label)
+     #iner_main_matrix = [row[:] for row in main_matrix]
+     iner_main_matrix = deepcopy(main_matrix)
+     print('iner_main_matrix' , iner_main_matrix)
+     main_graph = show_main_graph(iner_main_matrix, Label)
      attack_list = []
 
-     list_of_weight , active_nodes = weight_def (main_matrix)
+     list_of_weight , active_nodes = weight_def (iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
      #attack_list.append(node_averg[0][1])
      print('attack_list : ',attack_list)
@@ -566,10 +570,10 @@ def weight_recursive_dis(main_matrix):
 
         target_node = attack_list[0]
         print('target node: ', target_node)
-        attack_list , main_matrix = disintegration(target_node, main_matrix, attack_list)
-        main_graph = show_main_graph(main_matrix, Label)
+        attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
+        #main_graph = show_main_graph(iner_main_matrix, Label)
         print('attack_list', attack_list)
-        list_of_weight , active_nodes = weight_def (main_matrix)
+        list_of_weight , active_nodes = weight_def (iner_main_matrix)
         node_averg = weight_account(list_of_weight, active_nodes)
         attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
@@ -577,8 +581,9 @@ def weight_recursive_dis(main_matrix):
             return
 
 
+def cost_connectivity ():
 
-
+    return
 
 
 # main
@@ -592,14 +597,17 @@ Map_dic, Total_Node = node_Mapping(list_of_nodes)
 #complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 print ('Main_Matrix_Type:', type(Main_Matrix))
-Main_Graph = show_main_graph(Main_Matrix, Label)
+#Main_Graph = show_main_graph(Main_Matrix, Label)
 #Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 
 
-#closeness_recursive_dis(1, Main_Matrix)
+closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
-weight_recursive_dis(Main_Matrix)
+#weight_recursive_dis(Main_Matrix)
+
+Main_Graph = show_main_graph(Main_Matrix, Label)
+print(Main_Matrix)
 
 
 
