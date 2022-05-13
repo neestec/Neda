@@ -15,6 +15,11 @@ from scipy.sparse import csr_matrix
 import math
 import matplotlib.pyplot as plt
 from copy import copy , deepcopy
+from sklearn.preprocessing import normalize
+from sklearn import preprocessing
+import pandas as pd
+
+
 
 
 
@@ -311,14 +316,14 @@ def create_major_matrix(Total_Matrix, Layer_Count):
     return main_matrix
 
 
-def show_main_graph(adjacency_matrix, labels):
+def create_main_graph(adjacency_matrix, labels):
     # main graph ro namayesh midim
     rows, cols = np.where(adjacency_matrix == 1)
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
     gr.add_edges_from(edges)
     nx.draw(gr, node_size=500,  with_labels=True)
-    plt.show()
+    #plt.show()
     return gr
 
 
@@ -387,7 +392,7 @@ def disintegration (node, main_matrix, attack_list):
 def closeness_recursive_dis(type , main_matrix):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     iner_matrix = deepcopy(main_matrix)
-    main_graph = show_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix, Label)
     #attack_list = Attack_Map
     attack_list = []
     switcher={
@@ -422,12 +427,12 @@ def closeness_recursive_dis(type , main_matrix):
 
             print('target node: ', max_order_node)
             attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
-            main_graph = show_main_graph(iner_matrix, Label)
+            main_graph = create_main_graph(iner_matrix, Label)
 
 
 def random_recursive_dis(main_matrix):
      iner_matrix = deepcopy(main_matrix)
-     main_graph = show_main_graph(iner_matrix, Label)
+     main_graph = create_main_graph(iner_matrix, Label)
     #attack_list = Attack_Map
      attack_list = []
      closeness = closeness_deg(main_graph)
@@ -456,10 +461,11 @@ def random_recursive_dis(main_matrix):
 
             print('target node: ', rand_order_node)
             attack_list , iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
-            main_graph = show_main_graph(iner_matrix, Label)
+            main_graph = create_main_graph(iner_matrix, Label)
 
 
 def weight_def (main_matrix):
+    # be ezaye ha node ye vazne tasadofi ijad mikone va liste node haye faal ro ham tashkhis mide va barmigardoone
     list_of_weight = []
     pair = []
     for i in range(Total_Node):
@@ -552,11 +558,12 @@ def weight_recursive_dis(main_matrix):
      #iner_main_matrix = [row[:] for row in main_matrix]
      iner_main_matrix = deepcopy(main_matrix)
      print('iner_main_matrix' , iner_main_matrix)
-     main_graph = show_main_graph(iner_main_matrix, Label)
+     main_graph = create_main_graph(iner_main_matrix, Label)
      attack_list = []
 
      list_of_weight , active_nodes = weight_def (iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
+     # primitive_node_avrg = node_averg
      #attack_list.append(node_averg[0][1])
      print('attack_list : ',attack_list)
      attack_list.append(node_averg[0][1])
@@ -581,9 +588,98 @@ def weight_recursive_dis(main_matrix):
             return
 
 
+def normalize(abnormal_list):
+    ab_normal_list = deepcopy(abnormal_list)
+    # list ha jofti hastan. aval bayad yek ozvishoon kinim bad aza ro normal konim, bad dobare set konim.
+    # nokteye mohem ine li nabayad az index 1 aza be onvan index join shodan estefade konim chon ina shomare node ha
+    # hastan va daem dar hale taghir.
+    print ('aaaaaaaaaaaaaaaaaa',ab_normal_list)
+    node = []
+    point = []
+    for n in ab_normal_list:
+        node.append(n[0])
+        point.append(n[1])
+    print ('point' , point)
+    print ('Node: ', node)
+    norm_list = []
+    min_value = min(point)
+    max_value = max(point)
+    for value in point:
+        tmp = (value - min_value) / (max_value - min_value)
+        norm_list.append(tmp)
+    print('Normalized List:',norm_list)
+    normal_list_final = []
+    for i in range(len(ab_normal_list)):
+        internal_point = []
+        internal_point.append(node[i])
+        internal_point.append(norm_list[i])
+        normal_list_final.append(internal_point)
+    print('normal_list_final', normal_list_final)
+    return normal_list_final
+
+
+def parent_choose(bc, dc, uw):
+    ga_base_list = {}
+    if len(bc)== len(dc) and len(dc) == len(uw):
+        print('toolha ba ham barabaran')
+    else:
+        print('toolha ba ham yeki nist', len(bc), len(dc) , len(uw))
+        return
+    create_dataset = False
+    for i in range(len(bc)):
+        if bc[i][0] == dc[i][0] and bc[i][0] == uw[i][0]:
+            create_dataset = True
+        else:
+            create_dataset = False
+            print('index ha ba ham yeki nistan', bc[i][0], dc[i][0],  uw[i][0])
+            return
+    if create_dataset:
+        index = []
+        bc_point = []
+        dc_point = []
+        uw_point = []
+        sum_point = []
+        for node in bc:
+            index.append(node[0])
+            bc_point.append(node[1])
+
+        for node in dc:
+            dc_point.append(node[1])
+        for node in uw:
+            uw_point.append(node[1])
+        for i in range(len(bc)):
+            local_sum = dc_point[i] + bc_point[i] + uw_point[i]
+            sum_point.append(local_sum)
+
+        data_frame = pd.DataFrame({
+            "index" : index,
+            "bc" : bc_point,
+            "dc" : dc_point,
+            "uw" : uw_point,
+            "sum" : sum_point
+        })
+        print (data_frame)
+        # max sum valu finding
+        column = data_frame["sum"]
+        max_sum_value = column.max()
+        print('max_sum_value:' , max_sum_value)
+
+        # max kpi finding by its node number
+        max_param = data_frame[['bc', 'dc', 'uw']].max()
+
+        print('max_param' , max_param)
+
+
+    return max_sum_value
+
+
+
+
+
 def cost_connectivity ():
 
     return
+
 
 
 # main
@@ -601,15 +697,20 @@ print ('Main_Matrix_Type:', type(Main_Matrix))
 #Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 
 
-closeness_recursive_dis(1, Main_Matrix)
+#closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
 #weight_recursive_dis(Main_Matrix)
+#Main_Graph = create_main_graph(Main_Matrix, Label)
+#print(Main_Matrix)
 
-Main_Graph = show_main_graph(Main_Matrix, Label)
-print(Main_Matrix)
-
-
+BC = [(0,7), (1, 5), (5,10)]
+DC = [(0,6.3454874987538), (1, 8.2198093809834), (5,5.27198496)]
+UW = [(0,5.3454874987538), (1, 4.2198093809834), (5,6.27198496)]
+BC1 = normalize(BC)
+DC1 = normalize(DC)
+UW1 = normalize(UW)
+Data_Frame = parent_choose(BC1, DC1, UW1)
 
 
 
