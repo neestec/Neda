@@ -184,7 +184,7 @@ def Create_List_of_Nodes(List_Struct):
     return list_of_Node , list_of_Node_lables
 
 
-def Create_Huristic_Atthck_Nodes(list_of_nodes ):
+def random_atthck_nodes(list_of_nodes ):
     #print('len(list_of_nodes):',len(list_of_nodes))
     attacked_number = math.floor(len(list_of_nodes)/4)
     #print('attacken number on nodes:', attacked_number)
@@ -351,6 +351,7 @@ def attack_Node_Mapping (attack_list):
     return index_list
 
 
+
 # def attack_Node_Ordering(attack_list:list, base_list):
 #     # attack_list: list of nodes which are attacked and mapped
 #     # base_list : BTW or DEG, which determines criterion of ordering
@@ -489,7 +490,7 @@ def weight_def (main_matrix):
     for node in list_of_weight:
         if node[0] not in active_node_list:
             active_node_list.append(node[0])
-    print('active_node: ', active_node_list)
+    #print('active_node: ', active_node_list)
     return list_of_weight , active_node_list
 
 
@@ -525,49 +526,48 @@ def weight_account(list_of_weight , active_nodes ):
     node_and_avr_list.sort()
         #= sorted(node_and_avr_list)
     node_and_avr_list.reverse()
-    print('node_and_avr_list:',node_and_avr_list)
+    #print('node_and_avr_list:',node_and_avr_list)
     return node_and_avr_list
 
 
 def attack_weight_sort(attack_node , node_avrg):
-    print('attack_nodes in attack weight sort: ', attack_node)
-    print ('node_avrg in attack weight sort: ', node_avrg)
+    #print('attack_nodes in attack weight sort: ', attack_node)
+    #print ('node_avrg in attack weight sort: ', node_avrg)
     attack_sort = []
     for node in attack_node:
         internal_node = []
         for nd in node_avrg:
-            print('-------', node , '==============',nd )
+            #print('-------', node , '==============',nd )
             if node == nd[1]:
 
                 internal_node.append(nd[0])
                 internal_node.append(node)
                 attack_sort.append(internal_node)
-                print('gdfhgsdfhgdfheg' , attack_sort)
+                #print('gdfhgsdfhgdfheg' , attack_sort)
 
     attack_sort.sort()
     attack_sort.reverse()
-    print('attack_sort: ',attack_sort)
+    #print('attack_sort: ',attack_sort)
     final_sorted_attack_node = []
     for node in attack_sort:
         final_sorted_attack_node.append(node[1])
-    print('final_sorted_attack_node: ', final_sorted_attack_node)
+    #print('final_sorted_attack_node: ', final_sorted_attack_node)
     return final_sorted_attack_node
 
 
 def weight_recursive_dis(main_matrix):
      #iner_main_matrix = [row[:] for row in main_matrix]
      iner_main_matrix = deepcopy(main_matrix)
-     print('iner_main_matrix' , iner_main_matrix)
+     #print('iner_main_matrix' , iner_main_matrix)
      main_graph = create_main_graph(iner_main_matrix, Label)
      attack_list = []
-
      list_of_weight , active_nodes = weight_def (iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
-     # primitive_node_avrg = node_averg
+     primitive_node_avrg = node_averg
      #attack_list.append(node_averg[0][1])
-     print('attack_list : ',attack_list)
+     #print('attack_list : ',attack_list)
      attack_list.append(node_averg[0][1])
-     print('attack_list : ',attack_list)
+     #print('attack_list : ',attack_list)
      while len(active_nodes) != 0:
         for node in attack_list:
             if node not in active_nodes:
@@ -576,16 +576,25 @@ def weight_recursive_dis(main_matrix):
                 print('alone node hase deleted: ', node)
 
         target_node = attack_list[0]
-        print('target node: ', target_node)
+        #print('target node: ', target_node)
         attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
         #main_graph = show_main_graph(iner_main_matrix, Label)
-        print('attack_list', attack_list)
+        #print('attack_list', attack_list)
         list_of_weight , active_nodes = weight_def (iner_main_matrix)
         node_averg = weight_account(list_of_weight, active_nodes)
         attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly by wight method ')
-            return
+            return primitive_node_avrg
+
+
+def attack_maping(attack_list, map_dic):
+    attack_map = []
+    for node in attack_list:
+        for n in map_dic:
+            if node == map_dic[n]:
+                attack_map.append(n)
+    return attack_map
 
 
 def normalize(abnormal_list):
@@ -593,33 +602,33 @@ def normalize(abnormal_list):
     # list ha jofti hastan. aval bayad yek ozvishoon kinim bad aza ro normal konim, bad dobare set konim.
     # nokteye mohem ine li nabayad az index 1 aza be onvan index join shodan estefade konim chon ina shomare node ha
     # hastan va daem dar hale taghir.
-    print ('aaaaaaaaaaaaaaaaaa',ab_normal_list)
+    #print ('abnormal list',ab_normal_list)
     node = []
     point = []
     for n in ab_normal_list:
         node.append(n[0])
         point.append(n[1])
-    print ('point' , point)
-    print ('Node: ', node)
+    #print ('point' , point)
+    #print ('Node: ', node)
     norm_list = []
     min_value = min(point)
     max_value = max(point)
     for value in point:
         tmp = (value - min_value) / (max_value - min_value)
         norm_list.append(tmp)
-    print('Normalized List:',norm_list)
+    #print('Normalized List:',norm_list)
     normal_list_final = []
     for i in range(len(ab_normal_list)):
         internal_point = []
         internal_point.append(node[i])
         internal_point.append(norm_list[i])
         normal_list_final.append(internal_point)
-    print('normal_list_final', normal_list_final)
+    #print('normal_list_final', normal_list_final)
     return normal_list_final
 
 
 def parent_choose(bc, dc, uw):
-    ga_base_list = {}
+
     if len(bc)== len(dc) and len(dc) == len(uw):
         print('toolha ba ham barabaran')
     else:
@@ -634,13 +643,13 @@ def parent_choose(bc, dc, uw):
             print('index ha ba ham yeki nistan', bc[i][0], dc[i][0],  uw[i][0])
             return
     if create_dataset:
-        index = []
+        node_number = []
         bc_point = []
         dc_point = []
         uw_point = []
         sum_point = []
         for node in bc:
-            index.append(node[0])
+            node_number.append(node[0])
             bc_point.append(node[1])
 
         for node in dc:
@@ -650,28 +659,99 @@ def parent_choose(bc, dc, uw):
         for i in range(len(bc)):
             local_sum = dc_point[i] + bc_point[i] + uw_point[i]
             sum_point.append(local_sum)
-
         data_frame = pd.DataFrame({
-            "index" : index,
+            "node_number" : node_number,
             "bc" : bc_point,
             "dc" : dc_point,
             "uw" : uw_point,
             "sum" : sum_point
         })
         print (data_frame)
-        # max sum valu finding
         column = data_frame["sum"]
         max_sum_value = column.max()
-        print('max_sum_value:' , max_sum_value)
+        target_node = data_frame['node_number'][data_frame[data_frame['sum'] == max_sum_value].index.tolist()].tolist()
+        #indx = data_frame.loc[data_frame['sum'] == max_sum_value, index]
+        print('max_sum_value:' , max_sum_value , 'target_node' , target_node)
 
-        # max kpi finding by its node number
-        max_param = data_frame[['bc', 'dc', 'uw']].max()
-
-        print('max_param' , max_param)
+    return target_node
 
 
-    return max_sum_value
+def GA_disintegration (main_matrix , attack_list, primitive_weight):
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix, Label)
+    weight_list = deepcopy(primitive_weight)
+    bc = closeness_btw(main_graph)
+    dc = closeness_deg(main_graph)
+    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+    #     print ('sorted:::', sort_order)
+    attack_lst = deepcopy(attack_list)
 
+    print('weight: ', weight_list, "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
+    #print('attack_map: ', attack_map)
+    weight_list_reverse = []
+    for n in weight_list:
+        temp_n = []
+        temp_n.append(n[1])
+        temp_n.append(n[0])
+        weight_list_reverse.append(temp_n)
+    print('weight_list_reverse' , weight_list_reverse)
+    weight_normal = normalize(weight_list_reverse)
+    bc_normal = normalize(bc_sort)
+    dc_normal = normalize(dc_sort)
+    attack_weight = []
+    attack_bc = []
+    attack_dc = []
+    for n in attack_lst:
+        for node in weight_normal:
+            #print ('node in weight', node , 'n', n , 'node[0]', node[0])
+            if n == node[0]:
+                attack_weight.append(node)
+    for n in attack_lst:
+
+        for node in bc_normal:
+            if n == node[0]:
+                attack_bc.append(node)
+    for n in attack_lst:
+        for node in dc_normal:
+            if n == node[0]:
+                attack_dc.append(node)
+
+    print('attack_weight: ', attack_weight )
+    print('attack_dc: ', attack_dc)
+    print('attack_bc: ', attack_bc)
+    print('attack_lst: ', attack_lst)
+    target_node = parent_choose(attack_bc, attack_dc, attack_weight)
+
+    # while len(closeness) != 0:
+    #     switcher={
+    #             1: closeness_btw(main_graph),
+    #             2: closeness_deg(main_graph),
+    #             }
+    #     closeness = switcher.get(type,"Invalid type")
+    #     print('closeness before sorting: ', closeness)
+    #     sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+    #
+    #     print ('sorted:::', sort_order)
+    #     if len(closeness) == 0:
+    #         print('final main matrix for other methodes: ', Main_Matrix)
+    #         print ('Network has disintegrated successfuly')
+    #         return
+    #     else:
+    #         for node in attack_list:
+    #             if node not in closeness:
+    #                 index = attack_list.index(node)
+    #                 attack_list.pop(index)
+    #                 print('alone node hase deleted: ', node)
+    #         #sort_order , max_order, attack_list_rand = attack_Node_Ordering(attack_list, closeness )
+    #         max_order_node = sort_order[0][0]
+    #
+    #         print('target node: ', max_order_node)
+    #         attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
+    #         main_graph = create_main_graph(iner_matrix, Label)
+
+
+    return
 
 
 
@@ -689,10 +769,12 @@ List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
 list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
-#Atthck_Nodes = Create_Huristic_Atthck_Nodes(list_of_nodes)
+#print ('map_dic:' , Map_dic, 'total_node:', Total_Node)
+Attack_Nodes = random_atthck_nodes(list_of_nodes)
+Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 #complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
-print ('Main_Matrix_Type:', type(Main_Matrix))
+#print ('Main_Matrix_Type:', type(Main_Matrix))
 #Main_Graph = show_main_graph(Main_Matrix, Label)
 #Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 
@@ -700,17 +782,19 @@ print ('Main_Matrix_Type:', type(Main_Matrix))
 #closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
-#weight_recursive_dis(Main_Matrix)
+Primitive_Weight = weight_recursive_dis(Main_Matrix)
 #Main_Graph = create_main_graph(Main_Matrix, Label)
 #print(Main_Matrix)
 
-BC = [(0,7), (1, 5), (5,10)]
-DC = [(0,6.3454874987538), (1, 8.2198093809834), (5,5.27198496)]
-UW = [(0,5.3454874987538), (1, 4.2198093809834), (5,6.27198496)]
-BC1 = normalize(BC)
-DC1 = normalize(DC)
-UW1 = normalize(UW)
-Data_Frame = parent_choose(BC1, DC1, UW1)
+# BC = [(0,7), (1, 5), (5,10)]
+# DC = [(0,6.3454874987538), (1, 8.2198093809834), (5,5.27198496)]
+# UW = [(0,5.3454874987538), (1, 4.2198093809834), (5,6.27198496)]
+# BC1 = normalize(BC)
+# DC1 = normalize(DC)
+# UW1 = normalize(UW)
+#Max_value_fitness = parent_choose(BC1, DC1, UW1)
+
+GA_disintegration(Main_Matrix, Attack_Map , Primitive_Weight)
 
 
 
