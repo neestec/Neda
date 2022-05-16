@@ -468,7 +468,7 @@ def random_recursive_dis(main_matrix):
 def weight_def (main_matrix):
     # be ezaye ha node ye vazne tasadofi ijad mikone va liste node haye faal ro ham tashkhis mide va barmigardoone
     list_of_weight = []
-    pair = []
+
     for i in range(Total_Node):
         for j in range(Total_Node):
             node1 = []
@@ -479,19 +479,30 @@ def weight_def (main_matrix):
                 node1.append(weight)
                 list_of_weight.append(node1)
     #print('list of weight :: ' , list_of_weight)
+    # baraye yalha be soorate do tarafe vazn injad shode bood ke too in halgheha yektarafash kardam.
     for node in list_of_weight:
         i = node[0]
         j = node[1]
         for n in list_of_weight:
             if n[0] == j and n[1] == i:
                 n[2] = node[2]
-    #print('list of weight correct:: ' , list_of_weight)
+    return list_of_weight
+
+
+def Active_node(main_matrix):
+    active_node =  []
+    for i in range(Total_Node):
+        for j in range(Total_Node):
+            node1 = []
+            if main_matrix[i][j] ==1:
+                node1.append(i)
+                node1.append(j)
+                active_node.append(node1)
     active_node_list = []
-    for node in list_of_weight:
+    for node in active_node:
         if node[0] not in active_node_list:
             active_node_list.append(node[0])
-    #print('active_node: ', active_node_list)
-    return list_of_weight , active_node_list
+    return active_node_list
 
 
 def average_count(list_node):
