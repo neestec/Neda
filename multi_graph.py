@@ -372,10 +372,17 @@ def disintegration (node, main_matrix, attack_list):
     # main_matrix: matrix should updated by each disintegration step
     # attack_List: should update by each disintegration step
     # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
-
+    print('main_matrix[0][45]:', main_matrix[1][45] ,'iner_matrix[45][0]: ', main_matrix[45][1])
+    print('main_matrix', main_matrix )
+    print('main_matrix.ndim: ', main_matrix.ndim)
     neigh = []
+    print('Total_Node:', Total_Node, "\n", 'attack_list:',attack_list)
     for i in range(Total_Node):
+        print('i:', i, 'node', node)
+        print('main_matrix[i][node]: ', main_matrix[i][node], "\n", 'main_matrix[node][i]: ', main_matrix[node][i])
         if main_matrix[i][node] == 1:
+            print('ineeeer')
+            print('main_matrix[i][node]: ', main_matrix[i][node], "\n", 'main_matrix[node][i]: ', main_matrix[node][i])
             neigh.append(i)
             main_matrix[i][node] = 0
             main_matrix[node][i] = 0
@@ -386,6 +393,7 @@ def disintegration (node, main_matrix, attack_list):
         attack_list.append(n)
     final_attack_list = []
     final_attack_list = list(set(attack_list))
+    print('final_attack_list:', final_attack_list)
     return final_attack_list , main_matrix
 
 
@@ -466,7 +474,7 @@ def random_recursive_dis(main_matrix):
 
 
 def weight_def (main_matrix):
-    # be ezaye ha node ye vazne tasadofi ijad mikone va liste node haye faal ro ham tashkhis mide va barmigardoone
+    # be ezaye har node ye vazne tasadofi ijad mikone va liste node haye faal ro ham tashkhis mide va barmigardoone
     list_of_weight = []
 
     for i in range(Total_Node):
@@ -489,7 +497,8 @@ def weight_def (main_matrix):
     return list_of_weight
 
 
-def Active_node(main_matrix):
+def active_node(main_matrix):
+    #har bar ke matrix ro update mikonm va azash kam mishe in metode mire node haye zendash ro list mikone
     active_node =  []
     for i in range(Total_Node):
         for j in range(Total_Node):
@@ -506,6 +515,7 @@ def Active_node(main_matrix):
 
 
 def average_count(list_node):
+    # ba estefade az vazne yalhayi ke be node vaslan miyangin migire
     #print ('list_node_out: ', list_node)
     count = 0
     sum = 0
@@ -520,6 +530,7 @@ def average_count(list_node):
 
 
 def weight_account(list_of_weight , active_nodes ):
+    # be ezaye list haeye vazn ha average vazn yek node ro hesab mikone va tahesh ham list ro sort mikone
     node_and_avr_list = []
 
     for i in active_nodes:
@@ -542,6 +553,7 @@ def weight_account(list_of_weight , active_nodes ):
 
 
 def attack_weight_sort(attack_node , node_avrg):
+    # list attack ro bar asase vazn sort mikone va khoroojish faghat yek node hast
     #print('attack_nodes in attack weight sort: ', attack_node)
     #print ('node_avrg in attack weight sort: ', node_avrg)
     attack_sort = []
@@ -567,12 +579,14 @@ def attack_weight_sort(attack_node , node_avrg):
 
 
 def weight_recursive_dis(main_matrix):
+     # recursive disintegration ro anjam mide
      #iner_main_matrix = [row[:] for row in main_matrix]
      iner_main_matrix = deepcopy(main_matrix)
      #print('iner_main_matrix' , iner_main_matrix)
      main_graph = create_main_graph(iner_main_matrix, Label)
      attack_list = []
-     list_of_weight , active_nodes = weight_def (iner_main_matrix)
+     list_of_weight  = weight_def (iner_main_matrix)
+     active_nodes = active_node(iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
      primitive_node_avrg = node_averg
      #attack_list.append(node_averg[0][1])
@@ -591,7 +605,8 @@ def weight_recursive_dis(main_matrix):
         attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
         #main_graph = show_main_graph(iner_main_matrix, Label)
         #print('attack_list', attack_list)
-        list_of_weight , active_nodes = weight_def (iner_main_matrix)
+        #list_of_weight  = weight_def (iner_main_matrix)
+        active_nodes = active_node(iner_main_matrix)
         node_averg = weight_account(list_of_weight, active_nodes)
         attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
@@ -689,6 +704,9 @@ def parent_choose(bc, dc, uw):
 
 def GA_disintegration (main_matrix , attack_list, primitive_weight):
     iner_matrix = deepcopy(main_matrix)
+
+    print('iner_matrix[0][45]:', iner_matrix[0][45] ,'iner_matrix[45][0]: ', iner_matrix[45][0])
+    active_nodes = active_node(iner_matrix)
     main_graph = create_main_graph(iner_matrix, Label)
     weight_list = deepcopy(primitive_weight)
     bc = closeness_btw(main_graph)
@@ -734,34 +752,19 @@ def GA_disintegration (main_matrix , attack_list, primitive_weight):
     print('attack_lst: ', attack_lst)
     target_node = parent_choose(attack_bc, attack_dc, attack_weight)
 
-    # while len(closeness) != 0:
-    #     switcher={
-    #             1: closeness_btw(main_graph),
-    #             2: closeness_deg(main_graph),
-    #             }
-    #     closeness = switcher.get(type,"Invalid type")
-    #     print('closeness before sorting: ', closeness)
-    #     sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
-    #
-    #     print ('sorted:::', sort_order)
-    #     if len(closeness) == 0:
-    #         print('final main matrix for other methodes: ', Main_Matrix)
-    #         print ('Network has disintegrated successfuly')
-    #         return
-    #     else:
-    #         for node in attack_list:
-    #             if node not in closeness:
-    #                 index = attack_list.index(node)
-    #                 attack_list.pop(index)
-    #                 print('alone node hase deleted: ', node)
-    #         #sort_order , max_order, attack_list_rand = attack_Node_Ordering(attack_list, closeness )
-    #         max_order_node = sort_order[0][0]
-    #
-    #         print('target node: ', max_order_node)
-    #         attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
-    #         main_graph = create_main_graph(iner_matrix, Label)
-
-
+    while len(active_nodes) != 0:
+        if len(active_nodes) == 0:
+            print ('Network has disintegrated successfuly')
+            return
+        else:
+            for node in attack_list:
+                if node not in active_nodes:
+                    index = attack_list.index(node)
+                    attack_list.pop(index)
+                    print('alone node hase deleted: ', node)
+            attack_lst , iner_matrix = disintegration(target_node, iner_matrix, attack_lst)
+            active_nodes = active_node(iner_matrix)
+            main_graph = create_main_graph(iner_matrix, Label)
     return
 
 
