@@ -327,6 +327,17 @@ def create_main_graph(adjacency_matrix, labels):
     return gr
 
 
+def create_main_graph_copy(adjacency_matrix, labels):
+    # main graph ro namayesh midim
+    rows, cols = np.where(adjacency_matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    nx.draw(gr, node_size=500,  with_labels=True)
+    plt.show()
+    return gr
+
+
 def closeness_btw(main_graph):
     # closeness ha ro mohasebe mikone
     btw = nx.betweenness_centrality(main_graph, normalized= False )
@@ -372,17 +383,14 @@ def disintegration (node, main_matrix, attack_list):
     # main_matrix: matrix should updated by each disintegration step
     # attack_List: should update by each disintegration step
     # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
-    print('main_matrix[0][45]:', main_matrix[1][45] ,'iner_matrix[45][0]: ', main_matrix[45][1])
-    print('main_matrix', main_matrix )
-    print('main_matrix.ndim: ', main_matrix.ndim)
+
     neigh = []
     print('Total_Node:', Total_Node, "\n", 'attack_list:',attack_list)
     for i in range(Total_Node):
         print('i:', i, 'node', node)
-        print('main_matrix[i][node]: ', main_matrix[i][node], "\n", 'main_matrix[node][i]: ', main_matrix[node][i])
         if main_matrix[i][node] == 1:
-            print('ineeeer')
-            print('main_matrix[i][node]: ', main_matrix[i][node], "\n", 'main_matrix[node][i]: ', main_matrix[node][i])
+            # print('ineeeer')
+            # print('main_matrix[', i, '][', node, ']:' , main_matrix[i][node], "\n", 'main_matrix[', node, '][',i,']: ', main_matrix[node][i])
             neigh.append(i)
             main_matrix[i][node] = 0
             main_matrix[node][i] = 0
@@ -517,9 +525,11 @@ def active_node(main_matrix):
 def average_count(list_node):
     # ba estefade az vazne yalhayi ke be node vaslan miyangin migire
     #print ('list_node_out: ', list_node)
+    #print('list_node in average_count :', list_node)
     count = 0
     sum = 0
     for node in list_node:
+        #print ('Node: ', node)
         count = count+1
         sum = sum + node[2]
     #print('node: ', node, 'count:', count , 'sum:', sum )
@@ -528,9 +538,23 @@ def average_count(list_node):
 
     return weight_avr
 
+def average_count_copy(list_node):
+    # ba estefade az vazne yalhayi ke be node vaslan miyangin migire
+    #print ('list_node_out: ', list_node)
+    #print('list_node in average_count :', list_node)
+    count = 0
+    sum = 0
+    for node in list_node:
+        #print ('Node: ', node)
+        count = count+1
+        sum = sum + node[2]
+    #print('node: ', node, 'count:', count , 'sum:', sum )
+    weight_avr = (sum/count)
+    return weight_avr
 
 def weight_account(list_of_weight , active_nodes ):
-    # be ezaye list haeye vazn ha average vazn yek node ro hesab mikone va tahesh ham list ro sort mikone
+    # vazn node haye active ro hesab mikone(methodesh ro farakhani mikone)
+    # va tahesh ham list ro sort mikone
     node_and_avr_list = []
 
     for i in active_nodes:
@@ -539,7 +563,6 @@ def weight_account(list_of_weight , active_nodes ):
         for node in list_of_weight:
             if i == node[0]:
                 list_node_internal.append(node)
-        #print('list_node_internal:',list_node_internal)
         node_avr = average_count(list_node_internal)
         node_and_avr_temp.append(node_avr)
         node_and_avr_temp.append(i)
@@ -548,9 +571,32 @@ def weight_account(list_of_weight , active_nodes ):
     node_and_avr_list.sort()
         #= sorted(node_and_avr_list)
     node_and_avr_list.reverse()
-    #print('node_and_avr_list:',node_and_avr_list)
+
     return node_and_avr_list
 
+def weight_account_copy(list_of_weight , active_nodes ):
+    # be ezaye list haeye vazn ha average vazn yek node ro hesab mikone va tahesh ham list ro sort mikone
+    #print('list_of_weight:::::::::::::' , list_of_weight)
+    #print(active_nodes)
+    node_and_avr_list = []
+
+    for i in active_nodes:
+        list_node_internal = []
+        node_and_avr_temp = []
+        for node in list_of_weight:
+            if i == node[0]:
+                list_node_internal.append(node)
+        #print('list_node_internal:::::::::::::',list_node_internal)
+        node_avr = average_count_copy(list_node_internal)
+        node_and_avr_temp.append(node_avr)
+        node_and_avr_temp.append(i)
+        node_and_avr_list.append(node_and_avr_temp)
+
+    node_and_avr_list.sort()
+        #= sorted(node_and_avr_list)
+    node_and_avr_list.reverse()
+    #print('node_and_avr_list::::::::',node_and_avr_list)
+    return node_and_avr_list
 
 def attack_weight_sort(attack_node , node_avrg):
     # list attack ro bar asase vazn sort mikone va khoroojish faghat yek node hast
@@ -578,6 +624,27 @@ def attack_weight_sort(attack_node , node_avrg):
     return final_sorted_attack_node
 
 
+def attack_weight_sort_copy(attack_node , node_avrg):
+    # list attack ro bar asase vazn sort mikone va khoroojish faghat yek node hast
+    attack_sort = []
+    for node in attack_node:
+        internal_node = []
+        for nd in node_avrg:
+            if node == nd[1]:
+                internal_node.append(nd[0])
+                internal_node.append(node)
+                attack_sort.append(internal_node)
+
+    attack_sort.sort()
+    attack_sort.reverse()
+    #print('attack_sort: ',attack_sort)
+    final_sorted_attack_node = []
+    for node in attack_sort:
+        final_sorted_attack_node.append(node[1])
+    #print('final_sorted_attack_node: ', final_sorted_attack_node)
+    return final_sorted_attack_node
+
+
 def weight_recursive_dis(main_matrix):
      # recursive disintegration ro anjam mide
      #iner_main_matrix = [row[:] for row in main_matrix]
@@ -586,9 +653,10 @@ def weight_recursive_dis(main_matrix):
      main_graph = create_main_graph(iner_main_matrix, Label)
      attack_list = []
      list_of_weight  = weight_def (iner_main_matrix)
+     primitive_list_of_weight = deepcopy(list_of_weight)
      active_nodes = active_node(iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
-     primitive_node_avrg = node_averg
+     primitive_node_avrg = deepcopy(node_averg)
      #attack_list.append(node_averg[0][1])
      #print('attack_list : ',attack_list)
      attack_list.append(node_averg[0][1])
@@ -611,7 +679,7 @@ def weight_recursive_dis(main_matrix):
         attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly by wight method ')
-            return primitive_node_avrg
+            return primitive_node_avrg , primitive_list_of_weight
 
 
 def attack_maping(attack_list, map_dic):
@@ -629,28 +697,35 @@ def normalize(abnormal_list):
     # nokteye mohem ine li nabayad az index 1 aza be onvan index join shodan estefade konim chon ina shomare node ha
     # hastan va daem dar hale taghir.
     #print ('abnormal list',ab_normal_list)
-    node = []
-    point = []
-    for n in ab_normal_list:
-        node.append(n[0])
-        point.append(n[1])
-    #print ('point' , point)
-    #print ('Node: ', node)
-    norm_list = []
-    min_value = min(point)
-    max_value = max(point)
-    for value in point:
-        tmp = (value - min_value) / (max_value - min_value)
-        norm_list.append(tmp)
-    #print('Normalized List:',norm_list)
-    normal_list_final = []
-    for i in range(len(ab_normal_list)):
-        internal_point = []
-        internal_point.append(node[i])
-        internal_point.append(norm_list[i])
-        normal_list_final.append(internal_point)
-    #print('normal_list_final', normal_list_final)
-    return normal_list_final
+    if len(ab_normal_list)!=0:
+        node = []
+        point = []
+        for n in ab_normal_list:
+            node.append(n[0])
+            point.append(n[1])
+        #print ('point' , point)
+        #print ('Node: ', node)
+        norm_list = []
+        min_value = min(point)
+        max_value = max(point)
+        for value in point:
+            if max_value != min_value:
+                tmp = (value - min_value) / (max_value - min_value)
+                norm_list.append(tmp)
+            else:
+                tmp = 0
+                norm_list.append(tmp)
+        #print('Normalized List:',norm_list)
+        normal_list_final = []
+        for i in range(len(ab_normal_list)):
+            internal_point = []
+            internal_point.append(node[i])
+            internal_point.append(norm_list[i])
+            normal_list_final.append(internal_point)
+        #print('normal_list_final', normal_list_final)
+        return normal_list_final
+    else:
+        return []
 
 
 def parent_choose(bc, dc, uw):
@@ -699,27 +774,23 @@ def parent_choose(bc, dc, uw):
         #indx = data_frame.loc[data_frame['sum'] == max_sum_value, index]
         print('max_sum_value:' , max_sum_value , 'target_node' , target_node)
 
-    return target_node
+    return target_node[0]
 
 
-def GA_disintegration (main_matrix , attack_list, primitive_weight):
+def GA_disintegration (main_matrix , attack_list, primitive_averg_weight_duble, primitive_weight_triple):
+    attack_lst = deepcopy(attack_list)
     iner_matrix = deepcopy(main_matrix)
-
-    print('iner_matrix[0][45]:', iner_matrix[0][45] ,'iner_matrix[45][0]: ', iner_matrix[45][0])
-    active_nodes = active_node(iner_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
-    weight_list = deepcopy(primitive_weight)
+    main_graph = create_main_graph_copy(iner_matrix, Label)
+    weight_list_avrg = deepcopy(primitive_averg_weight_duble)
+    weight_list_triple = deepcopy(primitive_weight_triple)
     bc = closeness_btw(main_graph)
     dc = closeness_deg(main_graph)
     bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
     dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
-    #     print ('sorted:::', sort_order)
-    attack_lst = deepcopy(attack_list)
-
-    print('weight: ', weight_list, "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
-    #print('attack_map: ', attack_map)
+    #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
+    print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
     weight_list_reverse = []
-    for n in weight_list:
+    for n in weight_list_avrg:
         temp_n = []
         temp_n.append(n[1])
         temp_n.append(n[0])
@@ -728,16 +799,16 @@ def GA_disintegration (main_matrix , attack_list, primitive_weight):
     weight_normal = normalize(weight_list_reverse)
     bc_normal = normalize(bc_sort)
     dc_normal = normalize(dc_sort)
+    #motabeghe node haye attack az bd , dc , weight mikeshe biron
     attack_weight = []
     attack_bc = []
     attack_dc = []
+    #create attack list from bc dc uw
     for n in attack_lst:
         for node in weight_normal:
-            #print ('node in weight', node , 'n', n , 'node[0]', node[0])
             if n == node[0]:
                 attack_weight.append(node)
     for n in attack_lst:
-
         for node in bc_normal:
             if n == node[0]:
                 attack_bc.append(node)
@@ -745,34 +816,70 @@ def GA_disintegration (main_matrix , attack_list, primitive_weight):
         for node in dc_normal:
             if n == node[0]:
                 attack_dc.append(node)
-
-    print('attack_weight: ', attack_weight )
-    print('attack_dc: ', attack_dc)
-    print('attack_bc: ', attack_bc)
-    print('attack_lst: ', attack_lst)
+    active_nodes = active_node(iner_matrix)
     target_node = parent_choose(attack_bc, attack_dc, attack_weight)
 
     while len(active_nodes) != 0:
+        print('active_nodes in do while:',active_nodes)
+        print ('attack_lst in do while list:',attack_lst)
         if len(active_nodes) == 0:
-            print ('Network has disintegrated successfuly')
+            print ('Network has disintegrated successfuly in GA')
             return
         else:
-            for node in attack_list:
+            for node in attack_lst:
                 if node not in active_nodes:
-                    index = attack_list.index(node)
-                    attack_list.pop(index)
+                    index = attack_lst.index(node)
+                    attack_lst.pop(index)
                     print('alone node hase deleted: ', node)
-            attack_lst , iner_matrix = disintegration(target_node, iner_matrix, attack_lst)
+            attack_lst, iner_matrix = disintegration(target_node, iner_matrix, attack_lst)
+            #print('attack_lst after disintegration :', attack_lst)
             active_nodes = active_node(iner_matrix)
-            main_graph = create_main_graph(iner_matrix, Label)
+            if len(active_nodes)== 0:
+                print ('Network has disintegrated successfuly in GA')
+                return
+            main_graph = create_main_graph_copy(iner_matrix, Label)
+            bc = closeness_btw(main_graph)
+            dc = closeness_deg(main_graph)
+            bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+            dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+            # dobare vazn nodha ro hesab mikonim
+            print('weight_list_reverse:  in recursive: ' , weight_list_reverse , "\n", 'active_nodes in recursive:' , active_nodes)
+            node_averg = weight_account_copy(weight_list_triple, active_nodes)
+            #print('len(node_averg): --------------', len(node_averg) , 'node_averg:', node_averg)
+            attack_weight = attack_weight_sort_copy(attack_lst , node_averg )
+            weight_list_reverse = []
+            for n in node_averg:
+                temp_n = []
+                temp_n.append(n[1])
+                temp_n.append(n[0])
+                weight_list_reverse.append(temp_n)
+            #print('len(weight_list_reverse): -----------------', len(weight_list_reverse), 'weight_list_reverse in do wjile'  , weight_list_reverse)
+
+            weight_normal = normalize(weight_list_reverse)
+            bc_normal = normalize(bc_sort)
+            dc_normal = normalize(dc_sort)
+            #motabeghe node haye attack az bd , dc , weight mikeshe biron
+            attack_weight = []
+            attack_bc = []
+            attack_dc = []
+            for n in attack_lst:
+                for node in weight_normal:
+                    if n == node[0]:
+                        attack_weight.append(node)
+            for n in attack_lst:
+                for node in bc_normal:
+                    if n == node[0]:
+                        attack_bc.append(node)
+            for n in attack_lst:
+                for node in dc_normal:
+                    if n == node[0]:
+                        attack_dc.append(node)
+            #print('weight: ', attack_weight, "\n", 'bc: ', attack_bc ,"\n",  'dc', attack_dc , "\n", 'attack_lst:', attack_lst)
+            target_node = parent_choose(attack_bc, attack_dc, attack_weight)
+            print('target_node in last step of dis : ',target_node)
+
     return
 
-
-
-
-def cost_connectivity ():
-
-    return
 
 
 
@@ -796,7 +903,7 @@ Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 #closeness_recursive_dis(1, Main_Matrix)
 #closeness_recursive_dis(2, Main_Matrix)
 #random_recursive_dis(Main_Matrix)
-Primitive_Weight = weight_recursive_dis(Main_Matrix)
+Primitive_Weight_Avrg , Primitive_List_of_Weight = weight_recursive_dis(Main_Matrix)
 #Main_Graph = create_main_graph(Main_Matrix, Label)
 #print(Main_Matrix)
 
@@ -808,7 +915,7 @@ Primitive_Weight = weight_recursive_dis(Main_Matrix)
 # UW1 = normalize(UW)
 #Max_value_fitness = parent_choose(BC1, DC1, UW1)
 
-GA_disintegration(Main_Matrix, Attack_Map , Primitive_Weight)
+GA_disintegration(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
 
 
 
