@@ -389,8 +389,6 @@ def disintegration (node, main_matrix, attack_list):
     for i in range(Total_Node):
         print('i:', i, 'node', node)
         if main_matrix[i][node] == 1:
-            # print('ineeeer')
-            # print('main_matrix[', i, '][', node, ']:' , main_matrix[i][node], "\n", 'main_matrix[', node, '][',i,']: ', main_matrix[node][i])
             neigh.append(i)
             main_matrix[i][node] = 0
             main_matrix[node][i] = 0
@@ -780,7 +778,7 @@ def parent_choose(bc, dc, uw):
 def GA_disintegration (main_matrix , attack_list, primitive_averg_weight_duble, primitive_weight_triple):
     attack_lst = deepcopy(attack_list)
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph_copy(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix, Label)
     weight_list_avrg = deepcopy(primitive_averg_weight_duble)
     weight_list_triple = deepcopy(primitive_weight_triple)
     bc = closeness_btw(main_graph)
@@ -837,7 +835,7 @@ def GA_disintegration (main_matrix , attack_list, primitive_averg_weight_duble, 
             if len(active_nodes)== 0:
                 print ('Network has disintegrated successfuly in GA')
                 return
-            main_graph = create_main_graph_copy(iner_matrix, Label)
+            main_graph = create_main_graph(iner_matrix, Label)
             bc = closeness_btw(main_graph)
             dc = closeness_deg(main_graph)
             bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
@@ -881,6 +879,104 @@ def GA_disintegration (main_matrix , attack_list, primitive_averg_weight_duble, 
     return
 
 
+def Greedy_disintegration (main_matrix, map_dic , primitive_averg_weight_duble, primitive_weight_triple):
+
+
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph_copy(iner_matrix, Label)
+    weight_list_avrg = deepcopy(primitive_averg_weight_duble)
+    weight_list_triple = deepcopy(primitive_weight_triple)
+    bc = closeness_btw(main_graph)
+    dc = closeness_deg(main_graph)
+    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+    print('len(primitive_averg_weight_duble)', len(primitive_averg_weight_duble))
+    print(' len(primitive_weight_triple)',  len(primitive_weight_triple))
+    print('len(map_dic)',len(map_dic))
+    print('bc_sort:', len(bc_sort))
+    print('dc_sort' , len(dc_sort))
+    #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
+    print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort )
+    weight_list_reverse = []
+    for n in weight_list_avrg:
+        temp_n = []
+        temp_n.append(n[1])
+        temp_n.append(n[0])
+        weight_list_reverse.append(temp_n)
+    print('weight_list_reverse' , weight_list_reverse)
+    for 
+    weight_list_reverse_sort =weight_list_reverse.sort()
+    print('weight_list_reverse_sort:' , weight_list_reverse_sort)
+    weight_normal = normalize(weight_list_reverse_sort)
+    bc_normal = normalize(bc_sort)
+    dc_normal = normalize(dc_sort)
+    #motabeghe node haye attack az bd , dc , weight mikeshe biron
+    active_nodes = active_node(iner_matrix)
+    target_node = parent_choose(bc_normal, dc_normal, weight_normal)
+    print('target_node:', target_node)
+
+    # while len(active_nodes) != 0:
+    #     print('active_nodes in do while:',active_nodes)
+    #     print ('attack_lst in do while list:',attack_lst)
+    #     if len(active_nodes) == 0:
+    #         print ('Network has disintegrated successfuly in GA')
+    #         return
+    #     else:
+    #         for node in attack_lst:
+    #             if node not in active_nodes:
+    #                 index = attack_lst.index(node)
+    #                 attack_lst.pop(index)
+    #                 print('alone node hase deleted: ', node)
+    #         attack_lst, iner_matrix = disintegration(target_node, iner_matrix, attack_lst)
+    #         #print('attack_lst after disintegration :', attack_lst)
+    #         active_nodes = active_node(iner_matrix)
+    #         if len(active_nodes)== 0:
+    #             print ('Network has disintegrated successfuly in GA')
+    #             return
+    #         main_graph = create_main_graph_copy(iner_matrix, Label)
+    #         bc = closeness_btw(main_graph)
+    #         dc = closeness_deg(main_graph)
+    #         bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+    #         dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+    #         # dobare vazn nodha ro hesab mikonim
+    #         print('weight_list_reverse:  in recursive: ' , weight_list_reverse , "\n", 'active_nodes in recursive:' , active_nodes)
+    #         node_averg = weight_account_copy(weight_list_triple, active_nodes)
+    #         #print('len(node_averg): --------------', len(node_averg) , 'node_averg:', node_averg)
+    #         attack_weight = attack_weight_sort_copy(attack_lst , node_averg )
+    #         weight_list_reverse = []
+    #         for n in node_averg:
+    #             temp_n = []
+    #             temp_n.append(n[1])
+    #             temp_n.append(n[0])
+    #             weight_list_reverse.append(temp_n)
+    #         #print('len(weight_list_reverse): -----------------', len(weight_list_reverse), 'weight_list_reverse in do wjile'  , weight_list_reverse)
+    #
+    #         weight_normal = normalize(weight_list_reverse)
+    #         bc_normal = normalize(bc_sort)
+    #         dc_normal = normalize(dc_sort)
+    #         #motabeghe node haye attack az bd , dc , weight mikeshe biron
+    #         attack_weight = []
+    #         attack_bc = []
+    #         attack_dc = []
+    #         for n in attack_lst:
+    #             for node in weight_normal:
+    #                 if n == node[0]:
+    #                     attack_weight.append(node)
+    #         for n in attack_lst:
+    #             for node in bc_normal:
+    #                 if n == node[0]:
+    #                     attack_bc.append(node)
+    #         for n in attack_lst:
+    #             for node in dc_normal:
+    #                 if n == node[0]:
+    #                     attack_dc.append(node)
+    #         #print('weight: ', attack_weight, "\n", 'bc: ', attack_bc ,"\n",  'dc', attack_dc , "\n", 'attack_lst:', attack_lst)
+    #         target_node = parent_choose(attack_bc, attack_dc, attack_weight)
+    #         print('target_node in last step of dis : ',target_node)
+    #
+    return
+
+
 
 
 # main
@@ -890,14 +986,9 @@ List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
 list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
-#print ('map_dic:' , Map_dic, 'total_node:', Total_Node)
 Attack_Nodes = random_atthck_nodes(list_of_nodes)
 Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-#complex_disintegrate(Huristic_Atthck_Nodes, Total_Matrix)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
-#print ('Main_Matrix_Type:', type(Main_Matrix))
-#Main_Graph = show_main_graph(Main_Matrix, Label)
-#Attack_Map = attack_Node_Mapping(Atthck_Nodes)
 
 
 #closeness_recursive_dis(1, Main_Matrix)
@@ -905,19 +996,8 @@ Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 #random_recursive_dis(Main_Matrix)
 Primitive_Weight_Avrg , Primitive_List_of_Weight = weight_recursive_dis(Main_Matrix)
 #Main_Graph = create_main_graph(Main_Matrix, Label)
-#print(Main_Matrix)
-
-# BC = [(0,7), (1, 5), (5,10)]
-# DC = [(0,6.3454874987538), (1, 8.2198093809834), (5,5.27198496)]
-# UW = [(0,5.3454874987538), (1, 4.2198093809834), (5,6.27198496)]
-# BC1 = normalize(BC)
-# DC1 = normalize(DC)
-# UW1 = normalize(UW)
-#Max_value_fitness = parent_choose(BC1, DC1, UW1)
-
-GA_disintegration(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
-
-
+#GA_disintegration(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
+Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 
 
 
