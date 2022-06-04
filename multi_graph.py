@@ -351,10 +351,9 @@ def disintegration (node, main_matrix, attack_list):
     #attack_list.pop(index)
 
     for n in neigh:
-        attack_list.append(n)
-    final_attack_list = []
+        if n not in attack_list:
+            attack_list.append(n)
     final_attack_list = list(set(attack_list))
-    #print('final_attack_list:', final_attack_list)
     return final_attack_list , main_matrix
 
 
@@ -921,106 +920,165 @@ def Greedy_disintegration (main_matrix, map_dic , primitive_averg_weight_duble, 
              print('target_node in last step of dis : ',target_node)
 
 
-def cost_count(main_graph , atc_lst):
+def cost_count(main_graph , atc_lst , p):
     # just cost counting for each member of attack list
     degree = closeness_deg(main_graph)
     degree_lst = sorted(degree.items(), key=lambda x: x[1], reverse=True)
-    p = [0, 0.5, 1, 1.5, 2]
-    sum_p0 = 0
-    sum_p1 = 0
-    sum_p2 = 0
-    sum_p3 = 0
-    sum_p4 = 0
-    for i in degree_lst:
-        sum_p0 = sum_p0 +(i[1]^p[0])
-        sum_p1 = sum_p1 +(i[1]^p[1])
-        sum_p2 = sum_p2 +(i[1]^p[2])
-        sum_p3 = sum_p3 +(i[1]^p[3])
-        sum_p4 = sum_p4 +(i[1]^p[4])
+    #p = [0, 0.5, 1, 1.5, 2]
+    sum_p = 0.0
+    # sum_p1 = 0.0
+    # sum_p2 = 0.0
+    # sum_p3 = 0.0
+    # sum_p4 = 0.0
+    for i in degree_lst: # makhraje kasr ro inja misazim va rooye hameye grapg hast
+        sum_p = sum_p +(i[1]**p)
+        # sum_p1 = sum_p1 +(i[1]**p[1])
+        # sum_p2 = sum_p2 +(i[1]**p[2])
+        # sum_p3 = sum_p3 +(i[1]**p[3])
+        # sum_p4 = sum_p4 +(i[1]**p[4])
     cost = []
-    for i in atc_lst:
+    for i in atc_lst: # soorate kasr faghat baraye azaye attack_lst
         internal_cost = []
         for j in degree_lst:
             if i == j[0]:
-                cost_0 = j[1]^p[0]
-                cost_1 = j[1]^p[1]
-                cost_2 = j[1]^p[2]
-                cost_3 = j[1]^p[3]
-                cost_4 = j[1]^p[4]
-        c0 = (cost_0/sum_p0)*100
-        c1 = (cost_1/sum_p1)*100
-        c2 = (cost_2/sum_p2)*100
-        c3 = (cost_3/sum_p3)*100
-        c4 = (cost_4/sum_p4)*100
-        internal_cost.append(i)
-        internal_cost.append(c0)
-        internal_cost.append(c1)
-        internal_cost.append(c2)
-        internal_cost.append(c3)
-        internal_cost.append(c4)
+                cost_p = j[1]**p
+                # cost_1 = j[1]**p[1]
+                # cost_2 = j[1]**p[2]
+                # cost_3 = j[1]**p[3]
+                # cost_4 = j[1]**p[4]
+        c = (cost_p/sum_p)*100 # mohasebeye kasr be ezaye p haye mokhtalef
+        # c1 = (cost_1/sum_p1)*100
+        # c2 = (cost_2/sum_p2)*100
+        # c3 = (cost_3/sum_p3)*100
+        # c4 = (cost_4/sum_p4)*100
+        internal_cost.append(i) # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
+        internal_cost.append(c)
+        # internal_cost.append(c1)
+        # internal_cost.append(c2)
+        # internal_cost.append(c3)
+        # internal_cost.append(c4)
         cost.append(internal_cost)
+    print('cost::::' , cost)
 
     return cost
 
 
-# def connectivity (Base_cont , cont_list):
-#     if len(cont_list) > 1:
-#         for i in cont_list:
-
-
-def Reward_count(cost , connect):
-    #reward counting foreach member of cost: attack list
+def target_node_automata( matrix , attack_list , conct , p):
+    #yek bar attack rooye ek node tasadofi anjam shode va bad az an parameter ha pas dade shode
+    # main_Graph: geraf bad az avalin hamle
+    # matrix: matrix bad az avalin hamle
+    # attack_list: list hamsaye haye avalin node ke be soorate tasadofi entekhb shod va attack shod
+    # conct: az avalin hamle mohasebe shode
+    iner_matrix = deepcopy(matrix)
+    main_graph = create_main_graph(iner_matrix, Label)
+    attack = deepcopy(attack_list)
+    print('len(attack_lst):' , len(attack_list), "\n", 'attack_list:', attack_list)
+    cost = cost_count(main_graph, attack_list , p) #
     reward = []
-    for i in cost:
-        internal_reward = []
-        r0 = connect/i[1]
-        r1 = connect/i[2]
-        r2 = connect/i[3]
-        r3 = connect/i[4]
-        r4 = connect/i[5]
-        internal_reward.append(i[0])
-        internal_reward.append(r0)
-        internal_reward.append(r1)
-        internal_reward.append(r2)
-        internal_reward.append(r3)
-        internal_reward.append(r4)
-        reward.append(internal_reward)
+    numerate = [] # soorate kasre mohasebe reward
+    for i in attack_list:
+        paire = []
+        list, iner_matrix = disintegration(i, iner_matrix, attack)
+        internal_main_graph = create_main_graph(iner_matrix, Label)
+        connectivity = connectivity_count(internal_main_graph)
+        inter_con = (connectivity /Main_Conct)
+        subtrac = conct- inter_con
+        paire.append(i)
+        paire.append(subtrac)
+        numerate.append(paire) #yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
+        print('i:' , i , 'paire:', paire)
+        print('soorate kasre reward:', numerate)
+        iner_matrix = deepcopy(matrix)
+    # hala ye cost darim ye list soorat baraye kasr ha
+    print('cost: ', cost)
+    print('attack_list: ', attack_list)
+    print('attack:', attack)
+    print('list:', list)
+    if len(cost) != len(numerate):
+        print('toolha yeki nist', "\n", 'len cost:', len(cost) ,'len numerate', len(numerate) )
+        return
+    for i in range(len(cost)):
+        if cost[i][0] != numerate[i][0]:
+            print('tartib hamkhani nadarad')
+            return
+        else:
+            r = []
+            p = numerate[i][1]/cost[i][1]
+            # p1 = numerate[i][1]/cost[i][2]
+            # p2 = numerate[i][1]/cost[i][3]
+            # p3 = numerate[i][1]/cost[i][4]
+            # p4 = numerate[i][1]/cost[i][5]
+            r.append(cost[i][0])
+            r.append(p)
+            # r.append(p1)
+            # r.append(p2)
+            # r.append(p3)
+            # r.append(p4)
+            reward.append(r)
+    print(reward)
+    node = []
+    p = []
+    # p1 = []
+    # p2 = []
+    # p3 = []
+    # p4 = []
+    for i in reward:
+        node.append(i[0])
+        p.append(i[1])
+        # p1.append(i[2])
+        # p2.append(i[3])
+        # p3.append(i[4])
+        # p4.append(i[5])
+
+    data_frame = pd.DataFrame({
+        "node_number" : node,
+        "p" : p,
+        # "p1" : p1,
+        # "p2" : p2,
+        # "p3" : p3,
+        # "p4" : p4,
+        # "p4" : p4
+        })
+    target_decision = []
+    print(data_frame)
+    column0 = data_frame["p"]
+    max_p_value = column0.max()
+    target_node_p = data_frame['node_number'][data_frame[data_frame['p'] == max_p_value].index.tolist()].tolist()
+    # column1 = data_frame["p1"]
+    # max_p1_value = column1.max()
+    # target_node_p1 = data_frame['node_number'][data_frame[data_frame['p1'] == max_p1_value].index.tolist()].tolist()
+    # column2 = data_frame["p2"]
+    # max_p2_value = column2.max()
+    # target_node_p2 = data_frame['node_number'][data_frame[data_frame['p2'] == max_p2_value].index.tolist()].tolist()
+    # column3 = data_frame["p3"]
+    # max_p3_value = column3.max()
+    # target_node_p3 = data_frame['node_number'][data_frame[data_frame['p3'] == max_p3_value].index.tolist()].tolist()
+    # column4 = data_frame["p4"]
+    # max_p4_value = column4.max()
+    # target_node_p4 = data_frame['node_number'][data_frame[data_frame['p4'] == max_p4_value].index.tolist()].tolist()
+    # print(target_node_p0 , target_node_p1 , target_node_p2, target_node_p3, target_node_p4)
+    target_decision.append(target_node_p[0]) #, target_node_p1, target_node_p2, target_node_p3, target_node_p4)
+    print('target_decision:' , target_decision)
+    return target_decision[0]
 
 
-def connectivity_count(main_matrix , connect_lst):
-    
-    return
-
-
-def target_node_automata(main_graph , attack_list , conct):
-     cost = cost_count(main_graph , attack_list)
-
-
-
-    return
-
-
-def automata_exploration(main_matrix , p):
+def automata_dis(main_matrix , p):
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix, Label)
-    #connectivity_lst = []
-    #attack_list = Attack_Map
     attack_list = []
     closeness = closeness_deg(main_graph)
-    print('closeness type------', closeness)
-    print('attack_list recurmmmmmmmmm', attack_list)
     sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
     rand_order_node = sort_order[np.random.randint(0, len(sort_order))][0]
     attack_list, iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
     main_graph = create_main_graph(iner_matrix, Label)
+    conct_lst = []
     connectivity = connectivity_count(main_graph)
     conct = (connectivity/Main_Conct)
-    #connectivity_lst.append(connectivity)
+    conct_lst.append(conct)
     browse = []
     browse.append(rand_order_node)
     while len(closeness) != 0:
         closeness = closeness_deg(main_graph)
-
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
             print ('Network has disintegrated successfuly')
@@ -1034,13 +1092,17 @@ def automata_exploration(main_matrix , p):
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
 
-            target_node , conct = target_node_automata(main_graph , attack_list , conct)
-
-            print('target node: ', rand_order_node)
-            attack_list , iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
+            target_node_a = target_node_automata( iner_matrix , attack_list , conct , p)
+            print('target_node_a:' , target_node_a)
+            attack_list , iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
             main_graph = create_main_graph(iner_matrix, Label)
+            closeness = closeness_deg(main_graph)
+            sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
             connectivity = connectivity_count(main_graph)
-            #connectivity_lst.append(connectivity)
+            conct = (connectivity/Main_Conct)
+            conct_lst.append(conct)
+            browse.append(target_node_a)
+    return browse, conct_lst
 
 
 
@@ -1066,7 +1128,7 @@ Main_Conct = connectivity_count(Main_Graph)
 #Connectivity_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
 #Connectivity_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 
-
+automata_dis(Main_Matrix , [0.0]) #[0.0, 0.5, 1.0, 1.5, 2.0]
 
 
 
