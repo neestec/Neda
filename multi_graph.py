@@ -295,15 +295,15 @@ def create_main_graph(adjacency_matrix, labels):
 
 def create_main_graph_copy(adjacency_matrix, labels):
     # main graph ro namayesh midim
-    for i in range(Total_Node):
-        for j in range(Total_Node):
-            if adjacency_matrix[i][j] == 1:
-                adjacency_matrix[j][i] = 0
-    
+    # for i in range(Total_Node):
+    #     for j in range(Total_Node):
+    #         if adjacency_matrix[i][j] == 1:
+    #             adjacency_matrix[j][i] = 0
+
     rows , cols = np.where(adjacency_matrix == 1)
     edge = (rows.tolist(),cols.tolist())
     edges = zip(rows.tolist(), cols.tolist())
-    print ('yyyyyyyaaaaalllll',edge)
+    #print ('yyyyyyyaaaaalllll',edge)
     gr = nx.Graph()
     gr.add_edges_from(edges)
     nx.draw(gr, node_size=500,  with_labels=True)
@@ -347,6 +347,8 @@ def disintegration (node, main_matrix, attack_list):
     # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
 
     neigh = []
+    print('in disintegrate:')
+    print (main_matrix , "\n", 'Node for attack: ', node)
     print('Total_Node:', Total_Node, "\n", 'attack_list:',attack_list)
     for i in range(Total_Node):
         #print('i:', i, 'node', node)
@@ -364,7 +366,7 @@ def disintegration (node, main_matrix, attack_list):
     return final_attack_list , main_matrix
 
 
-def closeness_recursive_dis(type , main_matrix):
+def closeness_dis(type , main_matrix):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph_copy(iner_matrix, Label)
@@ -376,22 +378,24 @@ def closeness_recursive_dis(type , main_matrix):
                 2: closeness_deg(main_graph),
                 }
     closeness = switcher.get(type,"Invalid type")
-    print('closeness type------', closeness)
-    print('attack_list recurmmmmmmmmm', attack_list)
+    #print('closeness type------', closeness)
+    #print('attack_list recurmmmmmmmmm', attack_list)
     while len(closeness) != 0:
         switcher={
                 1: closeness_btw(main_graph),
                 2: closeness_deg(main_graph),
                 }
         closeness = switcher.get(type,"Invalid type")
-        print('closeness before sorting: ', closeness)
+        #print('closeness before sorting: ', closeness)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
-        print ('sorted:::', sort_order)
+        #print ('sorted:::', sort_order)
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', Main_Matrix)
             print ('Network has disintegrated successfuly')
             return connectivity_lst
         else:
+            if len(closeness) != 0 and len(attack_list)==0:
+                max_order_node = sort_order[0][0]
             for node in attack_list:
                 if node not in closeness:
                     index = attack_list.index(node)
@@ -401,6 +405,7 @@ def closeness_recursive_dis(type , main_matrix):
             max_order_node = sort_order[0][0]
             print('target node: ', max_order_node)
             attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
+            print ('iner_matrix in closeness recursive dis:', "\n", iner_matrix)
             main_graph = create_main_graph_copy(iner_matrix, Label)
             connctivity = connectivity_count(main_graph)
             print('connectivity', connctivity)
@@ -408,16 +413,12 @@ def closeness_recursive_dis(type , main_matrix):
             print('connectivity_lst', connectivity_lst)
 
 
-
 def random_recursive_dis(main_matrix):
      iner_matrix = deepcopy(main_matrix)
      main_graph = create_main_graph(iner_matrix, Label)
      connectivity_lst = []
-    #attack_list = Attack_Map
      attack_list = []
      closeness = closeness_deg(main_graph)
-     print('closeness type------', closeness)
-     print('attack_list recurmmmmmmmmm', attack_list)
      while len(closeness) != 0:
         closeness =  closeness_deg(main_graph)
         print('closeness before sorting: ', closeness)
@@ -428,10 +429,10 @@ def random_recursive_dis(main_matrix):
             print ('Network has disintegrated successfuly')
             return connectivity_lst
         else:
+            if len(closeness) != 0 and len(attack_list)==0:
+                rand_order_node = sort_order[np.random.randint(0, len(sort_order))][0]
             for node in attack_list:
-                if node in closeness:
-                    flag = "true"
-                else:
+                if node not in closeness:
                     index = attack_list.index(node)
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
@@ -618,8 +619,7 @@ def weight_recursive_dis(main_matrix):
      # recursive disintegration ro anjam mide
      #iner_main_matrix = [row[:] for row in main_matrix]
      iner_main_matrix = deepcopy(main_matrix)
-     #print('iner_main_matrix' , iner_main_matrix)
-     main_graph = create_main_graph(iner_main_matrix, Label)
+     main_graph = create_main_graph_copy(iner_main_matrix, Label)
      connectivity_lst = []
      attack_list = []
      list_of_weight  = weight_def (iner_main_matrix)
@@ -627,21 +627,27 @@ def weight_recursive_dis(main_matrix):
      active_nodes = active_node(iner_main_matrix)
      node_averg = weight_account(list_of_weight, active_nodes)
      primitive_node_avrg = deepcopy(node_averg)
-     #attack_list.append(node_averg[0][1])
-     #print('attack_list : ',attack_list)
      attack_list.append(node_averg[0][1])
-     #print('attack_list : ',attack_list)
      while len(active_nodes) != 0:
         for node in attack_list:
             if node not in active_nodes:
                 index = attack_list.index(node)
                 attack_list.pop(index)
                 print('alone node hase deleted: ', node)
-
-        target_node = attack_list[0]
+        if len(attack_list) != 0:
+            target_node = attack_list[0]
+        else:
+            if len(active_nodes)!= 0 and len(attack_list)==0:
+            # baraye jologiri az khata ya loop binahayat da moredi ke graph az aval chand bakhshi boode
+                main_graph = create_main_graph_copy(iner_main_matrix, Label)
+                list_of_weight  = weight_def (iner_main_matrix)
+                primitive_list_of_weight = deepcopy(list_of_weight)
+                node_averg = weight_account(list_of_weight, active_nodes)
+                primitive_node_avrg = deepcopy(node_averg)
+                attack_list.append(node_averg[0][1])
         #print('target node: ', target_node)
         attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
-        main_graph = create_main_graph(iner_main_matrix, Label)
+        main_graph = create_main_graph_copy(iner_main_matrix, Label)
         connectivity = connectivity_count(main_graph)
         connectivity_lst.append(connectivity)
         #print('attack_list', attack_list)
@@ -799,6 +805,41 @@ def GA_dis (main_matrix , attack_list, primitive_averg_weight_duble, primitive_w
             print ('Network has disintegrated successfuly in GA')
             return
         else:
+            if len(active_nodes)!= 0 and len(attack_list)==0:
+                    main_graph = create_main_graph(iner_matrix, Label)
+                    weight_list_avrg = deepcopy(primitive_averg_weight_duble)
+                    weight_list_triple = deepcopy(primitive_weight_triple)
+                    bc = closeness_btw(main_graph)
+                    dc = closeness_deg(main_graph)
+                    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+                    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+                    print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
+                    weight_list_reverse = []
+                    for n in weight_list_avrg:
+                        temp_n = []
+                        temp_n.append(n[1])
+                        temp_n.append(n[0])
+                        weight_list_reverse.append(temp_n)
+                    weight_normal = normalize(weight_list_reverse)
+                    bc_normal = normalize(bc_sort)
+                    dc_normal = normalize(dc_sort)
+                    attack_weight = []
+                    attack_bc = []
+                    attack_dc = []
+                    for n in attack_lst:
+                        for node in weight_normal:
+                            if n == node[0]:
+                                attack_weight.append(node)
+                    for n in attack_lst:
+                        for node in bc_normal:
+                            if n == node[0]:
+                                attack_bc.append(node)
+                    for n in attack_lst:
+                        for node in dc_normal:
+                            if n == node[0]:
+                                attack_dc.append(node)
+                    active_nodes = active_node(iner_matrix)
+                    target_node = parent_choose(attack_bc, attack_dc, attack_weight)
             for node in attack_lst:
                 if node not in active_nodes:
                     index = attack_lst.index(node)
@@ -893,6 +934,28 @@ def Greedy_disintegration (main_matrix, map_dic , primitive_averg_weight_duble, 
              print('Network has disintegrated successfuly in Greedy')
              return connectivity_lst
          else:
+             if len(active_nodes)!=0 and len (attack_lst) ==0 :
+                    weight_list_avrg = deepcopy(primitive_averg_weight_duble)
+                    weight_list_triple = deepcopy(primitive_weight_triple)
+                    bc = closeness_btw(main_graph)
+                    dc = closeness_deg(main_graph)
+                    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+                    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+                    weight_list_reverse = []
+                    for n in weight_list_avrg:
+                        temp_n = []
+                        temp_n.append(n[1])
+                        temp_n.append(n[0])
+                        weight_list_reverse.append(temp_n)
+                    weight_list_reverse_sort = sorted(weight_list_reverse, key=itemgetter(0))
+                    weight_normal = normalize(weight_list_reverse_sort)
+                    bc_normal = normalize(bc_sort)
+                    dc_normal = normalize(dc_sort)
+                    active_nodes = active_node(iner_matrix)
+                    bc_normal = sorted(bc_normal, key=itemgetter(0))
+                    dc_normal = sorted(dc_normal, key=itemgetter(0))
+                    target_node = parent_choose(bc_normal, dc_normal, weight_normal)
+
              attack_lst, iner_matrix = disintegration(target_node, iner_matrix, [])
              print('attack_lst after disintegration :', attack_lst)
              active_nodes = active_node(iner_matrix)
@@ -1102,9 +1165,6 @@ def automata_dis(main_matrix , p):
 
 
 
-
-
-
 # main
 list_node_initial , Layen_Count = list_node()
 Total_Matrix = create_matrix(list_node_initial)
@@ -1117,8 +1177,8 @@ Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 Main_Graph = create_main_graph(Main_Matrix, Label)
 Main_Conct = connectivity_count(Main_Graph)
-Connectivity_BTW = closeness_recursive_dis(1, Main_Matrix)
-#Connectivity_DEG = closeness_recursive_dis(2, Main_Matrix)
+#Connectivity_BTW = closeness_dis(1, Main_Matrix)
+#Connectivity_DEG = closeness_dis(2, Main_Matrix)
 #Connectivity_Random = random_recursive_dis(Main_Matrix)
 #Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight = weight_recursive_dis(Main_Matrix)
 #Connectivity_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
