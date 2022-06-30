@@ -19,6 +19,12 @@ from sklearn.preprocessing import normalize
 from sklearn import preprocessing
 import pandas as pd
 from operator import itemgetter
+import matplotlib.pyplot as plt
+from matplotlib import colors
+import seaborn as sns
+import matplotlib.image as mpimg
+
+
 
 
 
@@ -1052,7 +1058,7 @@ def cost_count(main_graph , actv_lst , p):
         for j in degree_lst:
             if i == j[0]:
                 cost_p = j[1]**p
-                c = (cost_p/sum_p)*100 # mohasebeye kasr be ezaye p haye mokhtalef
+                c = (cost_p/sum_p)*25 # mohasebeye kasr be ezaye p haye mokhtalef
                 internal_cost.append(i) # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
                 internal_cost.append(c)
                 cost.append(internal_cost)
@@ -1132,7 +1138,8 @@ def target_node_automata( matrix , active_lst , conct , p):
     return target_decision[0]
 
 
-def automata_dis(main_matrix , p):
+def automata_dis(main_matrix, p):
+    cost = 0.0
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph_copy(iner_matrix, Label)
     attack_list = []
@@ -1155,7 +1162,7 @@ def automata_dis(main_matrix , p):
         closeness = closeness_deg(main_graph)
         if len(closeness) == 0:
             print ('Network has disintegrated successfuly in automata')
-            return conct_lst
+            return conct_lst , cost
         else:
             for node in attack_list:
                 if node not in closeness:
@@ -1165,6 +1172,9 @@ def automata_dis(main_matrix , p):
         active_node_lst = active_node(iner_matrix)
         target_node_a = target_node_automata( iner_matrix , active_node_lst , conct , p)
         print('target_node_a:' , target_node_a)
+
+        cost_internal = cost_count(main_graph, [target_node_a], p)
+        cost= cost + cost_internal[0][1]
         attack_list, iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
         main_graph = create_main_graph_copy(iner_matrix, Label)
         #closeness = closeness_deg(main_graph)
@@ -1173,7 +1183,7 @@ def automata_dis(main_matrix , p):
         conct = (connectivity/Main_Conct)
         conct_lst.append(conct)
         browse.append(target_node_a)
-    return  conct_lst
+    return  conct_lst, cost
 
 
 def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSA):
@@ -1212,6 +1222,69 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSA):
     plt.show()
 
 
+def automata_cost_creation(main_matrix , p):
+    connctivity_aut = 0.0
+
+    cost = []
+    for i in range(len(p)):
+        internal_matrix = deepcopy(main_matrix)
+        connctivity_aut_inter, cost_aut = automata_dis(Main_Matrix , p[i])
+        cost.append(cost_aut)
+        if i == 0:
+            connctivity_aut = connctivity_aut_inter
+    return connctivity_aut , cost
+
+
+def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy, cost_aut):
+    # generate matrix
+    matrix = np.zeros((7, 5), dtype="object", order='c')
+    matrix[0] = cost_btw
+    matrix[1] = cost_deg
+    matrix[2] = cost_Rand
+    matrix[3] = cost_weight
+    matrix[4] = cost_GA
+    matrix[5] = cost_greedy
+    matrix[6] = cost_aut
+    print(matrix.dtype)
+    print(matrix)
+
+    #plot the matrix as an image with an appropriate colormap
+    print('000000000000000')
+    matrix_in = np.random.uniform(0,1,(7,5))
+    for j in range(5):
+        matrix_in[0][j] = cost_deg[j]
+    for j in range(5):
+        matrix_in[1][j] = cost_deg[j]
+    for j in range(5):
+        matrix_in[2][j] = cost_Rand[j]
+    for j in range(5):
+        matrix_in[3][j] = cost_weight[j]
+    for j in range(5):
+        matrix_in[4][j] = cost_GA[j]
+    for j in range(5):
+        matrix_in[5][j] = cost_greedy[j]
+    for j in range(5):
+        matrix_in[6][j] = cost_aut[j]
+
+    print(matrix_in[1][2])
+    print(matrix_in)
+    print(matrix_in.dtype)
+    plt.imshow(matrix_in.T, aspect='auto', cmap="bwr")
+    print('11111111111111')
+    # add the values
+    for (i, j), value in np.ndenumerate(matrix_in):
+        print('2222222222222222')
+        plt.text(i, j, "%.3f"%value, va='center', ha='center')
+        print('333333333333333')
+    plt.axis('on')
+    print('4444444444444444')
+    plt.show()
+    print('555555555555555')
+    #plt.imshow()
+    return
+
+
+
 # main
 list_node_initial , Layen_Count = list_node()
 Total_Matrix = create_matrix(list_node_initial)
@@ -1224,31 +1297,32 @@ Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 Main_Graph = create_main_graph(Main_Matrix, Label)
 Main_Conct = connectivity_count(Main_Graph)
-
-#Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
-#print('cost_btw:' , Cost_BTW)
-#Connectivity_DEG = closeness_dis(2, Main_Matrix)
-#Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
-#print('cost_Rand:' , Cost_Rand)
+#
+Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
+print('cost_btw:' , Cost_BTW)
+Connectivity_DEG, Cost_DEG = closeness_dis(2, Main_Matrix)
+print('cost_DEG:' , Cost_DEG)
+Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
+print('cost_Rand:' , Cost_Rand)
 Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
 print('cost_weight:' , Cost_Weight)
 Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
 print('cost_GA:' , Cost_GA)
 Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 print('cost_greedy:', Cost_Greedy)
-# Connctivity_aut = automata_dis(Main_Matrix , 0.0) #[0.0, 0.5, 1.0, 1.5, 2.0]
+Connctivity_aut, Cost_aut = automata_cost_creation(Main_Matrix , [0.0, 0.5, 1.0, 1.5, 2.0])
+print('cost_aut' , Cost_aut)
 
-# con_rand = [1 , 0.987463876, 0.953284298, 0.89729837, 0.8828942834, 0.832873683, 0.7927836487, 0.732934698, 0.700000, 0.60237874, 0.5628374382,0.4343434,0.389386276 , 0.27823748,0.2029387, 0.1923984,0.1023647 , 0.07]
-# con_DC = [1 , 0.907463876, 0.853284298, 0.89729837, 0.7828942834, 0.632873683, 0.5927836487, 0.432934698, 0.300000, 0.20237874, 0.1628374382,0.054343434,0.0389386276 , 0.0327823748]
-# con_BC = [1 , 0.957463876, 0.903284298, 0.85729837, 0.8128942834, 0.8, 0.7527836487, 0.702934698, 0.6700000, 0.60237874, 0.5028374382,0.4643434, 0.309386276 , 0.22823748,0.192029387, 0.1523984]
-# con_UW = [1 , 0.95, 0.90, 0.85, 0.80, 0.75, 0.70, 0.65, 0.6, 0.55, 0.50,0.45,0.35 , 0.3]
-# con_Greedy = [1 , 0.93, 0.90, 0.85, 0.80, 0.76, 0.73, 0.70, 0.650, 0.60, 0.51,0.4934,0.429386276 , 0.37,0.3029387, 0.2723984]
-# con_GA = [1 , 0.857463876, 0.703284298, 0.685729837, 0.65128942834, 0.68, 0.56, 0.50, 0.46700000, 0.40, 0.34,0.30, 0.25 , 0.202823748,0.10]
-# con_DSA = [1 , 0.80, 0.7598, 0.707, 0.674, 0.608, 0.587, 0.528, 0.46, 0.404, 0.34,0.304, 0.256 , 0.22823748,0.102029387, 0.051523984]
-# plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSA)
 
-#plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_aut)
-
+plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_aut)
+# Cost_BTW = [1,1,1,1,1]
+# Cost_DEG = [2,3,4,5,6]
+# Cost_Rand = [1,1,1,1,1]
+# Cost_Weight = [2,3,4,5,6]
+# Cost_GA = [2,3,4,5,6]
+# Cost_Greedy = [2,3,4,5,6]
+# Cost_aut = [2,3,4,5,6]
+table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_aut)
 
 
 
