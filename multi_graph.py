@@ -1075,9 +1075,7 @@ def target_node_automata( matrix , active_lst , conct , p):
     # active_list: list active node hayee ke bad az attack tasadofi moondan
     # conct: az avalin hamle mohasebe shode
     iner_matrix = deepcopy(matrix)
-
     print('graph in target_node_automata: ')
-
     internal_main_graph = create_main_graph(iner_matrix, Label)
     active = deepcopy(active_lst)
     print('len(active_lst):' , len(active_lst), "\n", 'active_list:', active_lst)
@@ -1134,7 +1132,7 @@ def target_node_automata( matrix , active_lst , conct , p):
     target_node_p = data_frame['node_number'][data_frame[data_frame['Reward'] == max_p_value].index.tolist()].tolist()
     target_decision.append(target_node_p[0])
     print('target_decision:' , target_decision)
-    return target_decision[0]
+    return target_decision[0] , max_p_value
 
 
 def rand_node(main_graph):
@@ -1160,7 +1158,9 @@ def automata_dis(main_matrix, node, p):
     conct_lst.append(conct)
     browse = []
     browse.append(node)
+    target_nodes_lst = []
     while len(closeness) != 0:
+        iner_target_node = []
         closeness = closeness_deg(main_graph)
         if len(closeness) == 0:
             print ('Network has disintegrated successfuly in automata')
@@ -1172,9 +1172,11 @@ def automata_dis(main_matrix, node, p):
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
         active_node_lst = active_node(iner_matrix)
-        target_node_a = target_node_automata( iner_matrix , active_node_lst , conct , p)
+        target_node_a , reward = target_node_automata( iner_matrix , active_node_lst , conct , p)
         print('target_node_a:' , target_node_a)
-
+        iner_target_node.append(target_node_a)
+        iner_target_node.append(reward)
+        target_nodes_lst.append(iner_target_node)
         cost_internal = cost_count(main_graph, [target_node_a], p)
         cost= cost + cost_internal[0][1]
         attack_list, iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
@@ -1295,12 +1297,20 @@ def q_table_create(initial_active_node):
     return q_table , map_list
 
 
-def q_table_update():
+def q_value(target_node , reward, q_table, map_lst , landa , gama):
+    # q(St,at) = q(St,at) + landa(rt + Gama * max Q(St+1 , a) - Q(St , at))
+    # sample: delte = 1+ 0.9*0-0 = 1
+    #         0+ 0.1*1 = 0.1
 
-    return
+    new_q = landa*(gama*reward)
+    print('newwwwww value: ' , new_q)
+    for i in map_lst:
+        if i[1] == target_node:
+            q_table[i][i] = new_q
+    return q_table, new_q
 
 
-def q_learning(main_matrix, node, p):
+def q_learning(main_matrix, node, p , landa , gama):
     cost = 0.0
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph_copy(iner_matrix, Label)
@@ -1311,7 +1321,7 @@ def q_learning(main_matrix, node, p):
     closeness = closeness_deg(main_graph)
     active_node_for_Qtable = active_node(iner_matrix)
     print('active_node_for_Qtable:::::::' , active_node_for_Qtable)
-    q_table_create(active_node_for_Qtable)
+    q_table , map_lst = q_table_create(active_node_for_Qtable)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
@@ -1320,10 +1330,12 @@ def q_learning(main_matrix, node, p):
     conct_lst.append(conct)
     browse = []
     browse.append(node)
+    target_nodes_lst = []
     while len(closeness) != 0:
+        iner_target_node = []
         closeness = closeness_deg(main_graph)
         if len(closeness) == 0:
-            print ('Network has disintegrated successfuly in automata')
+            print ('Network has disintegrated successfuly in Q_learning')
             return conct_lst , cost
         else:
             for node in attack_list:
@@ -1332,20 +1344,23 @@ def q_learning(main_matrix, node, p):
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
         active_node_lst = active_node(iner_matrix)
-    #     target_node_a = target_node_automata( iner_matrix , active_node_lst , conct , p)
-    #     print('target_node_a:' , target_node_a)
-    #
-    #     cost_internal = cost_count(main_graph, [target_node_a], p)
-    #     cost= cost + cost_internal[0][1]
-    #     attack_list, iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
-    #     main_graph = create_main_graph_copy(iner_matrix, Label)
-    #     #closeness = closeness_deg(main_graph)
-    #     sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
-    #     connectivity = connectivity_count(main_graph)
-    #     conct = (connectivity/Main_Conct)
-    #     conct_lst.append(conct)
-    #     browse.append(target_node_a)
-    # return  conct_lst, cost
+        target_node_a, reward = target_node_automata( iner_matrix , active_node_lst , conct , p)
+        iner_target_node.append(target_node_a)
+        iner_target_node.append(reward)
+        target_nodes_lst.append(iner_target_node)
+        print('target_node_a:' , target_node_a)
+        cost_internal = cost_count(main_graph, [target_node_a], p)
+        cost= cost + cost_internal[0][1]
+        q_table , q_value  = q_value(target_node_a , reward, q_table, map_lst , landa , gama)
+        attack_list, iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
+        main_graph = create_main_graph_copy(iner_matrix, Label)
+        closeness = closeness_deg(main_graph)
+        sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+        connectivity = connectivity_count(main_graph)
+        conct = (connectivity/Main_Conct)
+        conct_lst.append(conct)
+        browse.append(target_node_a)
+    return  conct_lst, cost
 
 
 
@@ -1377,7 +1392,7 @@ Rand_Node = rand_node(Main_Graph)
 # print('cost_greedy:', Cost_Greedy)
 # Connctivity_aut, Cost_aut = automata_cost_creation(Main_Matrix , Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0])
 # print('cost_aut' , Cost_aut)
-q_learning(Main_Matrix , Rand_Node , [0.0, 0.5, 1.0, 1.5, 2.0])
+q_learning(Main_Matrix , Rand_Node , 0.5 , 0.1 , 0.9)
 
 # plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_aut)
 # table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_aut)
