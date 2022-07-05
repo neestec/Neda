@@ -1200,8 +1200,8 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     list_name.append('UW')
     list_name.append('Greedy')
     list_name.append('GA')
-    list_name.append('DSA')
     list_name.append('DSQ')
+    list_name.append('DSA')
     episode = [len(con_rand), len(con_DC),len(con_BC), len(con_UW), len(con_Greedy), len(con_GA),len(con_DSQ) ,len(con_DSA)]
     min_episode = min(episode)
     order = []
@@ -1216,14 +1216,14 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     del con_DSQ[min_episode: len(con_DSQ)]
     del con_DSA[min_episode: len(con_DSA)]
 
-    plt.plot(con_rand, label = 'Rand', lw=2, marker='s', ms=10) # square
-    plt.plot(con_DC, label = 'DC', lw=2, marker='^', ms=10) # triangle
-    plt.plot(con_BC, label = 'BC', lw=2, marker='o', ms=10) # circle
-    plt.plot(con_UW, label = 'UW', lw=2, marker='D', ms=10) # diamond
-    plt.plot(con_Greedy, label = 'Greedy', lw=2, marker='P', ms=10) # filled plus sign
-    plt.plot(con_GA, label = 'GA', lw=2, marker='3', ms=10) # tri_left
-    plt.plot(con_DSQ, label = 'DSA', lw=2, marker='>', ms=10) # triangle_right
-    plt.plot(con_DSA, label = 'GA', lw=2, marker='+', ms=10) # plus
+    plt.plot(con_rand, label = 'Rand', lw=2, marker='s', ms=6) # square
+    plt.plot(con_DC, label = 'DC', lw=2, marker='^', ms=6) # triangle
+    plt.plot(con_BC, label = 'BC', lw=2, marker='o', ms=6) # circle
+    plt.plot(con_UW, label = 'UW', lw=2, marker='D', ms=6) # diamond
+    plt.plot(con_Greedy, label = 'Greedy', lw=2, marker='P', ms=6) # filled plus sign
+    plt.plot(con_GA, label = 'GA', lw=2, marker='3', ms=6) # tri_left
+    plt.plot(con_DSQ, label = 'DSQ', lw=2, marker='>', ms=6) # triangle_right
+    plt.plot(con_DSA, label = 'DSA', lw=2, marker='+', ms=6) # plus
     plt.legend()
     plt.show()
     # data_frame = pd.DataFrame({
@@ -1243,33 +1243,34 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     # plt.show()
 
 
-def automata_cost_creation(main_matrix , node, p):
+def automata_cost_creation( node, p):
     connctivity_aut = 0.0
 
     cost = []
     for i in range(len(p)):
-        internal_matrix = deepcopy(main_matrix)
-        connctivity_aut_inter, cost_aut = automata_dis(Main_Matrix ,node,  p[i] )
+        #internal_matrix = deepcopy(main_matrix)
+        connctivity_aut_inter, cost_aut, target_nodes_lst = automata_dis(Main_Matrix ,node,  p[i] )
         cost.append(cost_aut)
         if i == 0:
             connctivity_aut = connctivity_aut_inter
     return connctivity_aut , cost
 
 
-def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy, cost_aut):
+def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,cost_q, cost_aut):
     # generate matrix
-    matrix = np.zeros((7, 5), dtype="object", order='c')
+    matrix = np.zeros((8, 5), dtype="object", order='c')
     matrix[0] = cost_btw
     matrix[1] = cost_deg
     matrix[2] = cost_Rand
     matrix[3] = cost_weight
     matrix[4] = cost_GA
     matrix[5] = cost_greedy
-    matrix[6] = cost_aut
+    matrix[6] = cost_q
+    matrix[7] = cost_aut
     print(matrix.dtype)
     print(matrix)
     #plot the matrix as an image with an appropriate colormap
-    matrix_in = np.random.uniform(0,1,(7,5))
+    matrix_in = np.random.uniform(0,1,(8,5))
     for j in range(5):
         matrix_in[0][j] = cost_deg[j]
     for j in range(5):
@@ -1283,7 +1284,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
     for j in range(5):
         matrix_in[5][j] = cost_greedy[j]
     for j in range(5):
-        matrix_in[6][j] = cost_aut[j]
+        matrix_in[6][j] = cost_q[j]
+    for j in range(5):
+        matrix_in[7][j] = cost_aut[j]
 
     print(matrix_in[1][2])
     print(matrix_in)
@@ -1391,14 +1394,14 @@ def q_learning(main_matrix, node, p , landa , gama):
             return conct_lst , cost , q_value , target_nodes_lst
     return  conct_lst, cost , q_value , target_nodes_lst
 
-def Q_cost_creation(main_matrix , node, p, landa , gama):
+def Q_cost_creation( node, p, landa , gama):
     connctivity_aut = 0.0
 
     cost = []
     for i in range(len(p)):
-        internal_matrix = deepcopy(main_matrix)
-        connctivity_Q_inter, cost_aut = q_learning(Main_Matrix ,node,  p[i] )
-        cost.append(cost_aut)
+        #internal_matrix = deepcopy(main_matrix)
+        connctivity_Q_inter, cost_internal, q_value , target_nodes_lst = q_learning(Main_Matrix ,node,  p[i] , landa, gama)
+        cost.append(cost_internal)
         if i == 0:
             connctivity_Q = connctivity_Q_inter
     return connctivity_Q , cost
@@ -1415,7 +1418,7 @@ Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 Main_Graph = create_main_graph(Main_Matrix, Label)
 Main_Conct = connectivity_count(Main_Graph)
-#
+
 Rand_Node = rand_node(Main_Graph)
 Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
 print('cost_btw:' , Cost_BTW)
@@ -1429,13 +1432,17 @@ Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avr
 print('cost_GA:' , Cost_GA)
 Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 print('cost_greedy:', Cost_Greedy)
-Connctivity_aut, Cost_aut = automata_cost_creation(Main_Matrix , Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0])
+Connctivity_aut, Cost_aut = automata_cost_creation( Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0])
 print('cost_aut' , Cost_aut)
-Connctivity_Q, Cost_Q = Q_cost_creation(Main_Matrix , Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
+Connctivity_Q, Cost_Q = Q_cost_creation(Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
 print('cost_Q' , Cost_Q)
+
+
+
+
 plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
 table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
-
+#plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
 
 #Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , Rand_Node , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
