@@ -40,7 +40,7 @@ def list_node():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(10, 15)
+        node = np.random.randint(10, 20)
         list_node.append(node)
     #print('list_node:', list_node)
     return list_node , layer_n
@@ -293,7 +293,7 @@ def create_main_graph(adjacency_matrix, labels):
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
     gr.add_edges_from(edges)
-    nx.draw(gr, node_size=500,  with_labels=True)
+    #nx.draw(gr, node_size=500,  with_labels=True)
     #plt.show()
     return gr
 
@@ -311,7 +311,7 @@ def create_main_graph_copy(adjacency_matrix, labels):
     #print ('yyyyyyyaaaaalllll',edge)
     gr = nx.Graph()
     gr.add_edges_from(edges)
-    nx.draw(gr, node_size=500,  with_labels=True)
+    #nx.draw(gr, node_size=500,  with_labels=True)
     #plt.show()
     return gr
 
@@ -1132,6 +1132,8 @@ def target_node_automata( matrix , active_lst , conct , p):
     target_node_p = data_frame['node_number'][data_frame[data_frame['Reward'] == max_p_value].index.tolist()].tolist()
     target_decision.append(target_node_p[0])
     print('target_decision:' , target_decision)
+    # del(iner_matrix)
+    # del(matrix)
     return target_decision[0] , max_p_value
 
 
@@ -1193,6 +1195,7 @@ def automata_dis(main_matrix, node, p):
 
 
 def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,con_DSA):
+
     list_name = []
     list_name.append('Random')
     list_name.append('DC')
@@ -1239,7 +1242,6 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     #     })
     # print(data_frame)
     # data_frame.set_index('order').plot()
-    #
     # plt.show()
 
 
@@ -1258,7 +1260,8 @@ def automata_cost_creation( node, p):
 
 def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,cost_q, cost_aut):
     # generate matrix
-    matrix = np.zeros((8, 5), dtype="object", order='c')
+    matrix = np.zeros((8, 5), dtype="float", order='c')
+
     matrix[0] = cost_btw
     matrix[1] = cost_deg
     matrix[2] = cost_Rand
@@ -1270,31 +1273,31 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
     print(matrix.dtype)
     print(matrix)
     #plot the matrix as an image with an appropriate colormap
-    matrix_in = np.random.uniform(0,1,(8,5))
-    for j in range(5):
-        matrix_in[0][j] = cost_deg[j]
-    for j in range(5):
-        matrix_in[1][j] = cost_deg[j]
-    for j in range(5):
-        matrix_in[2][j] = cost_Rand[j]
-    for j in range(5):
-        matrix_in[3][j] = cost_weight[j]
-    for j in range(5):
-        matrix_in[4][j] = cost_GA[j]
-    for j in range(5):
-        matrix_in[5][j] = cost_greedy[j]
-    for j in range(5):
-        matrix_in[6][j] = cost_q[j]
-    for j in range(5):
-        matrix_in[7][j] = cost_aut[j]
+    #matrix_in = np.random.uniform(0,1,(8,5))
+    # for j in range(5):
+    #     matrix_in[0][j] = cost_deg[j]
+    # for j in range(5):
+    #     matrix_in[1][j] = cost_deg[j]
+    # for j in range(5):
+    #     matrix_in[2][j] = cost_Rand[j]
+    # for j in range(5):
+    #     matrix_in[3][j] = cost_weight[j]
+    # for j in range(5):
+    #     matrix_in[4][j] = cost_GA[j]
+    # for j in range(5):
+    #     matrix_in[5][j] = cost_greedy[j]
+    # for j in range(5):
+    #     matrix_in[6][j] = cost_q[j]
+    # for j in range(5):
+    #     matrix_in[7][j] = cost_aut[j]
 
-    print(matrix_in[1][2])
-    print(matrix_in)
-    print(matrix_in.dtype)
-    plt.imshow(matrix_in.T, aspect='auto', cmap="bwr")
+    print(matrix[1][2])
+    print(matrix)
+    print(matrix.dtype)
+    plt.imshow(matrix.T, aspect='auto', cmap="bwr")
 
     # add the values
-    for (i, j), value in np.ndenumerate(matrix_in):
+    for (i, j), value in np.ndenumerate(matrix):
 
         plt.text(i, j, "%.3f"%value, va='center', ha='center')
     plt.axis('on')
@@ -1439,7 +1442,7 @@ print('cost_Q' , Cost_Q)
 
 
 
-
+del(Main_Matrix)
 plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
 table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
 #plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
