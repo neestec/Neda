@@ -25,11 +25,6 @@ import seaborn as sns
 import matplotlib.image as mpimg
 
 
-
-
-
-
-
 def list_node():
     """gets layers count as an int variation layer_n
     for each layer creates a random int number of nodes as a member of list_node
@@ -328,6 +323,7 @@ def closeness_deg(main_graph):
     for pair in deg_temp:
         deg[pair[0]] = pair[1]
     return deg
+
 
 def attack_Node_Mapping (attack_list):
     # node haye attack ro be shomare haye jadid map mikone
@@ -1068,14 +1064,13 @@ def cost_count(main_graph , actv_lst , p):
     return cost
 
 
-def target_node_automata( matrix , active_lst , conct , p):
-    #yek bar attack rooye ek node tasadofi anjam shode va bad az an parameter ha pas dade shode
+def target_node_learning( q_table, last_node, last_state, last_reward,  matrix , active_lst , conct , p, landa, gama):
+    #yek bar attack rooye yek node tasadofi anjam shode va bad az an parameter ha pas dade shode
     # main_Graph: geraf bad az avalin hamle
     # matrix: matrix bad az avalin hamle
     # active_list: list active node hayee ke bad az attack tasadofi moondan
     # conct: az avalin hamle mohasebe shode
     iner_matrix = deepcopy(matrix)
-    print('graph in target_node_automata: ')
     internal_main_graph = create_main_graph(iner_matrix, Label)
     active = deepcopy(active_lst)
     print('len(active_lst):' , len(active_lst), "\n", 'active_list:', active_lst)
@@ -1114,27 +1109,36 @@ def target_node_automata( matrix , active_lst , conct , p):
             temp = numerate[i][1]/cost[i][1]
             r.append(cost[i][0])
             r.append(temp)
-            reward.append(r)
+            reward.append(r) # in list dotayi hast. shomare node va reward
     print(reward)
+    q_value_lst = []
+    #q(St,at) = q(St,at) + landa(rt + Gama * max Q(St+1 , a) - Q(St , at))
+    for n in reward:
+        internal_val = []
+        q_table[last_state][last_node] = q_table[last_state][last_node] + landa*(last_reward+ gama*(n[1]) - q_table[last_state][last_node])
+        re = q_table[last_state][last_node]
+        internal_val.append(n[0])
+        internal_val.append(re)
+
     node = []
     reward_pure = []
-    for i in reward:
+    for i in internal_val:
         node.append(i[0])
         reward_pure.append(i[1])
     data_frame = pd.DataFrame({
         "node_number" : node,
-        "Reward" : reward_pure,
+        "q_value" : reward_pure,
         })
     target_decision = []
     print(data_frame)
-    column0 = data_frame["Reward"]
-    max_p_value = column0.max()
-    target_node_p = data_frame['node_number'][data_frame[data_frame['Reward'] == max_p_value].index.tolist()].tolist()
+    column0 = data_frame["q_value"]
+    max_reward = column0.max()
+    target_node_p = data_frame['node_number'][data_frame[data_frame['q_value'] == max_reward].index.tolist()].tolist()
     target_decision.append(target_node_p[0])
     print('target_decision:' , target_decision)
     # del(iner_matrix)
     # del(matrix)
-    return target_decision[0] , max_p_value
+    return target_decision[0] , max_reward
 
 
 def rand_node(main_graph):
@@ -1144,12 +1148,13 @@ def rand_node(main_graph):
     return node
 
 
-def automata_dis(main_matrix, node, p):
+def automata_dis(main_matrix, p):
     cost = 0.0
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph_copy(iner_matrix, Label)
     closeness = closeness_deg(main_graph)
     attack_list = []
+    node = rand_node(main_graph)
     attack_list, iner_matrix = disintegration(node, iner_matrix, attack_list)
     print('attack lst after automata init: ' , attack_list)
     main_graph = create_main_graph_copy(iner_matrix, Label)
@@ -1176,7 +1181,7 @@ def automata_dis(main_matrix, node, p):
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
         active_node_lst = active_node(iner_matrix)
-        target_node_a , reward = target_node_automata( iner_matrix , active_node_lst , conct , p)
+        target_node_a , reward = target_node_learning( iner_matrix , active_node_lst , conct , p)
         print('target_node_a:' , target_node_a)
         iner_target_node.append(target_node_a)
         iner_target_node.append(reward)
@@ -1306,7 +1311,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
     return
 
 
-def q_table_create(initial_active_node):
+def q_table_create_old(initial_active_node):
+    # Create Q-Table by Total_node Dimentions
     n = len(initial_active_node)
     q_table = np.zeros((n, n), dtype="float", order='c')
     map_list = []
@@ -1320,35 +1326,45 @@ def q_table_create(initial_active_node):
     return q_table , map_list
 
 
-def q_value_count_update(target_node , reward, q_table, map_lst , landa , gama):
+def q_table_create(total_node):
+    # Create Q-Table by Total_node Dimentions
+    #n = len(total_node)
+    q_table = np.zeros((total_node, total_node), dtype="float", order='c')
+    print('q_table' , q_table)
+    return q_table
+
+
+def q_value_count_update(last_node, last_state, last_reward, current_state,  next_node ,next_reward, q_table , landa , gama):
     # q(St,at) = q(St,at) + landa(rt + Gama * max Q(St+1 , a) - Q(St , at))
-    # sample: delte = 1+ 0.9*0-0 = 1
+    # sample: delta = 1+ 0.9*0-0 = 1
     #         0+ 0.1*1 = 0.1
-    print('target_node: ' , target_node , "\n" ,'reward:' ,  reward, "\n",
-              'q_table:',  q_table , "\n", 'map_lst',  map_lst , "\n", 'landa', landa ,"\n", 'gama', gama)
-    new_q = landa*(gama*reward)
-    print('newwwwww value: ' , new_q)
-    for i in map_lst:
-        if i[1] == target_node:
-            j = i[0]
-            print ('i: ', i , 'j: ', j)
-            q_table[i[0]][j] = new_q
+    old_value = q_table[last_state][last_node]
+    # print('next_node: ' , next_node , "\n" ,'next_reward:' ,  next_reward, "\n",
+    #           'q_table:',  q_table , "\n", 'landa', landa ,"\n", 'gama', gama)
+    new_value = old_value + (landa*(last_reward+ (gama*next_reward)) - old_value)
+    q_table[current_state][next_node] = next_reward
+    q_table[last_state][last_node] = new_value
+    print('newwwwww value: ' , new_value)
+    # for i in map_lst:
+    #     if i[1] == target_node:
+    #         j = i[0]
+    #         print ('i: ', i , 'j: ', j)
+    #         q_table[i[0]][j] = new_q
     print('q_table after update: ' ,q_table)
-    return q_table, new_q
+    return q_table, new_value
 
 
-def q_learning(main_matrix, node, p , landa , gama):
+def q_learning(main_matrix, p , landa , gama):
     cost = 0.0
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph_copy(iner_matrix, Label)
     attack_list = []
-    attack_list, iner_matrix = disintegration(node, iner_matrix, attack_list)
+    initiator_node = rand_node(main_graph)
+    q_table = q_table_create(Total_Node)
+    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
     print('attack lst after automata init: ' , attack_list)
     main_graph = create_main_graph_copy(iner_matrix, Label)
     closeness = closeness_deg(main_graph)
-    active_node_for_Qtable = active_node(iner_matrix)
-    print('active_node_for_Qtable:::::::' , active_node_for_Qtable)
-    q_table , map_lst = q_table_create(active_node_for_Qtable)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
@@ -1356,16 +1372,24 @@ def q_learning(main_matrix, node, p , landa , gama):
     print('first connectivity: ', conct)
     conct_lst.append(conct)
     browse = []
-    browse.append(node)
+    browse.append(initiator_node)
+    #list of browsed nodes for disintegrating
     target_nodes_lst = []
+    first_node = []
+    first_node.append(initiator_node)
+    first_node.append(0)
+    target_nodes_lst.append(first_node)
+    s_lst = []
+    s_lst.append(0)
     q_value = 0
+    last_reward = 0
     while len(closeness) != 0:
         iner_target_node = []
         closeness = closeness_deg(main_graph)
         print('len(closeness): ', len(closeness))
         if len(closeness) == 0:
             print ('Network has disintegrated successfuly in Q_learning')
-            return conct_lst , cost , q_value, target_nodes_lst
+            return conct_lst , cost , q_value, target_nodes_lst , q_table
         else:
             for node in attack_list:
                 if node not in closeness:
@@ -1373,83 +1397,112 @@ def q_learning(main_matrix, node, p , landa , gama):
                     attack_list.pop(index)
                     print('alone node hase deleted: ', node)
         active_node_lst = active_node(iner_matrix)
-        target_node_a, reward = target_node_automata( iner_matrix , active_node_lst , conct , p)
-        iner_target_node.append(target_node_a)
-        iner_target_node.append(reward)
+        last_node = target_nodes_lst[-1][0]
+        last_state = s_lst[-1]
+        next_node, next_reward = target_node_learning(q_table, last_node, last_state, last_reward,
+                                                       iner_matrix , active_node_lst , conct , p, landa, gama)
+        iner_target_node.append(next_node)
+        iner_target_node.append(next_reward)
         target_nodes_lst.append(iner_target_node)
-        print('target_node_a:' , target_node_a)
-        cost_internal = cost_count(main_graph, [target_node_a], p)
+        print('target_node_a:' , next_node)
+        cost_internal = cost_count(main_graph, [next_node], p)
         cost= cost + cost_internal[0][1]
-        print('target_node_a: ' , target_node_a , "\n",'reward:' ,  reward, "\n",
-              'q_table:',  q_table , "\n", 'map_lst',  map_lst , "\n", 'landa', landa ,"\n", 'gama', gama)
-        q_table , q_value_internal  = q_value_count_update(target_node_a , reward, q_table, map_lst , landa , gama)
+        print('next_node: ' , next_node , "\n",'last_reward:' , last_reward , "\n",'next_reward:' , next_reward , "\n",
+              'q_table:',  q_table , "\n", 'landa', landa ,"\n", 'gama', gama)
+        last_node = target_nodes_lst[-1][0]
+        last_state = s_lst[-1]
+        s_lst.append(s_lst[-1]+1)
+        current_state = s_lst[-1]
+        q_table , q_value_internal  = q_value_count_update(last_node, last_state, last_reward, current_state ,
+                                                           next_node ,next_reward, q_table , landa , gama)
+        last_reward = next_reward
         q_value = q_value + q_value_internal
-        attack_list, iner_matrix = disintegration(target_node_a, iner_matrix, attack_list)
+        attack_list, iner_matrix = disintegration(next_node, iner_matrix, attack_list)
         main_graph = create_main_graph_copy(iner_matrix, Label)
         closeness = closeness_deg(main_graph)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
         connectivity = connectivity_count(main_graph)
         conct = (connectivity/Main_Conct)
         conct_lst.append(conct)
-        browse.append(target_node_a)
+        browse.append(next_node)
         if len(closeness) == 0:
             print ('Network has disintegrated successfuly in Q_learning')
-            return conct_lst , cost , q_value , target_nodes_lst
-    return  conct_lst, cost , q_value , target_nodes_lst
+            return conct_lst , cost , q_value , target_nodes_lst, q_table
+    return  conct_lst, cost , q_value , target_nodes_lst , q_table
 
-def Q_cost_creation( node, p, landa , gama):
-    connctivity_aut = 0.0
 
-    cost = []
-    for i in range(len(p)):
-        #internal_matrix = deepcopy(main_matrix)
-        connctivity_Q_inter, cost_internal, q_value , target_nodes_lst = q_learning(Main_Matrix ,node,  p[i] , landa, gama)
-        cost.append(cost_internal)
-        if i == 0:
-            connctivity_Q = connctivity_Q_inter
-    return connctivity_Q , cost
+def q_learning_episodic(total_node , episode, main_matrix, p, landa, gama):
+    q_table = q_table_create(total_node)
+
+    for i in range(episode):
+        conct_lst, cost , q_value , target_nodes_lst , q_table = q_learning(main_matrix, p, landa, gama)
+    
+    return q_table
+
+
+def q_lerning_Table_storage():
+
+    return
+
+
+# def Q_cost_creation(p, landa , gama, episode):
+#
+#     cost = []
+#     for i in range(len(p)):
+#         #internal_matrix = deepcopy(main_matrix)
+#         q_table , cost_ = q_learning_episodic(Main_Matrix,  p[i] , landa, gama , episode)
+#         cost.append(cost_internal)
+#         # if i == 0:
+#         #     connctivity_Q = connctivity_Q_inter
+#     return  cost
 
 # main
 list_node_initial , Layen_Count = list_node()
+print ('list_node_initial:' , list_node_initial)
 Total_Matrix = create_matrix(list_node_initial)
 List_Struct= list_struc(list_node_initial)
 comb_dis = create_comb_array(list_node_initial)
 list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
+print('list_of_nodes:' , list_of_nodes)
 Map_dic, Total_Node = node_Mapping(list_of_nodes)
+print('Map_dic:' , Map_dic)
+print('Total_node:' , Total_Node)
 Attack_Nodes = random_atthck_nodes(list_of_nodes)
 Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 Main_Graph = create_main_graph(Main_Matrix, Label)
 Main_Conct = connectivity_count(Main_Graph)
 
-Rand_Node = rand_node(Main_Graph)
-Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
-print('cost_btw:' , Cost_BTW)
-Connectivity_DEG, Cost_DEG = closeness_dis(2, Main_Matrix)
-print('cost_DEG:' , Cost_DEG)
-Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
-print('cost_Rand:' , Cost_Rand)
-Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
-print('cost_weight:' , Cost_Weight)
-Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
-print('cost_GA:' , Cost_GA)
-Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
-print('cost_greedy:', Cost_Greedy)
-Connctivity_aut, Cost_aut = automata_cost_creation( Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0])
-print('cost_aut' , Cost_aut)
-Connctivity_Q, Cost_Q = Q_cost_creation(Rand_Node, [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
-print('cost_Q' , Cost_Q)
+# Rand_Node = rand_node(Main_Graph)
+# Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
+# print('cost_btw:' , Cost_BTW)
+# Connectivity_DEG, Cost_DEG = closeness_dis(2, Main_Matrix)
+# print('cost_DEG:' , Cost_DEG)
+# Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
+# print('cost_Rand:' , Cost_Rand)
+# Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
+# print('cost_weight:' , Cost_Weight)
+# Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
+# print('cost_GA:' , Cost_GA)
+# Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
+# print('cost_greedy:', Cost_Greedy)
+# Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
+# print('cost_aut' , Cost_aut)
+# Connctivity_Q, Cost_Q = Q_cost_creation( [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
+# print('cost_Q' , Cost_Q)
+#
+
+#plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
+#table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
 
 
 
-del(Main_Matrix)
-plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
-table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
+
 #plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
 
-#Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , Rand_Node , 0.0 , 0.1 , 0.9)
-# print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
-#
+Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
+print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
+
 # conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Main_Matrix,Rand_Node, 0.0)
 # print('Target_Node_Lst_Q: ' , Target_Node_Lst_Q)
 # print ('Target_Node_Lst_AUT: ', Target_Node_Lst_AUT)
