@@ -13,16 +13,13 @@ import networkx as nx
 from itertools import combinations
 from scipy.sparse import csr_matrix
 import math
-import matplotlib.pyplot as plt
 from copy import copy , deepcopy
 from sklearn.preprocessing import normalize
-from sklearn import preprocessing
 import pandas as pd
 from operator import itemgetter
 import matplotlib.pyplot as plt
-from matplotlib import colors
-import seaborn as sns
-import matplotlib.image as mpimg
+import ga
+
 
 
 def list_node():
@@ -693,6 +690,7 @@ def attack_maping(attack_list, map_dic):
     return attack_map
 
 
+#------------------ GA-------------
 def normalize(abnormal_list):
     ab_normal_list = deepcopy(abnormal_list)
     # list ha jofti hastan. aval bayad yek ozvishoon kinim bad aza ro normal konim, bad dobare set konim.
@@ -730,7 +728,46 @@ def normalize(abnormal_list):
         return []
 
 
-def parent_choose(bc, dc, uw):
+def fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator ):
+    weight_list_avrg = deepcopy(primitive_weight_duble)
+    weight_list_triple = deepcopy(primitive_weight_triple)
+    bc = closeness_btw(main_graph)
+    dc = closeness_deg(main_graph)
+    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+    #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
+    #print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
+    weight_list_reverse = []
+    for n in weight_list_avrg:
+        temp_n = []
+        temp_n.append(n[1])
+        temp_n.append(n[0])
+        weight_list_reverse.append(temp_n)
+    print('weight_list_reverse' , weight_list_reverse)
+    weight_normal = normalize(weight_list_reverse)
+    bc_normal = normalize(bc_sort)
+    dc_normal = normalize(dc_sort)
+    #motabeghe node haye attack az bd , dc , weight mikeshe biron
+    weight_lst = []
+    bc_lst = []
+    dc_lst = []
+    #create attack list from bc dc uw
+    for n in initiator:
+        for node in weight_normal:
+            if n == node[0]:
+                weight_lst.append(node)
+    for n in initiator:
+        for node in bc_normal:
+            if n == node[0]:
+                bc_lst.append(node)
+    for n in initiator:
+        for node in dc_normal:
+            if n == node[0]:
+                dc_lst.append(node)
+    return weight_lst , dc_lst, bc_lst
+
+
+def fitness_arrenge(bc, dc, uw):
 
     if len(bc)== len(dc) and len(dc) == len(uw):
         print('toolha ba ham barabaran')
@@ -742,7 +779,6 @@ def parent_choose(bc, dc, uw):
         if bc[i][0] == dc[i][0] and bc[i][0] == uw[i][0]:
             create_dataset = True
         else:
-            create_dataset = False
             print('index ha ba ham yeki nistan', bc[i][0], dc[i][0],  uw[i][0])
             return
     if create_dataset:
@@ -769,113 +805,109 @@ def parent_choose(bc, dc, uw):
             "uw" : uw_point,
             "sum" : sum_point
         })
-        print (data_frame)
-        column = data_frame["sum"]
+        #data_frame.sort_values("sum")
+        df = data_frame.sort_values(by=['sum'] , ascending= False)
+        print ('data_frame after sorting', df)
+        column = df["sum"]
+        node_lst = df["node_number"]
         max_sum_value = column.max()
-        target_node = data_frame['node_number'][data_frame[data_frame['sum'] == max_sum_value].index.tolist()].tolist()
+        target_node = df['node_number'][df[df['sum'] == max_sum_value].index.tolist()].tolist()
         #indx = data_frame.loc[data_frame['sum'] == max_sum_value, index]
         print('max_sum_value:' , max_sum_value , 'target_node' , target_node)
 
-    return target_node[0]
+    return node_lst
 
 
-def GA_dis (main_matrix , attack_list, primitive_averg_weight_duble, primitive_weight_triple):
+def generation(mutation_portion , crossover, sorted_lst):
+    n = len(sorted_lst)
+    mut= round( mutation_portion* len(n))
+    m = n -mut
+    print('mutation:' , mut)
+    mut_lst = []
+    for i in range(mut):
+        mut_lst.append(sorted_lst[i])
+    crossover_lst = []
+    for i in range(m):
+        crossover_lst.append(sorted_lst[i+mut])
+    permanent_parent_len = round((1-crossover)* m) # portion of permanent parent
+    len_children = (n - mut - permanent_parent_len)
+    permanent_parent_lst = random.sample(crossover_lst, permanent_parent_len)
+    for i in permanent_parent_lst:
+        if i in crossover_lst:
+            index = sorted_lst.index(i)
+            sorted_lst.pop(index)
+    children = []
+    children = crossover_lst
+    return children , mut , permanent_parent_lst
+
+
+def attack():
+
+    return
+
+
+def GA_dis (main_matrix , primitive, primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
-    attack_lst = deepcopy(attack_list)
+    initiator = deepcopy(primitive)
+    init_len = len(initiator)
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix, Label)
+    weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator )
+    sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
     connectivity_lst = []
     connectivity_lst.append(1)
-    weight_list_avrg = deepcopy(primitive_averg_weight_duble)
-    weight_list_triple = deepcopy(primitive_weight_triple)
-    bc = closeness_btw(main_graph)
-    dc = closeness_deg(main_graph)
-    bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
-    dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
-    #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
-    print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
-    weight_list_reverse = []
-    for n in weight_list_avrg:
-        temp_n = []
-        temp_n.append(n[1])
-        temp_n.append(n[0])
-        weight_list_reverse.append(temp_n)
-    print('weight_list_reverse' , weight_list_reverse)
-    weight_normal = normalize(weight_list_reverse)
-    bc_normal = normalize(bc_sort)
-    dc_normal = normalize(dc_sort)
-    #motabeghe node haye attack az bd , dc , weight mikeshe biron
-    attack_weight = []
-    attack_bc = []
-    attack_dc = []
-    #create attack list from bc dc uw
-    for n in attack_lst:
-        for node in weight_normal:
-            if n == node[0]:
-                attack_weight.append(node)
-    for n in attack_lst:
-        for node in bc_normal:
-            if n == node[0]:
-                attack_bc.append(node)
-    for n in attack_lst:
-        for node in dc_normal:
-            if n == node[0]:
-                attack_dc.append(node)
     active_nodes = active_node(iner_matrix)
-    target_node = parent_choose(attack_bc, attack_dc, attack_weight)
-
     while len(active_nodes) != 0:
         print('active_nodes in do while:',active_nodes)
-        print ('attack_lst in do while list:',attack_lst)
+        print ('initiate_lst in do while list:',sorted_lst)
         if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly in GA')
             return connectivity_lst, cost_lst
-
-        for node in attack_lst:
+        for node in sorted_lst:
             if node not in active_nodes:
-                index = attack_lst.index(node)
-                attack_lst.pop(index)
+                index = sorted_lst.index(node)
+                sorted_lst.pop(index)
                 print('alone node hase deleted: ', node)
+        # if len(active_nodes)!= 0 and len(sorted_lst)==0:
+        #
+        #     main_graph = create_main_graph(iner_matrix, Label)
+        #     weight_list_avrg = deepcopy(primitive_averg_weight_duble)
+        #     weight_list_triple = deepcopy(primitive_weight_triple)
+        #     bc = closeness_btw(main_graph)
+        #     dc = closeness_deg(main_graph)
+        #     bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+        #     dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
+        #     print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
+        #     weight_list_reverse = []
+        #     for n in weight_list_avrg:
+        #         temp_n = []
+        #         temp_n.append(n[1])
+        #         temp_n.append(n[0])
+        #         weight_list_reverse.append(temp_n)
+        #     weight_normal = normalize(weight_list_reverse)
+        #     bc_normal = normalize(bc_sort)
+        #     dc_normal = normalize(dc_sort)
+        #     attack_weight = []
+        #     attack_bc = []
+        #     attack_dc = []
+        #     for n in attack_lst:
+        #         for node in weight_normal:
+        #             if n == node[0]:
+        #                 attack_weight.append(node)
+        #     for n in attack_lst:
+        #         for node in bc_normal:
+        #             if n == node[0]:
+        #                 attack_bc.append(node)
+        #     for n in attack_lst:
+        #         for node in dc_normal:
+        #             if n == node[0]:
+        #                 attack_dc.append(node)
+        #     active_nodes = active_node(iner_matrix)
+        #     target_node = parent_choose(attack_bc, attack_dc, attack_weight)
 
-        if len(active_nodes)!= 0 and len(attack_list)==0:
-            print('akhkhkhkhkhhhhhhhhhhhh')
-            main_graph = create_main_graph(iner_matrix, Label)
-            weight_list_avrg = deepcopy(primitive_averg_weight_duble)
-            weight_list_triple = deepcopy(primitive_weight_triple)
-            bc = closeness_btw(main_graph)
-            dc = closeness_deg(main_graph)
-            bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
-            dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
-            print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
-            weight_list_reverse = []
-            for n in weight_list_avrg:
-                temp_n = []
-                temp_n.append(n[1])
-                temp_n.append(n[0])
-                weight_list_reverse.append(temp_n)
-            weight_normal = normalize(weight_list_reverse)
-            bc_normal = normalize(bc_sort)
-            dc_normal = normalize(dc_sort)
-            attack_weight = []
-            attack_bc = []
-            attack_dc = []
-            for n in attack_lst:
-                for node in weight_normal:
-                    if n == node[0]:
-                        attack_weight.append(node)
-            for n in attack_lst:
-                for node in bc_normal:
-                    if n == node[0]:
-                        attack_bc.append(node)
-            for n in attack_lst:
-                for node in dc_normal:
-                    if n == node[0]:
-                        attack_dc.append(node)
-            active_nodes = active_node(iner_matrix)
-            target_node = parent_choose(attack_bc, attack_dc, attack_weight)
+        children,  mut , permanent_parent_lst = generation(mutation_portion, crossover, sorted_lst)
 
-        print ('heeeeeeeeeeeeeeey target:' , target_node)
         for i in range(len(p)):
             cost = cost_count(main_graph, [target_node], p[i])
             cost_lst[i] = cost_lst[i] + cost[0][1]
@@ -934,6 +966,7 @@ def GA_dis (main_matrix , attack_list, primitive_averg_weight_duble, primitive_w
     return connectivity_lst, cost_lst
 
 
+#___________________Greedy_____________
 def Greedy_disintegration (main_matrix, map_dic , primitive_averg_weight_duble, primitive_weight_triple):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
@@ -1455,6 +1488,8 @@ def q_learning(main_matrix, p , landa , gama, q_table):
 def q_learning_episodic(total_node , episode, main_matrix, p, landa, gama):
     q_table = table_initiator_Q(total_node)
 
+
+
     for i in range(episode):
         conct_lst, cost , q_value , target_nodes_lst , q_table = q_learning(main_matrix, p, landa, gama, q_table)
     print('Q_Table' , q_table)
@@ -1591,6 +1626,7 @@ print('Map_dic:' , Map_dic)
 print('Total_node:' , Total_Node)
 Attack_Nodes = random_atthck_nodes(list_of_nodes)
 Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+print('attack_map::::::::::', Attack_Map)
 Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
 Main_Graph = create_main_graph(Main_Matrix, Label)
 Main_Conct = connectivity_count(Main_Graph)
@@ -1602,10 +1638,10 @@ Main_Conct = connectivity_count(Main_Graph)
 # print('cost_DEG:' , Cost_DEG)
 # Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
 # print('cost_Rand:' , Cost_Rand)
-# Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
-# print('cost_weight:' , Cost_Weight)
-# Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
-# print('cost_GA:' , Cost_GA)
+Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
+print('cost_weight:' , Cost_Weight)
+Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight)
+print('cost_GA:' , Cost_GA)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 # print('cost_greedy:', Cost_Greedy)
 # Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
@@ -1627,7 +1663,7 @@ Main_Conct = connectivity_count(Main_Graph)
 
 #Q_Table = q_learning_episodic(Total_Node , 1, Main_Matrix, 1, 0.1, 0.9)
 
-H_Table = automata_learn_episodic(Total_Node, 2, Main_Matrix, 1, 0.2)
+#H_Table = automata_learn_episodic(Total_Node, 2, Main_Matrix, 1, 0.2)
 
 # conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Main_Matrix,Rand_Node, 0.0)
 # print('Target_Node_Lst_Q: ' , Target_Node_Lst_Q)
