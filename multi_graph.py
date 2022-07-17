@@ -820,55 +820,41 @@ def fitness_arrenge(bc, dc, uw):
         return node_lst
 
 
-def GA_target_node(mutation_portion , crossover_portion, sorted_lst : list, main_graph, main_matrix, evolution,
+def GA_target_node(mutation_portion , crossover_portion, sorted_lst, main_graph, main_matrix, evolution,
                primitive_weight_duble, primitive_weight_triple ):
-    general_target_node = 0
+    target_node = 0
     print('sorted_lst in GA_target_node:', sorted_lst)
     print('sorted_lst type: ', type(sorted_lst))
-    for i in range(evolution):
-        print('sorted_lst in GA for:', sorted_lst)
-        if sorted_lst != None:
-            last_sorted_lst = sorted_lst
-            mut , permanent_parent_lst , children = split_list(sorted_lst, mutation_portion, crossover_portion)
-            new_list = crossover(children, main_matrix)
-            if new_list != None:
-                weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , new_list )
-                node_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
-                if node_lst != None:
-                    new_mut,new_per_par, new_children = split_list(node_lst, mutation_portion, crossover_portion)
-                    generation = []
-                    for i in mut:
-                        generation.append(i)
-                    for i in new_mut:
-                        generation.append(i)
-                    for i in permanent_parent_lst:
-                        generation.append(i)
-                    for i in new_per_par:
-                        generation.append(i)
-                    for i in new_children:
-                        generation.append(i)
-                    if generation == None:
-                        general_target_node= last_sorted_lst[-1]
-                        print('target_node in generation breack:', general_target_node)
-                        return general_target_node
-                    else:
-                        print('generation before getting target_node in else', generation)
-                        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple,
-                                                                    main_graph , generation)
-                        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
-                else:
-                    target_node = last_sorted_lst[-1]
-                    print('target_node in node_lst breack:', target_node)
-                    return target_node
-            else:
-                target_node = last_sorted_lst[-1]
-                print('target_node in new_list breack:', target_node)
-                return target_node
-        # else:
-        #     target_node = last_sorted_lst[-1]
-        #     print('target_node in  final breack:', target_node)
-        #     return target_node
-        # return target_node
+    i = 0
+    while sorted_lst != None or i < evolution:
+        target_node = sorted_lst[-1]
+        mut , permanent_parent_lst , children = split_list(sorted_lst, mutation_portion, crossover_portion)
+        sorted_lst = crossover(children, main_matrix)
+        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , sorted_lst )
+        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
+        new_mut,new_per_par, new_children = split_list(sorted_lst, mutation_portion, crossover_portion)
+        generation = []
+        for i in mut:
+            generation.append(i)
+        for i in new_mut:
+            generation.append(i)
+        for i in permanent_parent_lst:
+            generation.append(i)
+        for i in new_per_par:
+            generation.append(i)
+        for i in new_children:
+            generation.append(i)
+        sorted_lst = generation
+        print('generation before getting target_node in else', generation)
+        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple,
+                                                                    main_graph , sorted_lst)
+        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
+        print('sorted_lst in generation part:', sorted_lst)
+
+        i = i+1
+    return target_node
+
+
 
 def split_list(sorted_lst, mutation_portion, crossover):
     print('sorted_lstttttttttttttt:' , sorted_lst)
@@ -907,22 +893,29 @@ def crossover(children, main_martix):
     return crossover_lst
 
 
-def GA_dis (main_matrix , primitive, primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion, evolution):
+def list_initiate(main_matrix, main_graph):
+        initiator = random_atthck_nodes(list_of_nodes)
+        Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator )
+        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
+        print('sorted_lstttttttttttttt in main  ', sorted_lst)
+        print('active_nodes in do while:',active_nodes)
+        print ('initiate_lst in do while list:',sorted_lst)
+    return
+
+
+def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion, evolution):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
-    initiator = deepcopy(primitive)
-    init_len = len(initiator)
+    #initiator = deepcopy(primitive)
+    #init_len = len(initiator)
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix, Label)
-    weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator )
-    sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
-    print('sorted_lstttttttttttttt in main  ', sorted_lst)
     connectivity_lst = []
     connectivity_lst.append(1)
     active_nodes = active_node(iner_matrix)
     while len(active_nodes) != 0:
-        print('active_nodes in do while:',active_nodes)
-        print ('initiate_lst in do while list:',sorted_lst)
+
         if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly in GA')
             return connectivity_lst, cost_lst
@@ -970,6 +963,7 @@ def GA_dis (main_matrix , primitive, primitive_weight_duble, primitive_weight_tr
 
         target_node = GA_target_node(mutation_portion , crossover, sorted_lst, main_graph, main_matrix, evolution,
                primitive_weight_duble, primitive_weight_triple )
+        print('target_node in GA_dis:', target_node)
         for i in range(len(p)):
             cost = cost_count(main_graph, [target_node], p[i])
             cost_lst[i] = cost_lst[i] + cost[0][1]
@@ -1150,6 +1144,7 @@ def table_initiator_Q(total_node):
 
 
 def cost_count(main_graph , actv_lst , p):
+    print('active list in cost_count:', actv_lst)
     # just cost counting for each member of attack list
     #p = [0, 0.5, 1, 1.5, 2]
     degree = closeness_deg(main_graph)
@@ -1697,7 +1692,7 @@ Main_Conct = connectivity_count(Main_Graph)
 # print('cost_Rand:' , Cost_Rand)
 Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
 print('cost_weight:' , Cost_Weight)
-Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight, 0.9, 0.05, 20)
+Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight, 0.9, 0.05, 5)
 print('cost_GA:' , Cost_GA)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 # print('cost_greedy:', Cost_Greedy)
