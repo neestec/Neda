@@ -183,12 +183,21 @@ def Create_List_of_Nodes(List_Struct):
     return list_of_Node , list_of_Node_lables
 
 
-def random_atthck_nodes(list_of_nodes ):
+def random_atthck_nodes(list_of_nodes):
     #print('len(list_of_nodes):',len(list_of_nodes))
+
     attacked_number = math.floor(len(list_of_nodes)/4)
     #print('attacken number on nodes:', attacked_number)
     attacked_list = random.sample(list_of_nodes, attacked_number)
     #print('attacked nodes:', attacked_list)
+    return attacked_list
+
+def random_atthck_nodes_GA(list_of_nodes , size ):
+    #print('len(list_of_nodes):',len(list_of_nodes))
+    if len(list_of_nodes) > size:
+        attacked_list = random.sample(list_of_nodes, size)
+    else:
+        attacked_list = list_of_nodes
     return attacked_list
 
 
@@ -361,6 +370,7 @@ def disintegration (node, main_matrix, attack_list):
         if n not in attack_list:
             attack_list.append(n)
     final_attack_list = list(set(attack_list))
+    print('diiiiiiiiiiiiiiissssssssssssssssssssss')
     return final_attack_list , main_matrix
 
 
@@ -690,7 +700,6 @@ def attack_maping(attack_list, map_dic):
     return attack_map
 
 
-#------------------ GA-------------
 def normalize(abnormal_list):
     ab_normal_list = deepcopy(abnormal_list)
     # list ha jofti hastan. aval bayad yek ozvishoon kinim bad aza ro normal konim, bad dobare set konim.
@@ -726,7 +735,7 @@ def normalize(abnormal_list):
         return normal_list_final
     else:
         return []
-
+#------------------ GA-------------
 
 def fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator ):
     weight_list_avrg = deepcopy(primitive_weight_duble)
@@ -820,91 +829,121 @@ def fitness_arrenge(bc, dc, uw):
         return node_lst
 
 
-def GA_target_node(mutation_portion , crossover_portion, sorted_lst, main_graph, main_matrix, evolution,
+def split_list(sorted_lst:list, len,  mutation_portion, crossover_portion):
+    print('sorted_lst in split:' , sorted_lst)
+    print('type:', type(sorted_lst))
+    
+
+    mut_of_len= math.ceil( mutation_portion* len)
+    mut_of_sorted = math.ceil((mut_of_len * n)/ len)
+    m = n -mut_of_sorted
+    mut_lst = []
+    for i in range(mut_of_sorted):
+        mut_lst.append(sorted_lst[i])
+    mut_final = random.sample(mut_lst, mut_of_len)
+
+    x = len-mut_of_len
+    m = n -mut_of_sorted
+    crossover_of_len= math.ceil( crossover_portion*x)
+    crossover_of_sorted = math.ceil((crossover_of_len * m)/ x)
+    crossover_lst = []
+    for i in range(m):
+        crossover_lst.append(sorted_lst[i+mut_of_sorted])
+    children = random.sample(crossover_lst, crossover_of_len)
+
+    z = x-crossover_of_len
+    parent = []
+    for i in crossover_lst:
+        if i not in children:
+            parent.append(i)
+
+    permanent_parent_lst = random.sample(parent, z)
+
+    print('mut_final:' , mut_final , 'permanent_parent_lst:', permanent_parent_lst , 'children:' , children)
+    return mut_final , permanent_parent_lst , children
+
+
+def crossover(children, main_martix):
+    neigh = []
+    final_neigh = []
+    for i in children:
+        for j in range(Total_Node):
+            if main_martix[j][i] == 1:
+                neigh.append(j)
+    print('neighhhhhhhhhhhhhhhh:', neigh )
+    print('neigh len:', len(neigh))
+    for i in neigh:
+        if i not in final_neigh:
+            final_neigh.append(i)
+
+    crossover_lst = list(set(final_neigh))
+    print('crossoverrrrrrrrrrrr', crossover_lst)
+    print('crossover len:', len(final_neigh))
+    return crossover_lst
+
+
+def list_initiate(main_matrix, generation_size):
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix, Label)
+    active_nodes = active_node(iner_matrix)
+    initiator = random_atthck_nodes_GA(active_nodes, generation_size)
+
+    return initiator
+
+
+def list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst):
+    weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst )
+    sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
+    return sorted_lst
+
+
+def list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_children):
+    GA_initiator = []
+    for i in mut:
+        GA_initiator.append(i)
+    for i in new_mut:
+        GA_initiator.append(i)
+    for i in permanent_parent_lst:
+        GA_initiator.append(i)
+    for i in new_per_par:
+        GA_initiator.append(i)
+    for i in new_children:
+        GA_initiator.append(i)
+    return GA_initiator
+
+
+def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generation_size, main_graph, main_matrix, evolution,
                primitive_weight_duble, primitive_weight_triple ):
-    target_node = 0
-    print('sorted_lst in GA_target_node:', sorted_lst)
-    print('sorted_lst type: ', type(sorted_lst))
+    iner_init = deepcopy(initiate_lst)
+    iner_matrix = deepcopy(main_matrix)
+    sorted_lst= iner_init
+    print('sorted_lst in GA_target_node:', initiate_lst)
+    print('sorted_lst type: ', type(initiate_lst))
     i = 0
-    while sorted_lst != None or i < evolution:
+    while sorted_lst != None or i < evolution or iner_init!= None:
+        if len(sorted_lst) < generation_size:
+            target_node = sorted_lst[-1]
+            return
+        sorted_lst = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
         target_node = sorted_lst[-1]
-        mut , permanent_parent_lst , children = split_list(sorted_lst, mutation_portion, crossover_portion)
-        sorted_lst = crossover(children, main_matrix)
-        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , sorted_lst )
-        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
-        new_mut,new_per_par, new_children = split_list(sorted_lst, mutation_portion, crossover_portion)
-        generation = []
-        for i in mut:
-            generation.append(i)
-        for i in new_mut:
-            generation.append(i)
-        for i in permanent_parent_lst:
-            generation.append(i)
-        for i in new_per_par:
-            generation.append(i)
-        for i in new_children:
-            generation.append(i)
-        sorted_lst = generation
-        print('generation before getting target_node in else', generation)
-        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple,
-                                                                    main_graph , sorted_lst)
-        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
+        sorted_len = len(sorted_lst)
+        mut , permanent_parent_lst , children = split_list(sorted_lst, sorted_len,  mutation_portion, crossover_portion)
+        children_len = len(children)
+        iner_init = crossover(children, iner_matrix)
+        print('crossoverrrrrrrrrrrrrr: ', iner_init)
+        sorted_lst = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
+        new_mut,new_per_par, new_children = split_list(sorted_lst, children_len, mutation_portion, crossover_portion)
+        iner_init = list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_children)
+        print('generation before while', initiate_lst)
+        print('generation after generation:', iner_init)
+
         print('sorted_lst in generation part:', sorted_lst)
 
         i = i+1
     return target_node
 
 
-
-def split_list(sorted_lst, mutation_portion, crossover):
-    print('sorted_lstttttttttttttt:' , sorted_lst)
-    n = len(sorted_lst)
-    mut= math.ceil( mutation_portion* n)
-    m = n -mut
-    print('mutation:' , mut)
-    mut_lst = []
-    for i in range(mut):
-        mut_lst.append(sorted_lst[i])
-    crossover_lst = []
-    for i in range(m):
-        crossover_lst.append(sorted_lst[i+mut])
-    permanent_parent_len = math.ceil((1-crossover)* m) # portion of permanent parent
-    mut_lst = random.sample(mut_lst, mut)
-    len_children = (n - mut - permanent_parent_len)
-    permanent_parent_lst = random.sample(crossover_lst, permanent_parent_len)
-    for i in permanent_parent_lst:
-        if i in crossover_lst:
-            index = crossover_lst.index(i)
-            crossover_lst.pop(index)
-    children = []
-    children = random.sample(crossover_lst, len_children)
-
-    return mut_lst , permanent_parent_lst , children
-
-
-def crossover(children, main_martix):
-    neigh = []
-    for i in children:
-        for j in range(Total_Node):
-            if main_martix[j][i] == 1:
-                if i not in neigh:
-                    neigh.append(i)
-    crossover_lst = list(set(neigh))
-    return crossover_lst
-
-
-def list_initiate(main_matrix, main_graph):
-        initiator = random_atthck_nodes(list_of_nodes)
-        Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-        weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator )
-        sorted_lst = fitness_arrenge(bc_lst, dc_lst, weight_lst)
-        print('sorted_lstttttttttttttt in main  ', sorted_lst)
-        print('active_nodes in do while:',active_nodes)
-        print ('initiate_lst in do while list:',sorted_lst)
-    return
-
-
-def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion, evolution):
+def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple ,generation_size, crossover, mutation_portion, evolution):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
     #initiator = deepcopy(primitive)
@@ -919,49 +958,15 @@ def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , cros
         if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly in GA')
             return connectivity_lst, cost_lst
-        for node in sorted_lst:
-            if node not in active_nodes:
-                index = sorted_lst.index(node)
-                sorted_lst.pop(index)
-                print('alone node hase deleted: ', node)
-        # if len(active_nodes)!= 0 and len(sorted_lst)==0:
-        #
-        #     main_graph = create_main_graph(iner_matrix, Label)
-        #     weight_list_avrg = deepcopy(primitive_averg_weight_duble)
-        #     weight_list_triple = deepcopy(primitive_weight_triple)
-        #     bc = closeness_btw(main_graph)
-        #     dc = closeness_deg(main_graph)
-        #     bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
-        #     dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
-        #     print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort , "\n", 'attack_lst:', attack_lst)
-        #     weight_list_reverse = []
-        #     for n in weight_list_avrg:
-        #         temp_n = []
-        #         temp_n.append(n[1])
-        #         temp_n.append(n[0])
-        #         weight_list_reverse.append(temp_n)
-        #     weight_normal = normalize(weight_list_reverse)
-        #     bc_normal = normalize(bc_sort)
-        #     dc_normal = normalize(dc_sort)
-        #     attack_weight = []
-        #     attack_bc = []
-        #     attack_dc = []
-        #     for n in attack_lst:
-        #         for node in weight_normal:
-        #             if n == node[0]:
-        #                 attack_weight.append(node)
-        #     for n in attack_lst:
-        #         for node in bc_normal:
-        #             if n == node[0]:
-        #                 attack_bc.append(node)
-        #     for n in attack_lst:
-        #         for node in dc_normal:
-        #             if n == node[0]:
-        #                 attack_dc.append(node)
-        #     active_nodes = active_node(iner_matrix)
-        #     target_node = parent_choose(attack_bc, attack_dc, attack_weight)
 
-        target_node = GA_target_node(mutation_portion , crossover, sorted_lst, main_graph, main_matrix, evolution,
+        initiate_lst = list_initiate(iner_matrix, generation_size)
+        for node in initiate_lst:
+            if node not in active_nodes:
+                index = initiate_lst.index(node)
+                initiate_lst.pop(index)
+                print('alone node hase deleted: ', node)
+
+        target_node = GA_target_node(mutation_portion , crossover, initiate_lst, generation_size , main_graph, main_matrix, evolution,
                primitive_weight_duble, primitive_weight_triple )
         print('target_node in GA_dis:', target_node)
         for i in range(len(p)):
@@ -978,42 +983,6 @@ def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , cros
         if len(active_nodes)== 0:
             print ('Network has disintegrated successfuly in GA')
             return connectivity_lst, cost_lst
-        #main_graph = create_main_graph(iner_matrix, Label)
-        # bc = closeness_btw(main_graph)
-        # dc = closeness_deg(main_graph)
-        # bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
-        # dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
-        # # dobare vazn nodha ro hesab mikonim
-        # print('weight_list_reverse:  in recursive: ' , weight_list_reverse , "\n", 'active_nodes in recursive:' , active_nodes)
-        # node_averg = weight_account_copy(weight_list_triple, active_nodes)
-        # attack_weight = attack_weight_sort_copy(attack_lst , node_averg )
-        # weight_list_reverse = []
-        # for n in node_averg:
-        #     temp_n = []
-        #     temp_n.append(n[1])
-        #     temp_n.append(n[0])
-        #     weight_list_reverse.append(temp_n)
-        # weight_normal = normalize(weight_list_reverse)
-        # bc_normal = normalize(bc_sort)
-        # dc_normal = normalize(dc_sort)
-        # #motabeghe node haye attack az bd , dc , weight mikeshe biron
-        # attack_weight = []
-        # attack_bc = []
-        # attack_dc = []
-        # for n in attack_lst:
-        #     for node in weight_normal:
-        #         if n == node[0]:
-        #             attack_weight.append(node)
-        # for n in attack_lst:
-        #     for node in bc_normal:
-        #         if n == node[0]:
-        #             attack_bc.append(node)
-        # for n in attack_lst:
-        #     for node in dc_normal:
-        #         if n == node[0]:
-        #             attack_dc.append(node)
-        # target_node = parent_choose(attack_bc, attack_dc, attack_weight)
-        # print('target_node in last step of dis : ',target_node)
     return connectivity_lst, cost_lst
 
 
@@ -1692,7 +1661,7 @@ Main_Conct = connectivity_count(Main_Graph)
 # print('cost_Rand:' , Cost_Rand)
 Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
 print('cost_weight:' , Cost_Weight)
-Connectivity_GA, Cost_GA = GA_dis(Main_Matrix, Attack_Map , Primitive_Weight_Avrg , Primitive_List_of_Weight, 0.9, 0.05, 5)
+Connectivity_GA, Cost_GA = GA_dis(Main_Matrix , Primitive_Weight_Avrg , Primitive_List_of_Weight, 10 , 0.9, 0.05, 2)
 print('cost_GA:' , Cost_GA)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 # print('cost_greedy:', Cost_Greedy)
