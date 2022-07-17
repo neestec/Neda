@@ -829,29 +829,22 @@ def fitness_arrenge(bc, dc, uw):
         return node_lst
 
 
-def split_list(sorted_lst:list, len,  mutation_portion, crossover_portion):
-    print('sorted_lst in split:' , sorted_lst)
-    print('type:', type(sorted_lst))
-    
-
+def split_initial_lst(initiate_lst, len,  mutation_portion, crossover_portion):
+    print('initiated list in split:' , initiate_lst)
+    print('type:', type(initiate_lst))
     mut_of_len= math.ceil( mutation_portion* len)
-    mut_of_sorted = math.ceil((mut_of_len * n)/ len)
-    m = n -mut_of_sorted
     mut_lst = []
-    for i in range(mut_of_sorted):
-        mut_lst.append(sorted_lst[i])
-    mut_final = random.sample(mut_lst, mut_of_len)
+    for i in range(mut_of_len):
+        mut_lst.append(initiate_lst[i])
 
-    x = len-mut_of_len
-    m = n -mut_of_sorted
-    crossover_of_len= math.ceil( crossover_portion*x)
-    crossover_of_sorted = math.ceil((crossover_of_len * m)/ x)
+    m = len -mut_of_len
+    crossover_of_len = math.ceil( crossover_portion*m)
     crossover_lst = []
     for i in range(m):
-        crossover_lst.append(sorted_lst[i+mut_of_sorted])
+        crossover_lst.append(initiate_lst[i+mut_of_len])
     children = random.sample(crossover_lst, crossover_of_len)
 
-    z = x-crossover_of_len
+    z = m-crossover_of_len
     parent = []
     for i in crossover_lst:
         if i not in children:
@@ -859,8 +852,41 @@ def split_list(sorted_lst:list, len,  mutation_portion, crossover_portion):
 
     permanent_parent_lst = random.sample(parent, z)
 
-    print('mut_final:' , mut_final , 'permanent_parent_lst:', permanent_parent_lst , 'children:' , children)
-    return mut_final , permanent_parent_lst , children
+    print('mut_lst:' , mut_lst , 'permanent_parent_lst:', permanent_parent_lst , 'children:' , children)
+    return mut_lst , permanent_parent_lst , children # , len(mut_lst), len(permanent_parent_lst), len(children)
+
+
+
+def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion):
+    #children counting
+    mutation_count = mutation_portion*children_len
+    cross_count = (crossover_portion* (children_len-mutation_count))
+    parent_count = children_len - mutation_count-cross_count
+
+    #cross_list counting
+    mut_cross_len =math.ceil( mutation_portion* crossover_lst_len)
+    cross_cross_len = math.ceil(crossover_portion* (crossover_lst_len-mut_cross_len))
+    parent_cross_len = crossover_lst_len - mut_cross_len - cross_cross_len
+
+    # create seperatedl list of cross_lst_sorted
+    mut_cross_lst = []
+    for i in range(mut_cross_len):
+        mut_cross_lst.append(crossover_lst_sorted[i])
+
+    cross_cross_lst = []
+    for i in range(cross_cross_len):
+        cross_cross_lst.append(crossover_lst_sorted[i+mut_cross_len])
+
+    # select cross
+    mut_final = random.sample(mut_cross_lst, mutation_count)
+    children = random.sample(cross_cross_lst, cross_count)
+    parent = []
+    for i in cross_cross_lst:
+        if i not in children:
+            parent.append(i)
+
+    print('mut_final:' , mut_final , 'parent:', parent , 'children:' , children)
+    return mut_final , parent , children
 
 
 def crossover(children, main_martix):
@@ -882,13 +908,13 @@ def crossover(children, main_martix):
     return crossover_lst
 
 
-def list_initiate(main_matrix, generation_size):
+def list_initiate(main_matrix):
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix, Label)
     active_nodes = active_node(iner_matrix)
-    initiator = random_atthck_nodes_GA(active_nodes, generation_size)
-
-    return initiator
+    initiator = random_atthck_nodes(active_nodes)
+    generation_size = len (initiator)
+    return initiator, generation_size
 
 
 def list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst):
@@ -916,34 +942,34 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
                primitive_weight_duble, primitive_weight_triple ):
     iner_init = deepcopy(initiate_lst)
     iner_matrix = deepcopy(main_matrix)
-    sorted_lst= iner_init
+
     print('sorted_lst in GA_target_node:', initiate_lst)
     print('sorted_lst type: ', type(initiate_lst))
     i = 0
-    while sorted_lst != None or i < evolution or iner_init!= None:
-        if len(sorted_lst) < generation_size:
-            target_node = sorted_lst[-1]
+    while iner_init != None or i < evolution or iner_init!= None:
+        if len(iner_init) < generation_size:
+            print('list is shorter than generation')
+            target_node = iner_init[-1]
             return
+        target_node = iner_init[-1]
         sorted_lst = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
         target_node = sorted_lst[-1]
         sorted_len = len(sorted_lst)
-        mut , permanent_parent_lst , children = split_list(sorted_lst, sorted_len,  mutation_portion, crossover_portion)
+        mut , permanent_parent_lst , children = split_initial_lst(sorted_lst, generation_size,  mutation_portion, crossover_portion)
         children_len = len(children)
-        iner_init = crossover(children, iner_matrix)
-        print('crossoverrrrrrrrrrrrrr: ', iner_init)
-        sorted_lst = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
-        new_mut,new_per_par, new_children = split_list(sorted_lst, children_len, mutation_portion, crossover_portion)
+        crossover_lst = crossover(children, iner_matrix)
+        print('crossover before split in target_node methode: ', crossover_lst)
+        crossover_lst_sorted = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
+        crossover_lst_len = len(crossover_lst)
+        new_mut,new_per_par, new_children = split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion)
         iner_init = list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_children)
         print('generation before while', initiate_lst)
         print('generation after generation:', iner_init)
-
-        print('sorted_lst in generation part:', sorted_lst)
-
         i = i+1
     return target_node
 
 
-def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple ,generation_size, crossover, mutation_portion, evolution):
+def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion, evolution):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
     #initiator = deepcopy(primitive)
@@ -959,7 +985,7 @@ def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple ,gener
             print ('Network has disintegrated successfuly in GA')
             return connectivity_lst, cost_lst
 
-        initiate_lst = list_initiate(iner_matrix, generation_size)
+        initiate_lst , generation_size = list_initiate(iner_matrix)
         for node in initiate_lst:
             if node not in active_nodes:
                 index = initiate_lst.index(node)
@@ -1661,7 +1687,7 @@ Main_Conct = connectivity_count(Main_Graph)
 # print('cost_Rand:' , Cost_Rand)
 Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
 print('cost_weight:' , Cost_Weight)
-Connectivity_GA, Cost_GA = GA_dis(Main_Matrix , Primitive_Weight_Avrg , Primitive_List_of_Weight, 10 , 0.9, 0.05, 2)
+Connectivity_GA, Cost_GA = GA_dis(Main_Matrix , Primitive_Weight_Avrg , Primitive_List_of_Weight , 0.9, 0.05, 2)
 print('cost_GA:' , Cost_GA)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix, Map_dic, Primitive_Weight_Avrg, Primitive_List_of_Weight)
 # print('cost_greedy:', Cost_Greedy)
