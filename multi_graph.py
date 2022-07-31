@@ -19,10 +19,12 @@ import pandas as pd
 from operator import itemgetter
 import matplotlib.pyplot as plt
 import ga
+import pickle
 
 
 
-def list_node():
+
+def list_node_init():
     """gets layers count as an int variation layer_n
     for each layer creates a random int number of nodes as a member of list_node
     returns list of layer nodes as list_node"""
@@ -114,7 +116,9 @@ def create_matrix(list_node):
     create adjacency matrix for each matrix using g.get_adjacency() """
     n = len(list_node)  # number of layers , list_node= list of nodes in each layer
     #print ('layer number:', n)
+    print('sign111111111111')
     total_mtrx = np.zeros((n, n), dtype="object", order='c')
+    print('sign22222222222222222')
     # total_mtrx = np.empty((n, n, n, n ), dtype="int", order='c')
     #print('total_mtrx:', total_mtrx)
     i = 0
@@ -127,6 +131,7 @@ def create_matrix(list_node):
         m = list_node[l]
         #print ('l:' , l , 'list_node[l]: ' , m)
         adjc_mtrx = random_weighted_graph(m) # craete random weighted graph for each layer. l = number of nodes
+        print('sign333333333333333')
         #adjc_mtrx = g.get_adjacency()
         #print('xxxxxx:', adjc_mtrx)
         total_mtrx[i][j] = adjc_mtrx
@@ -139,6 +144,7 @@ def create_matrix(list_node):
     for p in comb:
         #print ('number of biprt edge:' , p[5], 'B1:', p[2] , 'B3', p[4])
         G = nx.bipartite.gnmk_random_graph(p[2], p[4], p[5])
+        print('sign44444444444444')
         G_lenth =(p[6])
         Row_order = range(G_lenth)
         #print ('row_order:', Row_order)
@@ -150,8 +156,8 @@ def create_matrix(list_node):
         #G_dens = csr_matrix.todense(G_adj)
         G_array = csr_matrix.toarray(G_adj)
         #print('G_array:', G_array, G_array.ndim , G_array[0], len(G_array[0]), G_array[0][0])
-
-        dens_matrx= np.zeros((G_lenth, G_lenth), order='c')
+        #total_mtrx = np.zeros((n, n), dtype="object", order='c')
+        dens_matrx= np.zeros((G_lenth, G_lenth) , order='c')
         #dtype="object"
         print('ppppppppppppppppppppppppppppppppppp')
         for i in range(G_lenth):
@@ -171,7 +177,8 @@ def create_matrix(list_node):
     #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
 
     print('totttttttttttttttttttttttttttttt:')
-    # print(len(total_mtrx))
+    print(type(total_mtrx))
+    print('total_mtrx', total_mtrx)
     return total_mtrx
 
 
@@ -215,12 +222,14 @@ def random_atthck_nodes_GA(list_of_nodes , size ):
 
 def attacked_node_struct(attacked_nodes):
     #print('---attacked_nodes which passed to attacked_node_struct:', attacked_nodes)
+    ls = np.load('List_Struct.npy' )
+    list_struct = deepcopy(ls)
     node_struct = []
     for node in attacked_nodes:
         node_struct_temp = []
         layer = node[0]
         node_num = node[1]# index of attacked node in its layer
-        Struct = List_Struct[layer]# get struct if the layer that belongs to attacked node
+        Struct = list_struct[layer]# get struct if the layer that belongs to attacked node
         layer_Node_Number = Struct[1]# getting Node_Number and wide of adjacency matrix
         node_struct_temp.append(layer)
         node_struct_temp.append(node_num)
@@ -251,27 +260,41 @@ def node_Mapping(list_of_Node):
     for node in list_of_Node:
         map_dic[i] = node
         i = i+1
-    np.save('Map_dic' , map_dic , allow_pickle=True)
-    np.save('Total_Node' , i , allow_pickle=True)
-    print('Map_dic:' , map_dic)
-    print('Total_node:' , i)
-    return map_dic , i
+    print('data type of map_dic ', type(map_dic))
+    # create a binary pickle file
+    with open('Map_dic.pkl', 'wb') as f:
+        pickle.dump(map_dic,f, protocol=pickle.HIGHEST_PROTOCOL)
+    # np.save('Map_dic' , map_dic , allow_pickle=False)
+    np.save('Total_Node', i, allow_pickle=True)
+    print('Map_dic:', map_dic)
+    print('Total_node:', i)
+    return map_dic, i
 
 
 def create_index_list(i , total_node):
+    with open('Map_dic.pkl', 'rb') as handle:
+        map_dic = pickle.load(handle)
+    #map_dic = pickle.load('Map_dic.npy', allow_pickle=True)
+    iner_map_dic= deepcopy(map_dic)
+    print('data type after convert ', type(iner_map_dic))
+    print('iner_map_dic', iner_map_dic)
+    print(iner_map_dic[0])
+    print(len(iner_map_dic))
     index_list = []
     for a in range(total_node):
-        temp_node = Map_dic[a]
-        if temp_node[0] == i:
+        temp_node = iner_map_dic[a]
+        if temp_node[0]== i:
             index_list.append(a)
+    print('index_list' , index_list)
     return index_list
-
 
 def create_major_matrix(Total_Matrix, Layer_Count):
     # main graph ro misaze
     # Map_dic, Total_Node = node_Mapping(list_of_nodes) / Inha ro darim
     # list_node_initial , Layen_Count = list_node()
-    main_matrix = np.zeros((Total_Node, Total_Node), dtype="int", order='c')
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
+    main_matrix = np.zeros((iner_total_node, iner_total_node), dtype="int", order='c')
     index_list = []
     temp_node = []
     z = 0
@@ -279,7 +302,7 @@ def create_major_matrix(Total_Matrix, Layer_Count):
         for j in range(Layer_Count):
             matrix = Total_Matrix[i][j]
             if i == j:
-                index_list = create_index_list(i, Total_Node)
+                index_list = create_index_list(i, iner_total_node)
                 for b in range(len(index_list)):
                     for c in range(len(index_list)):
                         main_matrix[index_list[b]][index_list[c]] = matrix[b][c]
@@ -287,8 +310,8 @@ def create_major_matrix(Total_Matrix, Layer_Count):
 
             else:
                 bi_index_list = []
-                index_list1 = create_index_list(i , Total_Node)
-                index_list2 = create_index_list(j , Total_Node)
+                index_list1 = create_index_list(i , iner_total_node)
+                index_list2 = create_index_list(j , iner_total_node)
                 for mp in index_list2:
                     index_list1.append(mp)
                     bi_index_list = index_list1
@@ -304,7 +327,7 @@ def create_major_matrix(Total_Matrix, Layer_Count):
     return main_matrix
 
 
-def create_main_graph(adjacency_matrix, labels):
+def create_main_graph_init(adjacency_matrix):
     # main graph ro namayesh midim
     rows, cols = np.where(adjacency_matrix == 1)
     edges = zip(rows.tolist(), cols.tolist())
@@ -316,7 +339,18 @@ def create_main_graph(adjacency_matrix, labels):
     return gr
 
 
-def create_main_graph_copy(adjacency_matrix, labels):
+def create_main_graph(adjacency_matrix):
+    # main graph ro namayesh midim
+    rows, cols = np.where(adjacency_matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    #nx.draw(gr, node_size=500,  with_labels=True)
+    #plt.show()
+    return gr
+
+
+def create_main_graph_copy(adjacency_matrix):
     # main graph ro namayesh midim
     # for i in range(Total_Node):
     #     for j in range(Total_Node):
@@ -354,18 +388,28 @@ def closeness_deg(main_graph):
 
 def attack_Node_Mapping(attack_list):
     # node haye attack ro be shomare haye jadid map mikone
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
+    map_dic = np.load('Map_dic.npy', allow_pickle= True)
+    iner_map_dic = deepcopy(map_dic)
     index_list = []
-    for a in range(Total_Node):
-        temp_node = Map_dic[a]
+    for a in range(iner_total_node):
+        temp_node = iner_map_dic[a]
         for node in attack_list:
             if temp_node == node:
                 index_list.append(a)
     return index_list
 
 
-def connectivity_count(main_graph):
+def connectivity_count_init(main_graph):
     connectivity = nx.average_node_connectivity(main_graph)
     np.save('Main_Conct' , connectivity , allow_pickle=True)
+    return connectivity
+
+
+def connectivity_count(main_graph):
+    connectivity = nx.average_node_connectivity(main_graph)
+    #np.save('Main_Conct' , connectivity , allow_pickle=True)
     return connectivity
 
 
@@ -374,13 +418,15 @@ def disintegration (node, main_matrix, attack_list):
     # main_matrix: matrix should updated by each disintegration step
     # attack_List: should update by each disintegration step
     # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
 
     neigh = []
     #print('in disintegrate:')
     #print (main_matrix , "\n", 'Node for attack: ', node)
     #print('Total_Node:', Total_Node, "\n", 'attack_list:',attack_list)
-    for i in range(Total_Node):
-        #print('i:', i, 'node', node)
+    for i in range(iner_total_node):
+        print('i:', i, 'node', node)
         if main_matrix[i][node] == 1:
             neigh.append(i)
             main_matrix[i][node] = 0
@@ -396,12 +442,15 @@ def disintegration (node, main_matrix, attack_list):
     return final_attack_list , main_matrix
 
 
-def closeness_dis(type , main_matrix):
+def closeness_dis(type) :
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1, 1.5, 2]
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    iner_main_conct = deepcopy(main_conct)
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
     attack_list = []
@@ -418,7 +467,7 @@ def closeness_dis(type , main_matrix):
         closeness = switcher.get(type,"Invalid type")
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
         if len(closeness) == 0:
-            print('final main matrix for other methodes: ', Main_Matrix)
+            print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
             return connectivity_lst, cost_lst
         else:
@@ -438,19 +487,22 @@ def closeness_dis(type , main_matrix):
 
             attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
             print ('iner_matrix in closeness recursive dis:', "\n", iner_matrix)
-            main_graph = create_main_graph(iner_matrix, Label)
+            main_graph = create_main_graph(iner_matrix)
             connectivity = connectivity_count(main_graph)
-            conct = (connectivity/Main_Conct)
+            conct = (connectivity/iner_main_conct)
             connectivity_lst.append(conct)
 
             print('connectivity_lst', connectivity_lst)
 
 
-def random_recursive_dis(main_matrix):
+def random_recursive_dis():
      cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
      p = [0.0, 0.5, 1.0, 1.5, 2]
+     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
      iner_matrix = deepcopy(main_matrix)
-     main_graph = create_main_graph(iner_matrix, Label)
+     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+     iner_main_conct = deepcopy(main_conct)
+     main_graph = create_main_graph(iner_matrix)
      connectivity_lst = []
      connectivity_lst.append(1)
      attack_list = []
@@ -461,7 +513,7 @@ def random_recursive_dis(main_matrix):
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
         print ('sorted:::', sort_order)
         if len(closeness) == 0:
-            print('final main matrix for other methodes: ', Main_Matrix)
+            print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
             return connectivity_lst , cost_lst
         else:
@@ -481,18 +533,19 @@ def random_recursive_dis(main_matrix):
                 cost = cost_count(main_graph, [rand_order_node], p[i])
                 cost_lst[i] = cost_lst[i] + cost[0][1]
             attack_list , iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
-            main_graph = create_main_graph(iner_matrix, Label)
+            main_graph = create_main_graph(iner_matrix)
             connectivity = connectivity_count(main_graph)
-            conct = (connectivity/Main_Conct)
+            conct = (connectivity/iner_main_conct)
             connectivity_lst.append(conct)
 
 
 def weight_def (main_matrix):
     # be ezaye har node ye vazne tasadofi ijad mikone va liste node haye faal ro ham tashkhis mide va barmigardoone
     list_of_weight = []
-
-    for i in range(Total_Node):
-        for j in range(Total_Node):
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
+    for i in range(iner_total_node):
+        for j in range(iner_total_node):
             node1 = []
             if main_matrix[i][j] ==1:
                 weight = np.random.randint(1, 20)
@@ -513,11 +566,13 @@ def weight_def (main_matrix):
     return list_of_weight
 
 
-def active_node(main_matrix):
+def active_node_init(main_matrix):
     #har bar ke matrix ro update mikonm va azash kam mishe in metode mire node haye zendash ro list mikone
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
     active_node =  []
-    for i in range(Total_Node):
-        for j in range(Total_Node):
+    for i in range(iner_total_node):
+        for j in range(iner_total_node):
             node1 = []
             if main_matrix[i][j] ==1:
                 node1.append(i)
@@ -529,6 +584,27 @@ def active_node(main_matrix):
             active_node_list.append(node[0])
     np.save('Active_Node' , active_node_list ,  allow_pickle=True)
     return active_node_list
+
+
+def active_node(main_matrix):
+    #har bar ke matrix ro update mikonm va azash kam mishe in metode mire node haye zendash ro list mikone
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
+    active_node =  []
+    for i in range(iner_total_node):
+        for j in range(iner_total_node):
+            node1 = []
+            if main_matrix[i][j] ==1:
+                node1.append(i)
+                node1.append(j)
+                active_node.append(node1)
+    active_node_list = []
+    for node in active_node:
+        if node[0] not in active_node_list:
+            active_node_list.append(node[0])
+    #np.save('Active_Node' , active_node_list ,  allow_pickle=True)
+    return active_node_list
+
 
 
 def average_count(list_node):
@@ -563,11 +639,10 @@ def average_count_copy(list_node):
     return weight_avr
 
 
-def weight_account(list_of_weight , active_nodes ):
+def weight_account_init(list_of_weight , active_nodes ):
     # vazn node haye active ro hesab mikone(methodesh ro farakhani mikone)
     # va tahesh ham list ro sort mikone
     node_and_avr_list = []
-
     for i in active_nodes:
         list_node_internal = []
         node_and_avr_temp = []
@@ -578,12 +653,30 @@ def weight_account(list_of_weight , active_nodes ):
         node_and_avr_temp.append(node_avr)
         node_and_avr_temp.append(i)
         node_and_avr_list.append(node_and_avr_temp)
-
     node_and_avr_list.sort()
-        #= sorted(node_and_avr_list)
     node_and_avr_list.reverse()
     np.save('Averg_Weight' , node_and_avr_list , allow_pickle=True)
     return node_and_avr_list
+
+
+def weight_account(list_of_weight , active_nodes ):
+    # vazn node haye active ro hesab mikone(methodesh ro farakhani mikone)
+    # va tahesh ham list ro sort mikone
+    node_and_avr_list = []
+    for i in active_nodes:
+        list_node_internal = []
+        node_and_avr_temp = []
+        for node in list_of_weight:
+            if i == node[0]:
+                list_node_internal.append(node)
+        node_avr = average_count(list_node_internal)
+        node_and_avr_temp.append(node_avr)
+        node_and_avr_temp.append(i)
+        node_and_avr_list.append(node_and_avr_temp)
+    node_and_avr_list.sort()
+    node_and_avr_list.reverse()
+    return node_and_avr_list
+
 
 
 def weight_account_copy(list_of_weight , active_nodes ):
@@ -658,39 +751,36 @@ def attack_weight_sort_copy(attack_node , node_avrg):
     return final_sorted_attack_node
 
 
-def weight_recursive_dis(main_matrix):
+def weight_recursive_dis():
      # recursive disintegration ro anjam mide
      #iner_main_matrix = [row[:] for row in main_matrix]
      cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
      p = [0.0, 0.5, 1.0, 1.5, 2]
+     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
      iner_main_matrix = deepcopy(main_matrix)
-     main_graph = create_main_graph(iner_main_matrix, Label)
+     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+     iner_main_conct = deepcopy(main_conct)
+     main_graph = create_main_graph(iner_main_matrix)
      connectivity_lst = []
      connectivity_lst.append(1)
      attack_list = []
-     list_of_weight  = weight_def (iner_main_matrix)
-     primitive_list_of_weight = deepcopy(list_of_weight)#******************
-     np.save('primitive_list_of_weight' , primitive_list_of_weight ,  allow_pickle=True)
+     avrag_weight = np.load('Averg_Weight.npy', allow_pickle= True)
+     iner_averg_weigh = deepcopy(avrag_weight)
+     print('iner_averg_weigh' , iner_averg_weigh)
+
      active_nodes = active_node(iner_main_matrix)
-     node_averg = weight_account(list_of_weight, active_nodes)
-     primitive_node_avrg = deepcopy(node_averg)#**********************
-     np.save('primitive_node_avrg' , primitive_node_avrg , allow_pickle=True)
-     attack_list.append(node_averg[0][1])
-     # print ('attack_list:;;;;;;;;;;;;;;;;', attack_list)
-     # print('intiatig;;;;;;;;;;;;;;')
      while len(active_nodes) != 0:
-        #print('111111111111111')
         for node in attack_list:
-            #print('222222222222222')
             if node not in active_nodes:
                 index = attack_list.index(node)
                 attack_list.pop(index)
                 print('alone node hase deleted: ', node)
         if len(active_nodes)!= 0 and len(attack_list)==0:
-                #print('333333333333333')
+
                 # baraye jologiri az khata ya loop binahayat da moredi ke graph az aval chand bakhshi boode
-                main_graph = create_main_graph(iner_main_matrix, Label)
-                list_of_weight  = weight_def (iner_main_matrix)
+                main_graph = create_main_graph(iner_main_matrix)
+                triple_weight = np.load('Triple_Weight.npy', allow_pickle= True)
+                list_of_weight = deepcopy(triple_weight)
                 primitive_list_of_weight = deepcopy(list_of_weight)
                 node_averg = weight_account(list_of_weight, active_nodes)
                 primitive_node_avrg = deepcopy(node_averg)
@@ -704,9 +794,9 @@ def weight_recursive_dis(main_matrix):
                     cost = cost_count(main_graph, [target_node], p[i])
                     cost_lst[i] = cost_lst[i] + cost[0][1]
                 attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
-                main_graph = create_main_graph(iner_main_matrix, Label)
+                main_graph = create_main_graph(iner_main_matrix)
                 connectivity = connectivity_count(main_graph)
-                conct = (connectivity/Main_Conct)
+                conct = (connectivity/iner_main_conct)
                 connectivity_lst.append(conct)
                 #print('attack_list', attack_list)
                 #list_of_weight  = weight_def (iner_main_matrix)
@@ -715,7 +805,7 @@ def weight_recursive_dis(main_matrix):
                 attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly by wight method ')
-            return primitive_node_avrg , primitive_list_of_weight , connectivity_lst , cost_lst
+            return connectivity_lst , cost_lst
 
 
 def attack_maping(attack_list, map_dic):
@@ -766,12 +856,17 @@ def normalize(abnormal_list):
         return []
 #------------------ GA-------------
 
-def fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiator ):
-    weight_list_avrg = deepcopy(primitive_weight_duble)
-    weight_list_triple = deepcopy(primitive_weight_triple)
+def fitness_count( main_graph , initiator ):
+    weight_avrg = np.load('Averg_Weight.npy', allow_pickle= True)
+    weight_list_avrg = deepcopy(weight_avrg)
+    triple_weight = np.load('Triple_Weight.npy', allow_pickle= True)
+    weight_list_triple = deepcopy(triple_weight)
+    print
     bc = closeness_btw(main_graph)
+    print('bc before sort: ' , bc)
     dc = closeness_deg(main_graph)
     bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
+    print('bc after sort: ' , bc_sort)
     dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
     #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
     print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort)
@@ -887,14 +982,17 @@ def split_initial_lst(initiate_lst, initial_len,  mutation_portion, crossover_po
             if node in iner_init_cross_lst:
                 index = iner_init_cross_lst.index(node)
                 iner_init_cross_lst.pop(index)
+    print('base: ', iner_init_cross_lst)
 
     # select cross
     children = random.sample(iner_init_cross_lst, cross_count)
+    #children = random.randint(iner_init_cross_lst, cross_count)
     parent = []
     for i in iner_init_cross_lst:
         if i not in children:
             parent.append(i)
     parent_final = random.sample(parent , parent_count)
+    #parent_final = random.randint(parent , parent_count)
 
     print('mut_cross_lst:' , mut_cross_lst , 'parent_final:', parent_final , 'children:' , children)
 
@@ -953,11 +1051,18 @@ def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, m
 
 
 def crossover(children, main_martix, last_gen):
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    for num in children:
+        num = int(num)
+    print(children)
+    iner_total_node = deepcopy(total_node)
     neigh = []
     neigh_single = []
     neigh_final = []
     for i in children:
-        for j in range(Total_Node):
+        print('i in children: ', i)
+        for j in range(iner_total_node):
+            print('j in range(iner_total_node) : ', j)
             if main_martix[j][i] == 1:
                 neigh.append(j)
 
@@ -981,7 +1086,7 @@ def crossover(children, main_martix, last_gen):
 
 def list_initiate(main_matrix):
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix)
     active_nodes = active_node(iner_matrix)
     initiator = random_atthck_nodes(active_nodes)
     generation_size = len (initiator)
@@ -990,9 +1095,12 @@ def list_initiate(main_matrix):
 
 
 def list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst):
-    weight_lst , dc_lst, bc_lst = fitness_count(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst )
+    weight_lst , dc_lst, bc_lst = fitness_count( main_graph , initiate_lst )
     #bc , dc, uw = list_allignment(bc_lst, dc_lst, weight_lst)
     sorted_lst = fitness_arrenge( weight_lst , dc_lst, bc_lst, initiate_lst)
+    for num in sorted_lst:
+        num = int(num)
+    print('sorted lst in list_sorting: ', sorted_lst)
     return sorted_lst
 
 
@@ -1016,6 +1124,7 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
     iner_init = deepcopy(initiate_lst)
     iner_matrix = deepcopy(main_matrix)
     print('sorted_lst in GA_target_node:', initiate_lst)
+    print('iner_init: ', iner_init)
     print('sorted_lst type: ', type(initiate_lst))
     print('evolution: ', evolution)
     print('generation_size:' , generation_size)
@@ -1033,6 +1142,7 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
         print('target_node on first step:', target_node)
         last_gen_len = len(last_gen)
         mut , permanent_parent_lst , children = split_initial_lst(last_gen, generation_size,  mutation_portion, crossover_portion)
+        print('children in target node: ', children)
         children_len = len(children)
         crossover_lst = crossover(children, iner_matrix, last_gen)
         print('crossover before split in target_node methode: ', crossover_lst)
@@ -1053,13 +1163,18 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
     return target_node
 
 
-def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , crossover, mutation_portion, evolution):
+def GA_dis( crossover, mutation_portion, evolution):
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
     #initiator = deepcopy(primitive)
     #init_len = len(initiator)
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    primitive_weight_duble = np.load('Averg_Weight.npy' , allow_pickle= True)
+    primitive_weight_triple = np.load('Triple_Weight.npy', allow_pickle=True)
+    iner_main_conct = deepcopy(main_conct)
+    main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
     active_nodes = active_node(iner_matrix)
@@ -1086,9 +1201,9 @@ def GA_dis (main_matrix , primitive_weight_duble, primitive_weight_triple , cros
         print('primitive_weight_triple:' , primitive_weight_triple)
         active_nodes = active_node(iner_matrix)
         print('active_node after dis:', active_nodes)
-        main_graph = create_main_graph(iner_matrix, Label)
+        main_graph = create_main_graph(iner_matrix)
         connectivity = connectivity_count(main_graph)
-        conct = (connectivity/Main_Conct)
+        conct = (connectivity/iner_main_conct)
         connectivity_lst.append(conct)
         if len(active_nodes)== 0:
             print ('Network has disintegrated successfuly in GA')
@@ -1172,18 +1287,21 @@ def target_choose(bc, dc, uw):
 
     return target_node
 
-def Greedy_disintegration (main_matrix):
+def Greedy_disintegration():
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1.0, 1.5, 2]
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    iner_main_conct = deepcopy(main_conct)
+    main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
-    print('connectivity initiationg: ' , connectivity_lst)
-    primitive_averg_weight_duble = np.load('primitive_node_avrg.npy' )
-    print ('len average ' , len(primitive_averg_weight_duble))
+    print('connectivity initiationg: ', connectivity_lst)
+    primitive_averg_weight_duble = np.load('Averg_Weight.npy', allow_pickle= True )
+    print ('len average ', len(primitive_averg_weight_duble))
     weight_list_avrg = deepcopy(primitive_averg_weight_duble)
-    primitive_weight_triple = np.load('primitive_list_of_weight.npy' )
+    primitive_weight_triple = np.load('Triple_Weight.npy', allow_pickle= True )
     weight_list_triple = deepcopy(primitive_weight_triple)
     active_nodes = active_node(main_matrix)
     bc_normal, dc_normal, weight_normal = data_preparing(main_graph, weight_list_avrg)
@@ -1199,18 +1317,18 @@ def Greedy_disintegration (main_matrix):
 
              for i in range(len(p)):
                 print('i : ', i , 'target_node: ' , target_node, 'p[i]',  p[i])
-                cost = cost_count(main_graph, [target_node], p[i])
+                cost = cost_count(main_graph, target_node, p[i])
                 print('cost: ' , cost)
                 cost_lst[i] = cost_lst[i] + cost[0][1]
-             attack_lst, iner_matrix = disintegration(target_node, iner_matrix, [])
+             attack_lst, iner_matrix = disintegration(target_node[0], iner_matrix, [])
              print('attack_lst after disintegration :', attack_lst)
              active_nodes = active_node(iner_matrix)
              if len(active_nodes)== 0:
                  print ('Network has disintegrated successfuly in Greedy')
                  return connectivity_lst, cost_lst
-             main_graph = create_main_graph(iner_matrix, Label)
+             main_graph = create_main_graph(iner_matrix)
              connectivity = connectivity_count(main_graph)
-             conct = (connectivity/Main_Conct)
+             conct = (connectivity/iner_main_conct)
              connectivity_lst.append(conct)
              print('connectivity in while: ', connectivity_lst)
              node_avrg = weight_account_copy(weight_list_triple, active_nodes)
@@ -1247,19 +1365,26 @@ def cost_count(main_graph , actv_lst , p):
     #p = [0, 0.5, 1, 1.5, 2]
     degree = closeness_deg(main_graph)
     degree_lst = sorted(degree.items(), key=lambda x: x[1], reverse=True)
+    print('degree_lst: ', degree_lst)
     sum_p = 0.0
     for i in degree_lst: # makhraje kasr ro inja misazim va rooye hameye grapg hast
         sum_p = sum_p +(i[1]**p)
+    print('sum_p: ' , sum_p)
     cost = []
     for i in actv_lst: # soorate kasr faghat baraye azaye attack_lst
-        internal_cost = []
-        for j in degree_lst:
-            if i == j[0]:
-                cost_p = j[1]**p
-                c = (cost_p/sum_p)*25 # mohasebeye kasr be ezaye p haye mokhtalef
-                internal_cost.append(i) # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
-                internal_cost.append(c)
-                cost.append(internal_cost)
+      internal_cost = []
+      print('i: ' , i )
+      for j in degree_lst:
+        print('j:' , j)
+        print(j[0])
+        if i == j[0]:
+
+            cost_p = j[1]**p
+            print('cost_p: ', cost_p)
+            c = (cost_p/sum_p)*25 # mohasebeye kasr be ezaye p haye mokhtalef
+            internal_cost.append(i) # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
+            internal_cost.append(c)
+            cost.append(internal_cost)
 
 
     print('cost::::' , cost)
@@ -1268,9 +1393,9 @@ def cost_count(main_graph , actv_lst , p):
 
 
 def rand_node():
-    main_matrix = np.load('Main_Matrix.npy' )
+    main_matrix = np.load('Main_Matrix.npy' , allow_pickle= True)
     iner_main_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_main_matrix, Label)
+    main_graph = create_main_graph(iner_main_matrix)
     closeness = closeness_deg(main_graph)
     sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
     node = sort_order[np.random.randint(0, len(sort_order))][0]
@@ -1282,9 +1407,10 @@ def rand_node():
 
 
 def target_node_aut_learning( matrix , active_lst , conct , p):
-
+    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    iner_main_conct = deepcopy(main_conct)
     iner_matrix = deepcopy(matrix)
-    internal_main_graph = create_main_graph(iner_matrix, Label)
+    internal_main_graph = create_main_graph(iner_matrix)
     active = deepcopy(active_lst)
     print('len(active_lst):' , len(active_lst), "\n", 'active_list:', active_lst)
     cost = cost_count(internal_main_graph, active_lst , p) #
@@ -1295,9 +1421,9 @@ def target_node_aut_learning( matrix , active_lst , conct , p):
         iner_matrix1 = deepcopy(iner_matrix)
         list, iner_matrix1 = disintegration(i, iner_matrix1, active)
         print('00000000000000000000000')
-        internal_main_graph = create_main_graph(iner_matrix1, Label)
+        internal_main_graph = create_main_graph(iner_matrix1)
         connectivity = connectivity_count(internal_main_graph)
-        inter_con = (connectivity /Main_Conct)
+        inter_con = (connectivity /iner_main_conct)
         subtrac = conct- inter_con
         paire.append(i)
         paire.append(subtrac)
@@ -1347,11 +1473,12 @@ def target_node_aut_learning( matrix , active_lst , conct , p):
 
 
 def h_value_count_update( current_state, target_node , h_table , a):
-
+    total_node = np.load('Total_Node.npy', allow_pickle= True)
+    iner_total_node = deepcopy(total_node)
     Pi = h_table[current_state][target_node]
     h_table[current_state][target_node] = Pi + a*(1-Pi)
     i = current_state
-    for j in range(Total_Node):
+    for j in range(iner_total_node):
         if j != target_node:
             h_table[i][j] == (1 - a)* h_table[i][j]
     print('h_table after update: ' ,h_table)
@@ -1359,21 +1486,25 @@ def h_value_count_update( current_state, target_node , h_table , a):
 
 
 
-def automata_dis(main_matrix, p , a, h_table ):
+def automata_dis( p , a, h_table ):
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    iner_main_matrix = deepcopy(main_matrix)
+    main_conct = np.load('Main_Conct.npy')
+    iner_main_conct = deepcopy(main_conct)
     cost = 0.0
-    iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    iner_matrix = deepcopy(iner_main_matrix)
+    main_graph = create_main_graph(iner_matrix)
     attack_list = []
     initiator_node = rand_node(main_graph)
     #h_table = table_initiator(Total_Node)
     attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
     print('attack lst after automata init: ' , attack_list)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix)
     closeness = closeness_deg(main_graph)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
-    conct = (connectivity/Main_Conct)
+    conct = (connectivity/ iner_main_conct)
     print('first connectivity: ', conct)
     conct_lst.append(conct)
     browse = []
@@ -1421,11 +1552,11 @@ def automata_dis(main_matrix, p , a, h_table ):
 
         print('H_tableeeeee:' , h_table)
         attack_list, iner_matrix = disintegration(target_node, iner_matrix, attack_list)
-        main_graph = create_main_graph(iner_matrix, Label)
+        main_graph = create_main_graph(iner_matrix)
         closeness = closeness_deg(main_graph)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
         connectivity = connectivity_count(main_graph)
-        conct = (connectivity/Main_Conct)
+        conct = (connectivity/iner_main_conct)
         conct_lst.append(conct)
         browse.append(target_node)
         if len(closeness) == 0:
@@ -1435,26 +1566,30 @@ def automata_dis(main_matrix, p , a, h_table ):
 
 
 def automata_cost_creation( node, p):
+    main_matrix = np.load('Main_Matrix.npy')
+    iner_main_matrix = main_matrix
     connctivity_aut = 0.0
 
     cost = []
     for i in range(len(p)):
         #internal_matrix = deepcopy(main_matrix)
-        connctivity_aut_inter, cost_aut, target_nodes_lst = automata_dis(Main_Matrix ,node,  p[i] )
+        connctivity_aut_inter, cost_aut, target_nodes_lst = automata_dis(iner_main_matrix ,node,  p[i] )
         cost.append(cost_aut)
         if i == 0:
             connctivity_aut = connctivity_aut_inter
     return connctivity_aut , cost
 
 
-def automata_learn_episodic(total_node, episode, main_matrix, p, a):
+def automata_learn_episodic(total_node, episode, p, a):
+    main_matrix= np.load('Main_Matrix.npy')
+    iner_main_matrix = deepcopy(main_matrix)
     h_table = table_initiator_aut(total_node)
     for i in range(episode):
-        conct_lst, cost, target_nodes_lst , h_table = automata_dis(main_matrix, p, a, h_table)
+        conct_lst, cost, target_nodes_lst , h_table = automata_dis(iner_main_matrix, p, a, h_table)
         print('H_Table' , h_table)
     print('data type of h_table:' , type(h_table))
     np.save('H_table.npy' , h_table)
-    h_table_load = np.load('H_table.npy' )
+    h_table_load = np.load('H_table.npy' , allow_pickle= True)
     print('H_Table_load' , h_table_load)
     print('data type of q_table_load:' , type(h_table_load))
     return h_table
@@ -1470,8 +1605,10 @@ def target_node_q_learning( q_table, last_node, last_state, last_reward,  matrix
     # matrix: matrix bad az avalin hamle
     # active_list: list active node hayee ke bad az attack tasadofi moondan
     # conct: az avalin hamle mohasebe shode
+    main_conct = np.load('Main_Conct.npy')
+    iner_main_conct = deepcopy(main_conct)
     iner_matrix = deepcopy(matrix)
-    internal_main_graph = create_main_graph(iner_matrix, Label)
+    internal_main_graph = create_main_graph(iner_matrix)
     active = deepcopy(active_lst)
     print('len(active_lst):' , len(active_lst), "\n", 'active_list:', active_lst)
     cost = cost_count(internal_main_graph, active_lst , p) #
@@ -1482,9 +1619,9 @@ def target_node_q_learning( q_table, last_node, last_state, last_reward,  matrix
         iner_matrix1 = deepcopy(iner_matrix)
         list, iner_matrix1 = disintegration(i, iner_matrix1, active)
         print('00000000000000000000000')
-        internal_main_graph = create_main_graph(iner_matrix1, Label)
+        internal_main_graph = create_main_graph(iner_matrix1)
         connectivity = connectivity_count(internal_main_graph)
-        inter_con = (connectivity /Main_Conct)
+        inter_con = (connectivity /iner_main_conct)
         subtrac = conct- inter_con
         paire.append(i)
         paire.append(subtrac)
@@ -1563,20 +1700,22 @@ def q_value_count_update(last_node, last_state, last_reward, current_state,  nex
 
 
 def q_learning(main_matrix, p , landa , gama, q_table):
+    main_conct = np.load('Main_Conct.npy')
+    iner_main_conct = deepcopy(main_conct)
     cost = 0.0
     iner_matrix = deepcopy(main_matrix)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix)
     attack_list = []
     initiator_node = rand_node(main_graph)
     #q_table = table_initiator(Total_Node)
     attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
     print('attack lst after Q_learning init: ' , attack_list)
-    main_graph = create_main_graph(iner_matrix, Label)
+    main_graph = create_main_graph(iner_matrix)
     closeness = closeness_deg(main_graph)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
-    conct = (connectivity/Main_Conct)
+    conct = (connectivity/iner_main_conct)
     print('first connectivity: ', conct)
     conct_lst.append(conct)
     browse = []
@@ -1626,11 +1765,11 @@ def q_learning(main_matrix, p , landa , gama, q_table):
         last_reward = next_reward
         q_value = q_value + q_value_internal
         attack_list, iner_matrix = disintegration(next_node, iner_matrix, attack_list)
-        main_graph = create_main_graph(iner_matrix, Label)
+        main_graph = create_main_graph(iner_matrix)
         closeness = closeness_deg(main_graph)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
         connectivity = connectivity_count(main_graph)
-        conct = (connectivity/Main_Conct)
+        conct = (connectivity/iner_main_conct)
         conct_lst.append(conct)
         browse.append(next_node)
         if len(closeness) == 0:
@@ -1639,17 +1778,16 @@ def q_learning(main_matrix, p , landa , gama, q_table):
     return  conct_lst, cost , q_value , target_nodes_lst , q_table
 
 
-def q_learning_episodic(total_node , episode, main_matrix, p, landa, gama):
+def q_learning_episodic(total_node , episode,  p, landa, gama):
     q_table = table_initiator_Q(total_node)
-
-
-
+    main_matrix = np.load('Main_Matrix.npy')
+    iner_main_matrix = deepcopy(main_matrix)
     for i in range(episode):
-        conct_lst, cost , q_value , target_nodes_lst , q_table = q_learning(main_matrix, p, landa, gama, q_table)
+        conct_lst, cost , q_value , target_nodes_lst , q_table = q_learning(iner_main_matrix, p, landa, gama, q_table)
     print('Q_Table' , q_table)
     print('data type of q_table:' , type(q_table))
     np.save('Q_table.npy' , q_table)
-    q_table_load = np.load('Q_table.npy' )
+    q_table_load = np.load('Q_table.npy', allow_pickle= True )
     print('Q_Table_load' , q_table_load)
     print('data type of q_table_load:' , type(q_table_load))
     return q_table
@@ -1772,70 +1910,72 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 
 
 # main
-list_node_initial , Layen_Count = list_node()
-# np.save('list_node_initial' , list_node , allow_pickle=True)
-# np.save('Layen_Count' , layer_n , allow_pickle=True)
-print('1')
-Total_Matrix = create_matrix(list_node_initial)
-#np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
-print('2')
-List_Struct= list_struc(list_node_initial)
-#np.save('List_Struct' , List_Struct , allow_pickle=True)
-print('3')
-comb_dis = create_comb_array(list_node_initial)
-#np.save('comb_dis' , List_Struct , allow_pickle=True)
-print('4')
-list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
-# np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
-# np.save('Label' , Label , allow_pickle=True)
-print('5')
-Map_dic, Total_Node = node_Mapping(list_of_nodes)
-# np.save('Map_dic' , map_dic , allow_pickle=True)
-# np.save('Total_Node' , i , allow_pickle=True)
-print('6')
-Attack_Nodes = random_atthck_nodes(list_of_nodes)
-#np.save('Attack_Nodes' , map_dic , allow_pickle=True)
-print('7')
-Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-# np.save('Attack_Map' , map_dic , allow_pickle=True)
-print('8')
-Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
-#np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
-print('9')
-Main_Graph = create_main_graph(Main_Matrix, Label)
-# np.save('Main_Graph' , Main_Graph , allow_pickle=True)
-print('10')
-Main_Conct = connectivity_count(Main_Graph)
-# np.save('Main_Conct' , Main_Conct , allow_pickle=True)
-print('11')
-Triple_Weight  = weight_def (Main_Matrix)
-# np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
-print('12')
-Active_Node = active_node(Main_Matrix)
-#np.save('Active_Node' , Active_Node ,  allow_pickle=True)
-print('13')
-Averg_Weight = weight_account(Triple_Weight, Active_Node)
-# np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
-print('14')
-print('initializing has finished successfully')
+# list_node_initial , Layen_Count = list_node_init()
+# # np.save('list_node_initial' , list_node , allow_pickle=True)
+# # np.save('Layen_Count' , layer_n , allow_pickle=True)
+# print('1')
+# Total_Matrix = create_matrix(list_node_initial)
+# # #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
+# # print('2')
+# List_Struct= list_struc(list_node_initial)
+# # #np.save('List_Struct' , List_Struct , allow_pickle=True)
+# # print('3')
+# comb_dis = create_comb_array(list_node_initial)
+# # #np.save('comb_dis' , List_Struct , allow_pickle=True)
+# print('4')
+# list_of_nodes , Label = Create_List_of_Nodes(List_Struct)
+# # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
+# # # np.save('Label' , Label , allow_pickle=True)
+# print('5')
+# Map_dic, Total_Node = node_Mapping(list_of_nodes)
+# # # np.save('Map_dic' , map_dic , allow_pickle=True)
+# # # np.save('Total_Node' , i , allow_pickle=True)
+# print('6')
+# Attack_Nodes = random_atthck_nodes(list_of_nodes)
+# # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
+# print('7')
+# Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+# # # np.save('Attack_Map' , map_dic , allow_pickle=True)
+# print('8')
+# Main_Matrix = create_major_matrix(Total_Matrix , Layen_Count)
+# # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
+# print('9')
+# Main_Graph = create_main_graph_init(Main_Matrix)
+# # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
+# print('10')
+# Main_Conct = connectivity_count_init(Main_Graph)
+# # # np.save('Main_Conct' , Main_Conct , allow_pickle=True)
+# print('11')
+# Triple_Weight  = weight_def (Main_Matrix)
+# # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
+# print('12')
+# Active_Node = active_node_init(Main_Matrix)
+# # print('Active_node', Active_Node)
+# # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
+# print('13')
+# Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
+# # print('Averg_Weight' , Averg_Weight)
+# # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
+# print('14')
+# print('initializing has finished successfully')
+#
 
 
 
 
-
-#Rand_Node = rand_node()
-# Connectivity_BTW, Cost_BTW = closeness_dis(1, Main_Matrix)
+# Rand_Node = rand_node()
+# Connectivity_BTW, Cost_BTW = closeness_dis(1)
 # print('cost_btw:' , Cost_BTW)
-# Connectivity_DEG, Cost_DEG = closeness_dis(2, Main_Matrix)
+# Connectivity_DEG, Cost_DEG = closeness_dis(2)
 # print('cost_DEG:' , Cost_DEG)
-# Connectivity_Random , Cost_Rand = random_recursive_dis(Main_Matrix)
+# Connectivity_Random , Cost_Rand = random_recursive_dis()
 # print('cost_Rand:' , Cost_Rand)
-# Primitive_Weight_Avrg, Primitive_List_of_Weight, Connectivity_Weight, Cost_Weight = weight_recursive_dis(Main_Matrix)
+# Connectivity_Weight, Cost_Weight = weight_recursive_dis()
 # print('cost_weight:' , Cost_Weight)
-# Connectivity_GA, Cost_GA = GA_dis(Main_Matrix , Primitive_Weight_Avrg , Primitive_List_of_Weight , 0.9, 0.05, 5)
+# Connectivity_Greedy, Cost_Greedy = Greedy_disintegration()
+# print('cost_greedy:', Cost_Greedy)
+Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 5)
 # print('cost_GA:' , Cost_GA)
-# Connectivity_Greedy, Cost_Greedy = Greedy_disintegration(Main_Matrix)
-#print('cost_greedy:', Cost_Greedy)
 # Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
 # print('cost_aut' , Cost_aut)
 # Connctivity_Q, Cost_Q = Q_cost_creation( [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
@@ -1853,11 +1993,11 @@ print('initializing has finished successfully')
 #Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 #print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-#Q_Table = q_learning_episodic(Total_Node , 1, Main_Matrix, 1, 0.1, 0.9)
+#Q_Table = q_learning_episodic(Total_Node , 1,  1, 0.1, 0.9)
 
-#H_Table = automata_learn_episodic(Total_Node, 2, Main_Matrix, 1, 0.2)
+#H_Table = automata_learn_episodic(Total_Node, 2,  1, 0.2)
 
-# conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Main_Matrix,Rand_Node, 0.0)
+# conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Rand_Node, 0.0)
 # print('Target_Node_Lst_Q: ' , Target_Node_Lst_Q)
 # print ('Target_Node_Lst_AUT: ', Target_Node_Lst_AUT)
 
