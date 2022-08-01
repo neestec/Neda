@@ -659,7 +659,7 @@ def weight_account_init(list_of_weight , active_nodes ):
     return node_and_avr_list
 
 
-def weight_account(list_of_weight , active_nodes ):
+def weight_account(list_of_weight, active_nodes):
     # vazn node haye active ro hesab mikone(methodesh ro farakhani mikone)
     # va tahesh ham list ro sort mikone
     node_and_avr_list = []
@@ -856,20 +856,17 @@ def normalize(abnormal_list):
         return []
 #------------------ GA-------------
 
-def fitness_count( main_graph , initiator ):
-    weight_avrg = np.load('Averg_Weight.npy', allow_pickle= True)
-    weight_list_avrg = deepcopy(weight_avrg)
-    triple_weight = np.load('Triple_Weight.npy', allow_pickle= True)
-    weight_list_triple = deepcopy(triple_weight)
-    print
+def fitness_count(Averg_Weight, main_graph , initiator ):
+
+    weight_list_avrg = deepcopy(Averg_Weight)
+
     bc = closeness_btw(main_graph)
-    print('bc before sort: ' , bc)
     dc = closeness_deg(main_graph)
     bc_sort = sorted(bc.items(), key=lambda x: x[1], reverse=True)
-    print('bc after sort: ' , bc_sort)
     dc_sort = sorted(dc.items(), key=lambda x: x[1], reverse=True)
     #weight_list_avrg = weight_account_copy(weight_list_triple , attack_list)
-    print('weight: ', weight_list_avrg, "\n", 'weight_list_triple: ',weight_list_triple ,  "\n", 'bc: ', bc_sort ,"\n",  'dc', dc_sort)
+    print('weight: ', weight_list_avrg, "\n",  'bc: ', bc_sort ,"\n",  'dc', dc_sort)
+
     weight_list_reverse = []
     for n in weight_list_avrg:
         temp_n = []
@@ -897,27 +894,48 @@ def fitness_count( main_graph , initiator ):
         for node in dc_normal:
             if n == node[0]:
                 dc_lst.append(node)
-    print('len initiator:' , len(initiator))
-    print('methode: fitness_count: ', 'len weight_lst:', len(weight_lst) , 'len dc_lst:' , len(dc_lst)  ,'len bc_lst: ', len( bc_lst))
-    return weight_lst , dc_lst, bc_lst
+    print('len initiator:', len(initiator))
+    print('methode: fitness_count: ', 'len weight_lst:', len(weight_lst), 'len dc_lst:', len(dc_lst),'len bc_lst: ', len(bc_lst))
+    print('len in fitness_count:')
+    print('len(weight_lst):', len(weight_lst), "\n", 'len(dc_lst)', len(dc_lst), "\n", 'len(bc_lst)', len(bc_lst))
+    return weight_lst, dc_lst, bc_lst
 
 
-def fitness_arrenge(bc, dc, uw, initiator):
+def fitness_arrenge(uw, dc, bc, initiator):
     print('bc:', bc, "\n", 'dc:', dc, "\n", 'uw:', uw)
+    bc_int = []
+    for num in bc:
+        num[0] = int(num[0])
+        bc_int.append(num)
+    dc_int = []
+    for num in dc:
+        num[0] = int(num[0])
+        dc_int.append(num)
+    uw_int = []
+    for num in uw:
+        num[0] = int(num[0])
+        uw_int.append(num)
     create_dataset = False
-    for i in range(len(bc)):
-        if bc[i][0] == dc[i][0] and bc[i][0] == uw[i][0]:
+    for i in range(len(bc_int)):
+        print('i:', i)
+        print('bc_int[i][0] : ', bc_int[i][0])
+        print('dc_int[i][0] : ', dc_int[i][0])
+        print('uw_int[i][0] : ', uw_int[i][0])
+        print('bc len: ', len(bc_int))
+        print('dc len: ', len(dc_int))
+        print('uw len: ', len(uw_int))
+        if bc_int[i][0] == dc_int[i][0] and bc_int[i][0] == uw_int[i][0]:
             create_dataset = True
-        else:
-            print('index ha ba ham yeki nistan', bc[i][0], dc[i][0],  uw[i][0])
-            for node in uw:
-                if node[i][0] == uw[i][0]:
-                    index = uw.index(node)
-                    uw.pop(index)
-    if len(bc)== len(dc) and len(dc) == len(uw):
+        # else:
+        #     print('index ha ba ham yeki nistan', bc_int[i][0], dc_int[i][0],  uw[i][0])
+        #     for node in uw:
+        #         if node[i][0] == uw[i][0]:
+        #             index = uw.index(node)
+        #             uw.pop(index)
+    if len(bc_int)== len(dc_int) and len(dc_int) == len(uw_int):
         print('toolha ba ham barabaran')
     else:
-        print('toolha ba ham yeki nist', len(bc), len(dc) , len(uw))
+        print('toolha ba ham yeki nist', len(bc_int), len(dc_int) , len(uw_int))
         return
 
     if create_dataset:
@@ -926,15 +944,14 @@ def fitness_arrenge(bc, dc, uw, initiator):
         dc_point = []
         uw_point = []
         sum_point = []
-        for node in bc:
+        for node in bc_int:
             node_number.append(node[0])
             bc_point.append(node[1])
-
-        for node in dc:
+        for node in dc_int:
             dc_point.append(node[1])
-        for node in uw:
+        for node in uw_int:
             uw_point.append(node[1])
-        for i in range(len(bc)):
+        for i in range(len(bc_int)):
             local_sum = dc_point[i] + bc_point[i] + uw_point[i]
             sum_point.append(local_sum)
         data_frame = pd.DataFrame({
@@ -1052,8 +1069,8 @@ def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, m
 
 def crossover(children, main_martix, last_gen):
     total_node = np.load('Total_Node.npy', allow_pickle= True)
-    for num in children:
-        num = int(num)
+    # for num in children:
+    #     num = int(num)
     print(children)
     iner_total_node = deepcopy(total_node)
     neigh = []
@@ -1094,14 +1111,29 @@ def list_initiate(main_matrix):
     return initiator, generation_size
 
 
-def list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , initiate_lst):
-    weight_lst , dc_lst, bc_lst = fitness_count( main_graph , initiate_lst )
+def list_sorting( weight_Triple, main_matrix, main_graph, initiate_lst):
+    iner_active_node = []
+    sorted_lst = []
+    sorted_lst_int = []
+    iner_active_node = active_node(main_matrix)
+    print('len(iner_active_node): ', len(iner_active_node))
+    if len(iner_active_node)< 3:
+        sorted_lst = deepcopy(iner_active_node)
+        for num in sorted_lst:
+            num = int(num)
+            sorted_lst_int.append(num)
+        print('****************** node ha tamoom shodan ********************')
+        return sorted_lst_int
+    Averg_Weight = weight_account(weight_Triple, iner_active_node)
+    weight_lst, dc_lst, bc_lst = fitness_count(Averg_Weight,main_graph , initiate_lst )
     #bc , dc, uw = list_allignment(bc_lst, dc_lst, weight_lst)
-    sorted_lst = fitness_arrenge( weight_lst , dc_lst, bc_lst, initiate_lst)
+    sorted_lst = fitness_arrenge(weight_lst, dc_lst, bc_lst, initiate_lst)
+
     for num in sorted_lst:
         num = int(num)
+        sorted_lst_int.append(num)
     print('sorted lst in list_sorting: ', sorted_lst)
-    return sorted_lst
+    return sorted_lst_int
 
 
 def list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_children):
@@ -1120,8 +1152,13 @@ def list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_childr
 
 
 def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generation_size, main_graph, main_matrix, evolution,
-               primitive_weight_duble, primitive_weight_triple ):
+               weight_average, weight_triple ):
     iner_init = deepcopy(initiate_lst)
+    if len(iner_init)<5:
+        print('list is shorter than generation')
+        target_node = iner_init[-1]
+        return target_node
+
     iner_matrix = deepcopy(main_matrix)
     print('sorted_lst in GA_target_node:', initiate_lst)
     print('iner_init: ', iner_init)
@@ -1134,11 +1171,13 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
             print('list is shorter than generation')
             target_node = iner_init[-1]
             return target_node
-
-        last_gen = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , iner_init)
-        print('last_gen in first step:' , last_gen)
+        # gen avaliya ro dorost mikone
+        last_gen = list_sorting(weight_triple, iner_matrix, main_graph , iner_init)
+        if len(last_gen) < 3:
+            target_node = last_gen[-1]
+            return target_node
+        print('last_gen in first step:', last_gen)
         target_node = last_gen[-1]
-
         print('target_node on first step:', target_node)
         last_gen_len = len(last_gen)
         mut , permanent_parent_lst , children = split_initial_lst(last_gen, generation_size,  mutation_portion, crossover_portion)
@@ -1146,7 +1185,7 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
         children_len = len(children)
         crossover_lst = crossover(children, iner_matrix, last_gen)
         print('crossover before split in target_node methode: ', crossover_lst)
-        crossover_lst_sorted = list_sorting(primitive_weight_duble, primitive_weight_triple, main_graph , crossover_lst)
+        crossover_lst_sorted = list_sorting(weight_triple,iner_matrix, main_graph , crossover_lst)
         crossover_lst_len = len(crossover_lst)
         new_mut,new_per_par, new_children = split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion)
         print('iner_init:' , iner_init)
@@ -1171,8 +1210,8 @@ def GA_dis( crossover, mutation_portion, evolution):
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-    primitive_weight_duble = np.load('Averg_Weight.npy' , allow_pickle= True)
-    primitive_weight_triple = np.load('Triple_Weight.npy', allow_pickle=True)
+    Averg_Weight = np.load('Averg_Weight.npy' , allow_pickle= True)
+    Triple_Weight = np.load('Triple_Weight.npy', allow_pickle=True)
     iner_main_conct = deepcopy(main_conct)
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
@@ -1185,29 +1224,50 @@ def GA_dis( crossover, mutation_portion, evolution):
             return connectivity_lst, cost_lst
 
         initiate_lst , generation_size = list_initiate(iner_matrix)
+        if len(initiate_lst) == 0:
+            print ('Network has disintegrated successfuly in GA')
+            return connectivity_lst, cost_lst
+
         for node in initiate_lst:
             if node not in active_nodes:
                 index = initiate_lst.index(node)
                 initiate_lst.pop(index)
                 print('alone node hase deleted: ', node)
+        if len(initiate_lst)<5  :
+            print('list is shorter than generation')
+            target_node =initiate_lst[-1]
+            print('target_node in GA_dis:', target_node)
+            for i in range(len(p)):
+                cost = cost_count(main_graph, [target_node], p[i])
+                cost_lst[i] = cost_lst[i] + cost[0][1]
+            attack_lst, iner_matrix = disintegration(target_node, iner_matrix, [])
+            active_nodes = active_node(iner_matrix)
+            print('active_node after dis:', active_nodes)
+            main_graph = create_main_graph(iner_matrix)
+            connectivity = connectivity_count(main_graph)
+            conct = (connectivity/iner_main_conct)
+            connectivity_lst.append(conct)
+            if len(active_nodes)== 0:
+                print ('Network has disintegrated successfuly in GA')
+                return connectivity_lst, cost_lst
+        else:
 
-        target_node = GA_target_node(mutation_portion , crossover, initiate_lst, generation_size , main_graph, main_matrix, evolution,
-               primitive_weight_duble, primitive_weight_triple )
-        print('target_node in GA_dis:', target_node)
-        for i in range(len(p)):
-            cost = cost_count(main_graph, [target_node], p[i])
-            cost_lst[i] = cost_lst[i] + cost[0][1]
-        attack_lst, iner_matrix = disintegration(target_node, iner_matrix, [])
-        print('primitive_weight_triple:' , primitive_weight_triple)
-        active_nodes = active_node(iner_matrix)
-        print('active_node after dis:', active_nodes)
-        main_graph = create_main_graph(iner_matrix)
-        connectivity = connectivity_count(main_graph)
-        conct = (connectivity/iner_main_conct)
-        connectivity_lst.append(conct)
-        if len(active_nodes)== 0:
-            print ('Network has disintegrated successfuly in GA')
-            return connectivity_lst, cost_lst
+            target_node = GA_target_node(mutation_portion , crossover, initiate_lst, generation_size , main_graph, iner_matrix, evolution,
+               Averg_Weight, Triple_Weight )
+            print('target_node in GA_dis:', target_node)
+            for i in range(len(p)):
+                cost = cost_count(main_graph, [target_node], p[i])
+                cost_lst[i] = cost_lst[i] + cost[0][1]
+            attack_lst, iner_matrix = disintegration(target_node, iner_matrix, [])
+            active_nodes = active_node(iner_matrix)
+            print('active_node after dis:', active_nodes)
+            main_graph = create_main_graph(iner_matrix)
+            connectivity = connectivity_count(main_graph)
+            conct = (connectivity/iner_main_conct)
+            connectivity_lst.append(conct)
+            if len(active_nodes)== 0:
+                print ('Network has disintegrated successfuly in GA')
+                return connectivity_lst, cost_lst
     return connectivity_lst, cost_lst
 
 
@@ -1485,7 +1545,6 @@ def h_value_count_update( current_state, target_node , h_table , a):
     return h_table
 
 
-
 def automata_dis( p , a, h_table ):
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_main_matrix = deepcopy(main_matrix)
@@ -1593,7 +1652,6 @@ def automata_learn_episodic(total_node, episode, p, a):
     print('H_Table_load' , h_table_load)
     print('data type of q_table_load:' , type(h_table_load))
     return h_table
-
 
 
 #_______________Q_Learning____________
@@ -1845,19 +1903,6 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     # plt.show()
 
 
-
-# def Q_cost_creation(p, landa , gama, episode):
-#
-#     cost = []
-#     for i in range(len(p)):
-#         #internal_matrix = deepcopy(main_matrix)
-#         q_table , cost_ = q_learning_episodic(Main_Matrix,  p[i] , landa, gama , episode)
-#         cost.append(cost_internal)
-#         # if i == 0:
-#         #     connctivity_Q = connctivity_Q_inter
-#     return  cost
-
-
 def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,cost_q, cost_aut):
     # generate matrix
     matrix = np.zeros((8, 5), dtype="float", order='c')
@@ -1906,10 +1951,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
     return
 
 
+#-------------MAIN------------------------------------------------------------------
 
-
-
-# main
+#-------------initiator--------------
 # list_node_initial , Layen_Count = list_node_init()
 # # np.save('list_node_initial' , list_node , allow_pickle=True)
 # # np.save('Layen_Count' , layer_n , allow_pickle=True)
@@ -1958,10 +2002,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
 # print('14')
 # print('initializing has finished successfully')
-#
 
 
-
+#-----------------methodes-------------------
 
 # Rand_Node = rand_node()
 # Connectivity_BTW, Cost_BTW = closeness_dis(1)
@@ -1974,32 +2017,33 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # print('cost_weight:' , Cost_Weight)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration()
 # print('cost_greedy:', Cost_Greedy)
-Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 5)
+# Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 30)
 # print('cost_GA:' , Cost_GA)
 # Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
 # print('cost_aut' , Cost_aut)
 # Connctivity_Q, Cost_Q = Q_cost_creation( [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
 # print('cost_Q' , Cost_Q)
-#
-
-#plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
-#table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
-
-
-
-
-#plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
-
 #Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 #print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
-
 #Q_Table = q_learning_episodic(Total_Node , 1,  1, 0.1, 0.9)
-
 #H_Table = automata_learn_episodic(Total_Node, 2,  1, 0.2)
-
 # conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Rand_Node, 0.0)
 # print('Target_Node_Lst_Q: ' , Target_Node_Lst_Q)
 # print ('Target_Node_Lst_AUT: ', Target_Node_Lst_AUT)
+
+
+
+
+
+
+
+
+
+
+#--------------------Reports-----------------------
+#plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
+#table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
+#plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
 
 
 
