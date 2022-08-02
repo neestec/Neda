@@ -1784,7 +1784,7 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
         paire.append(i)
         paire.append(subtrac)
         numerate.append(paire) #yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
-        print('i:' , i, 'paire:', paire)
+        print('i:', i, 'paire:', paire)
         print('soorate kasre reward:', numerate)
         iner_matrix = deepcopy(matrix)
     # hala ye cost darim ye list soorat baraye kasr ha
@@ -1793,14 +1793,21 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     print('active:', active)
     print('attack: ', attack)
     print('iner_attack:', iner_attack)
-    if len(cost) != len(numerate):
-        print('toolha yeki nist', "\n", 'len cost:', len(cost) ,'len numerate', len(numerate) )
+
+    cost_for_attack = []
+    for i in active:
+        for j in cost:
+            if i == j[0]:
+                cost_for_attack.append(j)
+    if len(cost_for_attack) != len(numerate):
+        print('toolha yeki nist', "\n", 'len cost_for_attack:',
+              len(cost_for_attack) ,'len numerate', len(numerate))
         return
-    for i in range(len(cost)):
-        if cost[i][0] != numerate[i][0]:
-            print('tartib hamkhani nadarad')
-            return
-        else:
+    for i in range(len(cost_for_attack)):
+         if cost[i][0] != numerate[i][0]:
+             print('tartib hamkhani nadarad')
+             return
+         else:
             r = []
             print('enumerate[i][1]:', numerate[i][1])
             print('cost[i][1]: ', cost[i][1])
@@ -1835,12 +1842,26 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
         index = active_pop.index(i)
         active_pop.pop(index)
     print('active_pop: ', active_pop)
-    target_epsilone = epsilon_greedy(epsilon_prob, target_prob, target_decision, active_pop)
-    if target_epsilone == target_decision:
+    target_epsilon = epsilon_greedy(epsilon_prob, target_prob, target_decision, active_pop)
+    if target_epsilon == target_decision:
+        return target_decision, max_reward
+    else:
+        # bayad baraye target_epsilon cost va reward hesab konim.
+        for i in cost:
+            if i[0] == target_decision:
+                epsilon_cost = i[1]
+                print('epsilon_cost', epsilon_cost)
 
-
-
-    return target_epsilone, max_reward
+        iner_matrix2 = deepcopy(iner_matrix)
+        list_atc, iner_matrix2 = disintegration(target_epsilon, iner_matrix2, [])
+        print('dis in epsilon')
+        internal_main_graph2 = create_main_graph(iner_matrix2)
+        connectivity = connectivity_count(internal_main_graph2)
+        inter_con = (connectivity/iner_main_conct)
+        subtrac2 = conct- inter_con # soorate kasre reward baraye i
+        max_reward_epsilon = subtrac2/epsilon_cost
+        print('max_reward_epsilon', max_reward_epsilon)
+        return target_epsilon, max_reward_epsilon
 
 
 def q_value_count_update(last_node, last_state, last_reward, current_state,  next_node ,next_reward, q_table , landa , gama):
@@ -1911,7 +1932,7 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
         active_node_lst = active_node(iner_matrix)
         last_node = target_nodes_lst[-1][0]
         last_state = s_lst[-1]
-        next_node, next_reward = target_node_q_learning(q_table, last_node, last_state, last_reward,
+        next_node, next_reward = target_node_q_learning_attack(q_table, last_node, last_state, last_reward,
                                                        iner_matrix, attack_list, active_node_lst,
                                                         conct, p, landa, gama,
                                                         epsilon_prob, target_prob)
@@ -1942,36 +1963,39 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
         browse.append(next_node)
         if len(closeness) == 0:
             print ('Network has been disintegrated successfuly in Q_learning')
-            return conct_lst , cost , q_value , target_nodes_lst, q_table
-    return  conct_lst, cost , q_value , target_nodes_lst , q_table
+            return conct_lst, cost, q_value, target_nodes_lst, q_table
+    return conct_lst, cost, q_value, target_nodes_lst, q_table, browse
 
 
 def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
-
-    main_matrix = np.load('Main_Matrix.npy')
-    iner_main_matrix = deepcopy(main_matrix)
-    total_node = np.load('Total_Node.npy')
-    q_table = np.load('Q_table.npy', allow_pickle= True)
-    last_browsing = [0]* total_node
-    print('last_browsing: ', last_browsing)
-    conct_lst, cost, q_value, target_nodes_lst, q_table, browsig_lst = q_learning(iner_main_matrix,
+    continue_browsing = True
+    while continue_browsing:
+        main_matrix = np.load('Main_Matrix.npy')
+        iner_main_matrix = deepcopy(main_matrix)
+        total_node = np.load('Total_Node.npy')
+        q_table = np.load('Q_table.npy', allow_pickle= True)
+        last_browsing = [0]* total_node
+        print('last_browsing: ', last_browsing)
+        conct_lst, cost, q_value, target_nodes_lst, q_table, browsig_lst = 0q_learning(iner_main_matrix,
                                                            p, landa, gama, q_table,
                                                            epsilon_prob, target_prob)
-    if len(last_browsing) == len(browsig_lst):
-        for i in range(len(last_browsing)):
-            if last_browsing[i] != browsig_lst:
-                continue_browsing = True
-                print('continue browsing ')
-            else:
-                continue_browsing = False
-                print('Q_Table', q_table)
-                print('data type of q_table:', type(q_table))
-                np.save('Q_table.npy', q_table)
-                q_table_load = np.load('Q_table.npy', allow_pickle= True )
-                print('Q_Table_load', q_table_load)
-                print('data type of q_table_load:', type(q_table_load))
-                return q_table
+        print('Q_Table', q_table)
+        print('data type of q_table:', type(q_table))
+        np.save('Q_table.npy', q_table)
 
+        if len(last_browsing) == len(browsig_lst):
+            for i in range(len(last_browsing)):
+                if last_browsing[i] == browsig_lst[i]:
+                    continue_browsing = False
+                else:
+                    last_browsing = browsig_lst
+                    print('continue browsing')
+
+            else:
+                last_browsing = browsig_lst
+                print('continue browsing')
+
+    return q_table
 
 
 
