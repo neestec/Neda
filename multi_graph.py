@@ -34,7 +34,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(30, 40)
+        node = np.random.randint(10, 15)
         list_node.append(node)
     #print('list_node:', list_node)
     np.save('list_node_initial' , list_node , allow_pickle=True)
@@ -65,7 +65,7 @@ def random_weighted_graph(n):
     g = nx.gnp_random_graph(n,p)
     m = g.number_of_edges()
     #print('number of edge:', m)
-    weights = [np.random.randint(7, 15) for r in range(m)]
+    weights = [np.random.randint(5, 10) for r in range(m)]
     uw_edges = g.edges()
     #print ('edges:', uw_edges)
     adj = np.zeros((n, n), dtype="object", order='c')
@@ -1473,6 +1473,8 @@ def epsilon_greedy(epsilon_prob, target_prob, target_node, attack_list_pop_targe
     if p > epsilon_prob:
         return target_node
     else:
+        print('attack_list_pop_target', attack_list_pop_target)
+        print('len(attack_list_pop_target): ', len(attack_list_pop_target))
         target_node = attack_list_pop_target [np.random.randint(0, len(attack_list_pop_target))]
         return target_node
 
@@ -1768,11 +1770,13 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     internal_main_graph = create_main_graph(iner_matrix)
     attack = deepcopy(attack_lst)
     active = deepcopy(active_lst)
+    print('attack: ' , attack)
+    print('active: ' , active)
     print('len(attack_lst):' , len(attack), "\n", 'attack_list:', attack)
     cost = cost_count(internal_main_graph, active_lst, p)
     reward = []
     numerate = [] # soorate kasre mohasebe reward
-    for i in attack_lst:
+    for i in attack:
         paire = []
         iner_matrix1 = deepcopy(iner_matrix)
         iner_attack, iner_matrix1 = disintegration(i, iner_matrix1, attack)
@@ -1795,16 +1799,23 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     print('iner_attack:', iner_attack)
 
     cost_for_attack = []
-    for i in active:
+    for i in attack:
         for j in cost:
             if i == j[0]:
                 cost_for_attack.append(j)
+    print('cost for attack: ', cost_for_attack )
+    print('nemerate: ', numerate)
+    print('len(cost_for_attack)', len(cost_for_attack))
+    print('len(numerate): ', len(numerate))
     if len(cost_for_attack) != len(numerate):
         print('toolha yeki nist', "\n", 'len cost_for_attack:',
               len(cost_for_attack) ,'len numerate', len(numerate))
         return
     for i in range(len(cost_for_attack)):
-         if cost[i][0] != numerate[i][0]:
+         print('len(cost_for_attack): ', len(cost_for_attack))
+         print('i:', i)
+         if cost_for_attack[i][0] != numerate[i][0]:
+             print('cost: ', cost[i][0] , 'numerate: ', numerate)
              print('tartib hamkhani nadarad')
              return
          else:
@@ -1838,10 +1849,11 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     print('active_lst: ', active)
     print('target_decision: ', target_decision)
     active_pop = deepcopy(active)
-    for i in attack:
-        index = active_pop.index(i)
-        active_pop.pop(index)
+    index = active_pop.index(target_decision)
+    active_pop.pop(index)
     print('active_pop: ', active_pop)
+    if len(active_pop)== 0:
+        return target_decision, max_reward
     target_epsilon = epsilon_greedy(epsilon_prob, target_prob, target_decision, active_pop)
     if target_epsilon == target_decision:
         return target_decision, max_reward
@@ -1915,8 +1927,11 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
     s_lst.append(0)
     q_value = 0
     last_reward = 0
-    active_node_lst = active_node(iner_matrix)
+
     while len(closeness) != 0:
+        active_node_lst = active_node(iner_matrix)
+        print('1933: attack_list: ', attack_list)
+        print('1934: active_node_list: ', active_node_lst)
         iner_target_node = []
         closeness = closeness_deg(main_graph)
         print('len(closeness): ', len(closeness))
@@ -1924,14 +1939,20 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
             print ('Network has disintegrated successfuly in Q_learning')
             return conct_lst , cost , q_value, target_nodes_lst , q_table
         else:
+            print('attack_list in else: ', attack_list)
+            temp_attack = []
             for node in attack_list:
-                if node not in active_node_lst:
-                    index = attack_list.index(node)
-                    attack_list.pop(index)
-                    print('alone node hase deleted: ', node)
-        active_node_lst = active_node(iner_matrix)
+                print('node:', node)
+                if node in active_node_lst:
+                    #index = attack_list.index(node)
+                    temp_attack.append(node)
+                    print('attack_list: ', attack_list)
+                    print('temp_attack: ', temp_attack)
+            attack_list = deepcopy(temp_attack)
         last_node = target_nodes_lst[-1][0]
         last_state = s_lst[-1]
+        print('1953: attack_list: ', attack_list)
+        print('1954: active_node_list: ', active_node_lst)
         next_node, next_reward = target_node_q_learning_attack(q_table, last_node, last_state, last_reward,
                                                        iner_matrix, attack_list, active_node_lst,
                                                         conct, p, landa, gama,
@@ -1963,7 +1984,7 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
         browse.append(next_node)
         if len(closeness) == 0:
             print ('Network has been disintegrated successfuly in Q_learning')
-            return conct_lst, cost, q_value, target_nodes_lst, q_table
+            return conct_lst, cost, q_value, target_nodes_lst, q_table, browse
     return conct_lst, cost, q_value, target_nodes_lst, q_table, browse
 
 
@@ -1976,23 +1997,24 @@ def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
         q_table = np.load('Q_table.npy', allow_pickle= True)
         last_browsing = [0]* total_node
         print('last_browsing: ', last_browsing)
-        conct_lst, cost, q_value, target_nodes_lst, q_table, browsig_lst = 0q_learning(iner_main_matrix,
+        conct_lst, cost, q_value, target_nodes_lst, q_table, browsing_lst = q_learning(iner_main_matrix,
                                                            p, landa, gama, q_table,
                                                            epsilon_prob, target_prob)
+        print('browsing_lst:' , browsing_lst)
         print('Q_Table', q_table)
         print('data type of q_table:', type(q_table))
         np.save('Q_table.npy', q_table)
 
-        if len(last_browsing) == len(browsig_lst):
+        if len(last_browsing) == len(browsing_lst):
             for i in range(len(last_browsing)):
-                if last_browsing[i] == browsig_lst[i]:
+                if last_browsing[i] == browsing_lst[i]:
                     continue_browsing = False
                 else:
-                    last_browsing = browsig_lst
+                    last_browsing = browsing_lst
                     print('continue browsing')
 
             else:
-                last_browsing = browsig_lst
+                last_browsing = browsing_lst
                 print('continue browsing')
 
     return q_table
@@ -2149,10 +2171,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # # print('Averg_Weight' , Averg_Weight)
 # # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
 # print('14')
-# Q_Table = def table_initiator_Q(Total_Node)
+# Q_Table = table_initiator_Q(Total_Node)
 # print ('Q_Table: ', Q_Table)
 # print('15')
-
 # print('initializing has finished successfully')
 
 
