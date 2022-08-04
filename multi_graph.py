@@ -2006,12 +2006,13 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
 
 def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
+    i = 0
+    total_node = np.load('Total_Node.npy' , allow_pickle= True)
+    last_browsing = [0]* total_node
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    iner_main_matrix = deepcopy(main_matrix)
     while continue_browsing:
-        main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
-        iner_main_matrix = deepcopy(main_matrix)
-        total_node = np.load('Total_Node.npy' , allow_pickle= True)
         q_table = np.load('Q_table.npy', allow_pickle= True)
-        last_browsing = [0]* total_node
         print('last_browsing: ', last_browsing)
         conct_lst, cost, q_value, target_nodes_lst, q_table, browsing_lst = q_learning(iner_main_matrix,
                                                            p, landa, gama, q_table,
@@ -2020,21 +2021,37 @@ def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
         print('Q_Table', q_table)
         print('data type of q_table:', type(q_table))
         np.save('Q_table.npy', q_table)
-
-
+        i = i+1
+        print('iiiii:', i)
         if len(last_browsing) == len(browsing_lst):
             for i in range(len(last_browsing)):
+                print('ba ham barabaran')
+                print('browsing_lst:' , browsing_lst)
+                print('last_browsing: ', last_browsing)
+                print('last_browsing[i] ', last_browsing[i])
+                print('browsing_lst[i] ', browsing_lst[i])
                 if last_browsing[i] == browsing_lst[i]:
                     continue_browsing = False
                 else:
-                    last_browsing = browsing_lst
-                    print('continue browsing')
+                    continue_browsing = True #//////////////////bayad ye kari konim ke in hey yeki dar moyoon t , f shod ghati nakone
+                # print('convergence is occured on i = ', i)
+                # else:
+                #     last_browsing = browsing_lst
+                #     browsing_lst = [0]
+                #     print('continue browsing')
+                #     print('browsing_lst:' , browsing_lst)
+                #     print('last_browsing: ', last_browsing)
+        else:
+            last_browsing = browsing_lst
+            browsing_lst = [0]
+            print('continue browsing')
+            print('browsing_lst:' , browsing_lst)
+            print('last_browsing: ', last_browsing)
 
-            else:
-                last_browsing = browsing_lst
-                print('continue browsing')
+    if continue_browsing==
 
-    return q_table
+
+    return q_table , i
 
 
 
