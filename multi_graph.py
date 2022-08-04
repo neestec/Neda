@@ -18,7 +18,7 @@ from sklearn.preprocessing import normalize
 import pandas as pd
 from operator import itemgetter
 import matplotlib.pyplot as plt
-import ga
+#import ga
 import pickle
 
 
@@ -663,8 +663,10 @@ def table_initiator_Q(total_node):
     # Create Q-Table by Total_node Dimentions
     #n = len(total_node)
     q_table = np.zeros((total_node, total_node), dtype="float", order='c')
+    q_rewards = np.zeros((total_node, total_node), dtype="float", order='c')
     print('q_table' , q_table)
     np.save('Q_table.npy' , q_table)
+    np.save('Q_reward.npy', q_rewards)
     return q_table
 
 
@@ -1773,10 +1775,11 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     print('attack: ' , attack)
     print('active: ' , active)
     print('len(attack_lst):' , len(attack), "\n", 'attack_list:', attack)
-    cost = cost_count(internal_main_graph, active_lst, p)
+    cost = cost_count(internal_main_graph, active_lst, p)# be ezaye hameye node haye graph, cost hesab mishe
     reward = []
     numerate = [] # soorate kasre mohasebe reward
     for i in attack:
+        # br ezaye hame node haye attack, difintegration anjam mishe va connectivity hesab mishe
         paire = []
         iner_matrix1 = deepcopy(iner_matrix)
         iner_attack, iner_matrix1 = disintegration(i, iner_matrix1, attack)
@@ -1784,7 +1787,7 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
         internal_main_graph = create_main_graph(iner_matrix1)
         connectivity = connectivity_count(internal_main_graph)
         inter_con = (connectivity /iner_main_conct)
-        subtrac = conct- inter_con # soorate kasre reward baraye i
+        subtrac = conct - inter_con # soorate kasre reward baraye i
         paire.append(i)
         paire.append(subtrac)
         numerate.append(paire) #yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
@@ -1797,9 +1800,8 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     print('active:', active)
     print('attack: ', attack)
     print('iner_attack:', iner_attack)
-
     cost_for_attack = []
-    for i in attack:
+    for i in attack: # cost haye motanazer ba attack list joda mishan
         for j in cost:
             if i == j[0]:
                 cost_for_attack.append(j)
@@ -1811,7 +1813,7 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
         print('toolha yeki nist', "\n", 'len cost_for_attack:',
               len(cost_for_attack) ,'len numerate', len(numerate))
         return
-    for i in range(len(cost_for_attack)):
+    for i in range(len(cost_for_attack)): #mohasebeye reward baraye hameye azaye attack list
          print('len(cost_for_attack): ', len(cost_for_attack))
          print('i:', i)
          if cost_for_attack[i][0] != numerate[i][0]:
@@ -1827,24 +1829,35 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
             r.append(temp) # in list dotayi hast. shomare node va reward
             reward.append(r)
     print('reward list of attack list: ', reward)
+    q_value = []
+    for r in reward: # be ezaye hameye azaye attack list q_value hesab mishavad
+        temp_q_value = []
+        # value marboot be next state
+        # q_table[last_state+1][r[0]]: meghdare ghabli hamin node va state dar q_table
+
+        value = q_table[last_state+1][r[0]] + landa*(( gama*(r[1]) - q_table[last_state+1][r[0]]))
+        temp_q_value.append(r[0])
+        temp_q_value.append(value)
+        q_value.append(temp_q_value)
+
     node = []
-    reward_pure = []
-    for i in reward:
+    pure_value = []
+    for i in q_value: # meghdare bishtarin value dar in ghesmat moshakhas mishavad
         node.append(i[0])
-        reward_pure.append(i[1])
+        pure_value.append(i[1])
     data_frame = pd.DataFrame({
         "node_number" : node,
-        "q_value" : reward_pure,
+        "q_value" : pure_value,
         })
     print(data_frame)
     column0 = data_frame["q_value"]
-    max_reward = column0.max()
-    target_node_p = data_frame['node_number'][data_frame[data_frame['q_value'] == max_reward].index.tolist()].tolist()
+    max_value = column0.max()
+    target_node_p = data_frame['node_number'][data_frame[data_frame['q_value'] == max_value].index.tolist()].tolist()
     target_decision = target_node_p[0]
     print('target_decision:', target_decision)
     #q(St,at) = q(St,at) + landa(rt + Gama * max Q(St+1 , a) - Q(St , at))
-    q_table[last_state][last_node] = q_table[last_state][last_node] + landa*(last_reward+ gama*(max_reward) - q_table[last_state][last_node])
-    q_value_lst = q_table[last_state][last_node]
+    # q_table[last_state][last_node] = q_table[last_state][last_node] + landa*(last_reward+ gama*(max_value) - q_table[last_state][last_node])
+    # q_value_lst = q_table[last_state][last_node]
     #prepare data for epsilone greedy
     print('active_lst: ', active)
     print('target_decision: ', target_decision)
@@ -1853,10 +1866,10 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
     active_pop.pop(index)
     print('active_pop: ', active_pop)
     if len(active_pop)== 0:
-        return target_decision, max_reward
+        return target_decision, max_value
     target_epsilon = epsilon_greedy(epsilon_prob, target_prob, target_decision, active_pop)
     if target_epsilon == target_decision:
-        return target_decision, max_reward
+        return target_decision, max_value
     else:
         # bayad baraye target_epsilon cost va reward hesab konim.
         for i in cost:
@@ -1872,18 +1885,20 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
         inter_con = (connectivity/iner_main_conct)
         subtrac2 = conct- inter_con # soorate kasre reward baraye i
         max_reward_epsilon = subtrac2/epsilon_cost
+        max_epsilon_value = q_table[last_state+1][target_epsilon] + landa*((gama*(max_reward_epsilon) - q_table[last_state+1][target_epsilon]))
         print('max_reward_epsilon', max_reward_epsilon)
-        return target_epsilon, max_reward_epsilon
+        return target_epsilon, max_epsilon_value
 
 
-def q_value_count_update(last_node, last_state, last_reward, current_state,  next_node ,next_reward, q_table , landa , gama):
+def q_value_count_update(last_node, last_state, last_reward, current_state, next_node, next_reward, q_table, landa,
+                         gama):
     # q(St,at) = q(St,at) + landa(rt + Gama * max Q(St+1 , a) - Q(St , at))
     # sample: delta = 1+ 0.9*0-0 = 1
     #         0+ 0.1*1 = 0.1
     old_value = q_table[last_state][last_node]
     # print('next_node: ' , next_node , "\n" ,'next_reward:' ,  next_reward, "\n",
     #           'q_table:',  q_table , "\n", 'landa', landa ,"\n", 'gama', gama)
-    new_value = old_value + (landa*(last_reward+ (gama*next_reward)) - old_value)
+    new_value = old_value + landa*((last_reward+ (gama*next_reward)) - old_value)
     q_table[current_state][next_node] = next_reward
     q_table[last_state][last_node] = new_value
     print('newwwwww value: ' , new_value)
@@ -1953,6 +1968,7 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
         last_state = s_lst[-1]
         print('1953: attack_list: ', attack_list)
         print('1954: active_node_list: ', active_node_lst)
+
         next_node, next_reward = target_node_q_learning_attack(q_table, last_node, last_state, last_reward,
                                                        iner_matrix, attack_list, active_node_lst,
                                                         conct, p, landa, gama,
@@ -1969,8 +1985,8 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
         last_state = s_lst[-1]
         s_lst.append(s_lst[-1]+1)
         current_state = s_lst[-1]
-        q_table , q_value_internal  = q_value_count_update(last_node, last_state, last_reward, current_state ,
-                                                           next_node ,next_reward, q_table , landa , gama)
+        q_table, q_value_internal = q_value_count_update(last_node, last_state, last_reward, current_state,
+                                                           next_node, next_reward, q_table, landa, gama)
         last_reward = next_reward
         q_value = q_value + q_value_internal
         attack_list, iner_matrix = disintegration(next_node, iner_matrix, attack_list)
@@ -1991,9 +2007,9 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
 def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
     while continue_browsing:
-        main_matrix = np.load('Main_Matrix.npy')
+        main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
         iner_main_matrix = deepcopy(main_matrix)
-        total_node = np.load('Total_Node.npy')
+        total_node = np.load('Total_Node.npy' , allow_pickle= True)
         q_table = np.load('Q_table.npy', allow_pickle= True)
         last_browsing = [0]* total_node
         print('last_browsing: ', last_browsing)
@@ -2004,6 +2020,7 @@ def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
         print('Q_Table', q_table)
         print('data type of q_table:', type(q_table))
         np.save('Q_table.npy', q_table)
+
 
         if len(last_browsing) == len(browsing_lst):
             for i in range(len(last_browsing)):
