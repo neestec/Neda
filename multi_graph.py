@@ -664,21 +664,29 @@ def table_initiator_Q_attack(total_node):
     # Create Q-Table by Total_node Dimentions
     #n = len(total_node)
     q_table = np.zeros((total_node, total_node), dtype="float", order='c')
-    q_rewards = np.zeros((total_node, total_node), dtype="float", order='c')
     print('q_table' , q_table)
     np.save('Q_table.npy' , q_table)
 
     return q_table
 
 def table_initiator_Q_total(total_node):
-    # Create Q-Table by Total_node Dimentions
+    # Create Q-Table_Total by Total_node Dimentions
     #n = len(total_node)
-    q_table = np.zeros((total_node, total_node), dtype="float", order='c')
-    q_rewards = np.zeros((total_node, total_node), dtype="float", order='c')
-    print('q_table' , q_table)
-    np.save('Q_table_Total.npy' , q_table)
+    q_table_total = np.zeros((total_node, total_node), dtype="float", order='c')
+    print('q_table' , q_table_total)
+    np.save('Q_table_Total.npy' , q_table_total)
 
-    return q_table
+    return q_table_total
+
+def h_table_initiator(total_node):
+    # Create H-Table by Total_node Dimentions
+    #n = len(total_node)
+    h_table = np.zeros((total_node, total_node), dtype="float", order='c')
+    print('h_table' , h_table)
+    np.save('H_Table.npy' , h_table)
+    return h_table
+
+
 
 def weight_account(list_of_weight, active_nodes):
     # vazn node haye active ro hesab mikone(methodesh ro farakhani mikone)
@@ -1493,6 +1501,20 @@ def epsilon_greedy(epsilon_prob, target_prob, target_node, attack_list_pop_targe
 
 #__________Automata_lerning______________
 
+def automata_cost_creation( node, p):
+    main_matrix = np.load('Main_Matrix.npy')
+    iner_main_matrix = main_matrix
+    connctivity_aut = 0.0
+
+    cost = []
+    for i in range(len(p)):
+        #internal_matrix = deepcopy(main_matrix)
+        connctivity_aut_inter, cost_aut, target_nodes_lst = automata_dis(iner_main_matrix ,node,  p[i] )
+        cost.append(cost_aut)
+        if i == 0:
+            connctivity_aut = connctivity_aut_inter
+    return connctivity_aut , cost
+
 
 def target_node_aut_learning( matrix , active_lst , conct , p):
     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
@@ -1572,18 +1594,17 @@ def h_value_count_update( current_state, target_node , h_table , a):
     return h_table
 
 
-def automata_dis( p , a, h_table ):
-    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
-    iner_main_matrix = deepcopy(main_matrix)
+def automata_dis(iner_main_matrix, p , a, h_table):
     main_conct = np.load('Main_Conct.npy')
     iner_main_conct = deepcopy(main_conct)
-    cost = 0.0
+    cost_rate = p
     iner_matrix = deepcopy(iner_main_matrix)
     main_graph = create_main_graph(iner_matrix)
-    attack_list = []
+    active_lst = active_node(iner_main_matrix)
     initiator_node = rand_node(main_graph)
     #h_table = table_initiator(Total_Node)
-    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
+    cost_lst = cost_count(main_graph, active_lst , cost_rate)
+    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, [])
     print('attack lst after automata init: ' , attack_list)
     main_graph = create_main_graph(iner_matrix)
     closeness = closeness_deg(main_graph)
@@ -1592,6 +1613,12 @@ def automata_dis( p , a, h_table ):
     connectivity = connectivity_count(main_graph)
     conct = (connectivity/ iner_main_conct)
     print('first connectivity: ', conct)
+    numerate_target = iner_main_conct - connectivity
+
+    for i in cost_lst:
+        if i[0] == initiator_node:
+            cost_init = i[1]
+    last_reward = numerate_target/cost_init
     conct_lst.append(conct)
     browse = []
     browse.append(initiator_node)
@@ -1604,7 +1631,7 @@ def automata_dis( p , a, h_table ):
     s_lst = []
     s_lst.append(0)
     h_value = 0
-    last_reward = 0
+
     while len(closeness) != 0:
         iner_target_node = []
         closeness = closeness_deg(main_graph)
@@ -1651,34 +1678,28 @@ def automata_dis( p , a, h_table ):
     return  conct_lst, cost  , target_nodes_lst , h_table
 
 
-def automata_cost_creation( node, p):
-    main_matrix = np.load('Main_Matrix.npy')
-    iner_main_matrix = main_matrix
-    connctivity_aut = 0.0
-
-    cost = []
-    for i in range(len(p)):
-        #internal_matrix = deepcopy(main_matrix)
-        connctivity_aut_inter, cost_aut, target_nodes_lst = automata_dis(iner_main_matrix ,node,  p[i] )
-        cost.append(cost_aut)
-        if i == 0:
-            connctivity_aut = connctivity_aut_inter
-    return connctivity_aut , cost
-
-
-def automata_learn_episodic(total_node, episode, p, a):
-    main_matrix= np.load('Main_Matrix.npy')
+def automata_learn_convergence(p, alfa):
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
     iner_main_matrix = deepcopy(main_matrix)
-    h_table = table_initiator_aut(total_node)
-    for i in range(episode):
-        conct_lst, cost, target_nodes_lst , h_table = automata_dis(iner_main_matrix, p, a, h_table)
-        print('H_Table' , h_table)
-    print('data type of h_table:' , type(h_table))
-    np.save('H_table.npy' , h_table)
-    h_table_load = np.load('H_table.npy' , allow_pickle= True)
-    print('H_Table_load' , h_table_load)
-    print('data type of q_table_load:' , type(h_table_load))
-    return h_table
+    total_node = np.load('Total_Node.npy', allow_pickle=True)
+    last_browsing = [0] * total_node
+    continue_browsing = True
+    i=0
+    while continue_browsing:
+        h_table = np.load('Q_table_Total.npy', allow_pickle= True)
+        print('h_table before dis in ', i, 'step:', "\n", h_table)
+        conct_lst, cost, browsing_lst , h_table = automata_dis(iner_main_matrix, p, alfa, h_table)
+        print('last_browsing: ', last_browsing)
+        print('browsing_lst:' , browsing_lst)
+        print('h_Table', h_table)
+        np.save('Q_table_Total.npy', h_table)
+        i = i+1
+        print('counter:', i)
+        continue_browsing , last_browsing, browsing_lst = convergence_check(last_browsing, browsing_lst)
+
+    return h_table, i
+
+
 
 #---------------------------------------------Q-LEARNING-------------------------------------------------------
 
@@ -1964,25 +1985,28 @@ def target_node_q_learning_attack(q_table, last_node, last_state, last_reward,  
 def q_learning_attack(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob):
     main_conct = np.load('Main_Conct.npy')
     iner_main_conct = deepcopy(main_conct)
-    cost = 0.0
+    cost = p
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix)
-    attack_list = []
+    active_lst = active_node(iner_matrix)
+    cost_lst = cost_count(main_graph, active_lst, p)
     initiator_node = rand_node()
-    #q_table = table_initiator(Total_Node)
-    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
+    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, [])
     print('attack lst after Q_learning init: ', attack_list)
     main_graph = create_main_graph(iner_matrix)
-    closeness = closeness_deg(main_graph)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
     conct = (connectivity/iner_main_conct)
-    print('first connectivity: ', conct)
+    conct_init = iner_main_conct - conct
+    for i in cost_lst:
+        if i[0] == initiator_node:
+            cost_init = i[1]
+    last_reward = conct/conct_init
+    print('first connectivity: ', conct_init)
     conct_lst.append(conct)
     browse = []
     browse.append(initiator_node)
-    #list of browsed nodes for disintegrating
     target_nodes_lst = []
     first_node = []
     first_node.append(initiator_node)
@@ -1990,8 +2014,10 @@ def q_learning_attack(main_matrix, p , landa , gama, q_table, epsilon_prob, targ
     target_nodes_lst.append(first_node)
     s_lst = []
     s_lst.append(0)
-    q_value = 0
-    last_reward = 0
+    q_value = landa*(gama*(last_reward))
+    q_table[0][initiator_node] = q_value
+    np.save('Q_table.npy', q_table)
+    closeness = closeness_deg(main_graph)
 
     while len(closeness) != 0:
         active_node_lst = active_node(iner_matrix)
@@ -2214,25 +2240,28 @@ def target_node_q_learning_total(q_table, last_node, last_state, last_reward,  m
 def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, target_prob):
     main_conct = np.load('Main_Conct.npy')
     iner_main_conct = deepcopy(main_conct)
-    cost = 0.0
+    cost = p
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix)
-    attack_list = []
+    active_lst = active_node(iner_matrix)
+    cost_lst = cost_count(main_graph, active_lst, p)
     initiator_node = rand_node()
-    #q_table = table_initiator(Total_Node)
-    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, attack_list)
+    attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, [])
     print('attack lst after Q_learning init: ', attack_list)
     main_graph = create_main_graph(iner_matrix)
-    closeness = closeness_deg(main_graph)
     conct_lst = []
     conct_lst.append(1)
     connectivity = connectivity_count(main_graph)
     conct = (connectivity/iner_main_conct)
-    print('first connectivity: ', conct)
+    conct_init = iner_main_conct - conct
+    for i in cost_lst:
+        if i[0] == initiator_node:
+            cost_init = i[1]
+    last_reward = conct/conct_init
+    print('first connectivity: ', conct_init)
     conct_lst.append(conct)
     browse = []
     browse.append(initiator_node)
-    #list of browsed nodes for disintegrating
     target_nodes_lst = []
     first_node = []
     first_node.append(initiator_node)
@@ -2240,8 +2269,10 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
     target_nodes_lst.append(first_node)
     s_lst = []
     s_lst.append(0)
-    q_value = 0
-    last_reward = 0
+    q_value = landa*(gama*(last_reward))
+    q_table_total[0][initiator_node] = q_value
+    closeness = closeness_deg(main_graph)
+    np.save('Q_table.npy', q_table_total)
 
     while len(closeness) != 0:
         active_node_lst = active_node(iner_matrix)
@@ -2308,7 +2339,7 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
 
 def q_learning_convergence_total(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
-    i = 0
+    i = 1000
     total_node = np.load('Total_Node.npy' , allow_pickle= True)
     last_browsing = [0]* total_node
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
@@ -2485,6 +2516,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # print('15')
 # Q_Table_Total = table_initiator_Q_total(24)
 # print('16')
+# H_Table = h_table_initiator(24)
+# print('17')
 # print('initializing has finished successfully')
 
 
@@ -2509,10 +2542,10 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 # Q_Table , i = q_learning_convergence_attack(1, 0.1, 0.9, 0.3, 0.7)
-Q_Table_Total , i  = q_learning_convergence_total(1, 0.1, 0.9, 0.3, 0.7)
+Q_Table_Total, i = q_learning_convergence_total(1, 0.1, 0.9, 0.3, 0.7)
 
 
-# H_Table = automata_learn_episodic(Total_Node, 2,  1, 0.2)
+# H_Table , i  = automata_learn_convergence( 1, 0.3)
 # conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Rand_Node, 0.0)
 # Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
 # print('cost_aut' , Cost_aut)
