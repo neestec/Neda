@@ -24,6 +24,7 @@ import pickle
 
 
 
+
 def list_node_init():
     """gets layers count as an int variation layer_n
     for each layer creates a random int number of nodes as a member of list_node
@@ -2004,6 +2005,39 @@ def q_learning(main_matrix, p , landa , gama, q_table, epsilon_prob, target_prob
     return conct_lst, cost, q_value, target_nodes_lst, q_table, browse
 
 
+
+def convergence_check(last_browsing, browsing_lst):
+
+        if len(last_browsing) == len(browsing_lst):
+            check_lst = []
+            for i in range(len(last_browsing)):
+                print('ba ham barabaran')
+                print('browsing_lst:' , browsing_lst)
+                print('last_browsing: ', last_browsing)
+                print('last_browsing[i] ', last_browsing[i])
+                print('browsing_lst[i] ', browsing_lst[i])
+                if last_browsing[i] == browsing_lst[i]:
+                    check_lst.append(1)
+                else:
+                    last_browsing = browsing_lst
+                    browsing_lst = [0]
+                    continue_browsing = True
+                    return continue_browsing , last_browsing, browsing_lst
+        else:
+            last_browsing = browsing_lst
+            browsing_lst = [0]
+            continue_browsing = True
+            print('continue browsing')
+            print('browsing_lst:' , browsing_lst)
+            print('last_browsing: ', last_browsing)
+            return continue_browsing , last_browsing, browsing_lst
+
+        if len(check_lst) == len (last_browsing):
+            continue_browsing = False
+            print('conversion has been occured')
+            return continue_browsing , last_browsing, browsing_lst
+
+
 def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
     i = 0
@@ -2014,42 +2048,14 @@ def q_learning_convergence(p, landa, gama, epsilon_prob, target_prob):
     while continue_browsing:
         q_table = np.load('Q_table.npy', allow_pickle= True)
         print('last_browsing: ', last_browsing)
-        conct_lst, cost, q_value, target_nodes_lst, q_table, browsing_lst = q_learning(iner_main_matrix,
-                                                           p, landa, gama, q_table,
-                                                           epsilon_prob, target_prob)
+        conct_lst, cost, q_value, target_nodes_lst, q_table, browsing_lst = q_learning(iner_main_matrix, p, landa, gama, q_table,epsilon_prob, target_prob)
         print('browsing_lst:' , browsing_lst)
         print('Q_Table', q_table)
         print('data type of q_table:', type(q_table))
         np.save('Q_table.npy', q_table)
         i = i+1
         print('iiiii:', i)
-        if len(last_browsing) == len(browsing_lst):
-            for i in range(len(last_browsing)):
-                print('ba ham barabaran')
-                print('browsing_lst:' , browsing_lst)
-                print('last_browsing: ', last_browsing)
-                print('last_browsing[i] ', last_browsing[i])
-                print('browsing_lst[i] ', browsing_lst[i])
-                if last_browsing[i] == browsing_lst[i]:
-                    continue_browsing = False
-                else:
-                    continue_browsing = True #//////////////////bayad ye kari konim ke in hey yeki dar moyoon t , f shod ghati nakone
-                # print('convergence is occured on i = ', i)
-                # else:
-                #     last_browsing = browsing_lst
-                #     browsing_lst = [0]
-                #     print('continue browsing')
-                #     print('browsing_lst:' , browsing_lst)
-                #     print('last_browsing: ', last_browsing)
-        else:
-            last_browsing = browsing_lst
-            browsing_lst = [0]
-            print('continue browsing')
-            print('browsing_lst:' , browsing_lst)
-            print('last_browsing: ', last_browsing)
-
-    if continue_browsing==
-
+        continue_browsing , last_browsing, browsing_lst = convergence_check(last_browsing, browsing_lst)
 
     return q_table , i
 
