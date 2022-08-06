@@ -115,70 +115,39 @@ def create_matrix(list_node):
     for each layer create a random weighted graph by using of node number
     of layer: random_weighted_graph(nlist[l-1])
     create adjacency matrix for each matrix using g.get_adjacency() """
-    n = len(list_node)  # number of layers , list_node= list of nodes in each layer
-    #print ('layer number:', n)
-    print('sign111111111111')
+
+    n = len(list_node)
+    """number of layers , list_node= list of nodes in each layer"""
     total_mtrx = np.zeros((n, n), dtype="object", order='c')
-    print('sign22222222222222222')
-    # total_mtrx = np.empty((n, n, n, n ), dtype="int", order='c')
-    #print('total_mtrx:', total_mtrx)
     i = 0
     j = 0
     edge_list = []
     """create diagonal of main matrix """
-
     for l in range(n): # n = number of layers
-        #print ('l:', l)
         m = list_node[l]
-        #print ('l:' , l , 'list_node[l]: ' , m)
         adjc_mtrx = random_weighted_graph(m) # craete random weighted graph for each layer. l = number of nodes
-        print('sign333333333333333')
-        #adjc_mtrx = g.get_adjacency()
-        #print('xxxxxx:', adjc_mtrx)
         total_mtrx[i][j] = adjc_mtrx
         i = i + 1
         j = j + 1
-
-    #create Bipartite matrixes
-    comb = create_comb_array(list_node) #for each member of combarray: 0.comb, 1.B0, 2.B1, 3.B2, 4.B3, 5.R(edge_number), 6.n(lenth)
-    print('torrrrrrrrrrrrrrrrrrrrrrrrrrrrr:')
+    """create Bipartite matrixes"""
+    comb = create_comb_array(list_node)
+    """for each member of combarray: 0.comb, 1.B0, 2.B1, 3.B2, 4.B3, 5.R(edge_number), 6.n(lenth)"""
     for p in comb:
-        #print ('number of biprt edge:' , p[5], 'B1:', p[2] , 'B3', p[4])
         G = nx.bipartite.gnmk_random_graph(p[2], p[4], p[5])
-        print('sign44444444444444')
         G_lenth =(p[6])
         Row_order = range(G_lenth)
-        #print ('row_order:', Row_order)
-        #G_adj0 = np.zeros((G_lenth, G_lenth), order='c')
         G_adj = nx.bipartite.biadjacency_matrix(G,row_order=Row_order, column_order= Row_order)
-        # print('Type of G_adj0:',type(G_adj))
-        # print('G_adj:', G_adj)
-        # print ('shape:' ,csr_matrix.get_shape(G_adj))
-        #G_dens = csr_matrix.todense(G_adj)
         G_array = csr_matrix.toarray(G_adj)
-        #print('G_array:', G_array, G_array.ndim , G_array[0], len(G_array[0]), G_array[0][0])
-        #total_mtrx = np.zeros((n, n), dtype="object", order='c')
         dens_matrx= np.zeros((G_lenth, G_lenth) , order='c')
-        #dtype="object"
-        print('ppppppppppppppppppppppppppppppppppp')
         for i in range(G_lenth):
             for j in range(G_lenth):
                 dens_matrx[i][j]= int(G_array[i][j])
-        #print('dens_matrx:', dens_matrx)
-        print('zzzzzzzzzzzzzzzzzzzz')
         for i in range(0 , G_lenth):
             for j in range(0, G_lenth):
                 if dens_matrx[i][j]==1:
                     dens_matrx[j][i]= 1
-
-        #print('dens_matrx after convertion :', dens_matrx)
         total_mtrx[p[1]][p[3]] = dens_matrx
         total_mtrx[p[3]][p[1]] = dens_matrx
-
-    #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
-
-    print('totttttttttttttttttttttttttttttt:')
-    print(type(total_mtrx))
     print('total_mtrx', total_mtrx)
     return total_mtrx
 
@@ -2045,7 +2014,7 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
 
 def q_learning_base_total(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
-    i = 0
+    i = 247
     total_node = np.load('Total_Node.npy' , allow_pickle= True)
     last_browsing = [0] * total_node
     sum_value = [1]
