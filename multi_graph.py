@@ -1949,7 +1949,7 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
     q_table_total[0][initiator_node] = q_value
     closeness = closeness_deg(main_graph)
     np.save('Q_table.npy', q_table_total)
-
+    sum_reward = last_reward
     while len(closeness) != 0:
         active_node_lst = active_node(iner_matrix)
         print('2249: active_nodes: ', active_node_lst)
@@ -1997,6 +1997,7 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
                                                            next_node, next_value, q_table_total, landa, gama)
         last_reward = next_reward
         sum_q_value = q_value + q_value_internal
+        sum_reward = sum_reward + next_reward
         main_graph = create_main_graph(iner_matrix)
         closeness = closeness_deg(main_graph)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
@@ -2007,14 +2008,14 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
         if len(closeness) == 0:
             print ('Network has been disintegrated successfuly in Q_learning')
             return conct_lst, cost, q_value, target_nodes_lst, q_table_total, browse
-    return conct_lst, cost, sum_q_value, target_nodes_lst, q_table_total, browse
+    return conct_lst, cost, sum_reward, target_nodes_lst, q_table_total, browse
 
 
 
 
 def q_learning_base_total(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
-    i = 247
+    i = 0
     total_node = np.load('Total_Node.npy' , allow_pickle= True)
     last_browsing = [0] * total_node
     sum_value = [1]
@@ -2145,7 +2146,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 #-------------MAIN------------------------------------------------------------------
 
 #-------------initiator--------------
-# # #
+# # # #
 # list_node_initial , Layen_Count = list_node_init()
 # # np.save('list_node_initial' , list_node , allow_pickle=True)
 # # np.save('Layen_Count' , layer_n , allow_pickle=True)
