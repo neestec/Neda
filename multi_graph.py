@@ -1811,16 +1811,11 @@ def q_target_total(q_table, last_node, last_state, last_reward,  matrix,
         paire.append(i)
         paire.append(subtrac)
         numerate.append(paire) #yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
-        print('i:', i, 'paire:', paire)
-        print('soorate kasre reward:', numerate)
         iner_matrix = deepcopy(matrix)
     # hala ye cost darim ye list soorat baraye kasr ha
     print('cost: ', cost)
-    print('active_list: ', active_lst)
-    print('active:', active)
-    cost_for_active = []
     print('nemerate: ', numerate)
-    print('len(numerate): ', len(numerate))
+    cost_for_active = []
     if len(cost) != len(numerate):
         print('toolha yeki nist', "\n", 'len cost:',
               len(cost) ,'len numerate', len(numerate))
@@ -1949,7 +1944,7 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
     q_table_total[0][initiator_node] = q_value
     closeness = closeness_deg(main_graph)
     np.save('Q_table.npy', q_table_total)
-    sum_reward = last_reward
+
     while len(closeness) != 0:
         active_node_lst = active_node(iner_matrix)
         print('2249: active_nodes: ', active_node_lst)
@@ -1997,7 +1992,6 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
                                                            next_node, next_value, q_table_total, landa, gama)
         last_reward = next_reward
         sum_q_value = q_value + q_value_internal
-        sum_reward = sum_reward + next_reward
         main_graph = create_main_graph(iner_matrix)
         closeness = closeness_deg(main_graph)
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
@@ -2008,14 +2002,14 @@ def q_learning_total(main_matrix, p, landa, gama, q_table_total, epsilon_prob, t
         if len(closeness) == 0:
             print ('Network has been disintegrated successfuly in Q_learning')
             return conct_lst, cost, q_value, target_nodes_lst, q_table_total, browse
-    return conct_lst, cost, sum_reward, target_nodes_lst, q_table_total, browse
+    return conct_lst, cost, sum_q_value, target_nodes_lst, q_table_total, browse
 
 
 
 
 def q_learning_base_total(p, landa, gama, epsilon_prob, target_prob):
     continue_browsing = True
-    i = 0
+    i = 247
     total_node = np.load('Total_Node.npy' , allow_pickle= True)
     last_browsing = [0] * total_node
     sum_value = [1]
@@ -2146,7 +2140,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 #-------------MAIN------------------------------------------------------------------
 
 #-------------initiator--------------
-# # # #
+# # #
 # list_node_initial , Layen_Count = list_node_init()
 # # np.save('list_node_initial' , list_node , allow_pickle=True)
 # # np.save('Layen_Count' , layer_n , allow_pickle=True)
