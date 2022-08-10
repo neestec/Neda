@@ -1716,7 +1716,7 @@ def reward_counting(landa, gama , new_reward, next_value):
 
 def value_count( old_value , reward, landa):
     # ghablan lada dar reward zarb shode
-    new_value = old_value + reward - landa*(old_value)
+    new_value = old_value + reward  # - landa*(old_value)
     return new_value
 
 
@@ -1840,7 +1840,9 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob, target_prob):
     main_graph = create_main_graph(iner_matrix)
     active_lst = active_node(iner_matrix)
     cost_lst = cost_count(main_graph, active_lst, p)
+    print('first list of cost: ', cost_lst)
     initiator_node = rand_node()
+    cost_init = cost_lst[initiator_node][1]
     attack_list, iner_matrix = disintegration(initiator_node, iner_matrix, [])
     print('attack lst after Q_learning init: ', attack_list)
     main_graph = create_main_graph(iner_matrix)
@@ -1849,7 +1851,6 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob, target_prob):
     connectivity = connectivity_count(main_graph)
     #conct = (connectivity/iner_main_conct)
     conct_init = iner_main_conct - connectivity
-    cost_init = cost_lst[initiator_node][1]
     new_reward = conct_init/cost_init
     conct_lst.append(iner_main_conct)
     conct_lst.append(connectivity)
@@ -2094,7 +2095,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # H_Table = h_table_initiator(Total_Node)
 # print('17')
 # print('initializing has finished successfully')
-
+#
 
 #-----------------methodes-------------------
 
