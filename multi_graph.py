@@ -1697,8 +1697,9 @@ def softmax(vector):
 
 
 def reward_counting(landa, gama, new_reward, next_value, old_value):
-    #reward = landa*(new_reward)
-    reward = landa*(new_reward + gama*next_value )#- old_value)
+
+    #reward = landa*(new_reward + gama*next_value)
+    reward = new_reward + gama*next_value
     return reward
 
 
@@ -1708,24 +1709,36 @@ def value_count(old_value, next_value,  reward, landa, gama):
     print ('next_value', next_value)
     print('reward: ' , reward)
 
-    new_value = old_value + reward - landa*old_value #+ landa*(gama*(next_value)  - old_value)
+    new_value = old_value +landa*(reward - old_value) #+ landa*(gama*(next_value)  - old_value)
     return new_value
 
 
-def convergence_value(sum_value, sum_max):
-    dx_lst = []
-    last = sum_value[-1]
-    for i in range(30):
-        dx = sum_value[-(i+1)] - sum_max
-        if abs(dx) > 0.003:
-            continue_browsing = True
-            print('not convergence')
-            return continue_browsing
+# def convergence_value(sum_value, sum_max):
+#     dx_lst = []
+#     last = sum_value[-1]
+#     for i in range(30):
+#         dx = sum_value[-(i+1)] - sum_max
+#         if abs(dx) > 0.003:
+#             continue_browsing = True
+#             print('not convergence')
+#             return continue_browsing
+#
+#     continue_browsing = False
+#     print('********convergence********')
+#     return continue_browsing
 
-    continue_browsing = False
-    print('********convergence********')
-    return continue_browsing
-
+def learning_convergence(learning_rate):
+    continue_browsing= True
+    max_delta= 0.0
+    max_delta = max(learning_rate)
+    print('max_delta:' , max_delta)
+    if max_delta > 0.02:
+        print('not converge')
+        return continue_browsing
+    else:
+        continue_browsing = False
+        print('continue_browsing is False: ', continue_browsing )
+        return continue_browsing
 
 def q_target_node(q_table,last_state, last_value, matrix,
                   active_lst, attack_list, conct, p,landa,gama,epsilon_prob,target_prob):
@@ -1845,10 +1858,13 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob,
     active_nodes = active_node(iner_matrix)
     connectivity = conct_lst[-1]
     main_graph = create_main_graph(iner_matrix)
+    delta = []
     while len(active_nodes) != 0:
         if len(active_nodes) == 0:
+            print('delta:' , delta)
             print ('Network has disintegrated successfuly in Q_learning')
-            return conct_lst, cost, sum_reward, q_table, browse
+            continue_browsing = learning_convergence(delta)
+            return conct_lst, cost, sum_reward, q_table, browse, continue_browsing
         else:
             #print('attack_list in else: ', attack_list)
             temp_attack = []
@@ -1873,13 +1889,18 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob,
         s_lst.append(s_lst[-1]+1)
         value = value_count(value, q_table[s_lst[-1]][browse[-1]], reward, landa, gama)
         print('value: ' , value )
+        learning_rate =abs(q_table[s_lst[-2]][browse[-2]] - value)
+        print('learning_rate : ' , learning_rate)
+        delta.append(learning_rate)
         q_table[s_lst[-2]][browse[-2]] = value
         print('q_table:' , q_table)
         connectivity = connectivity_count(main_graph)
         conct_lst.append(connectivity)
         if len(active_nodes) == 0:
+            print('delta:' , delta)
             print ('Network has been disintegrated successfuly in Q_learning')
-            return conct_lst, cost, sum_reward, q_table, browse
+            continue_browsing = learning_convergence(delta)
+            return conct_lst, cost, sum_reward, q_table, browse , continue_browsing
     return conct_lst, cost, sum_reward, q_table, browse
 
 
@@ -1893,31 +1914,26 @@ def q_learning_base(p, landa, gama, epsilon_prob, target_prob):
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_main_matrix = deepcopy(main_matrix)
     continue_browsing = True
-    i = 0
+    i = 1480
 
     while continue_browsing:
         q_table, init_s_lst , init_browse, init_value, init_reward, init_conct_lst, init_attack_list, iner_matrix, cost_init = \
         initiator(main_matrix, p, landa, gama, q_table, initiator_node)
-        conct_lst, cost, sum_reward, q_table, browse = q_learning(main_matrix, p,landa, gama, q_table,
+        conct_lst, cost, sum_reward, q_table, browse, continue_browsing = q_learning(main_matrix, p,landa, gama, q_table,
         epsilon_prob, target_prob, init_s_lst, init_browse , init_reward, init_conct_lst, init_attack_list, cost_init)
         sum_value.append(sum_reward)
         print('browse:', browse)
         print('Q_Table', q_table)
         np.save('Q_table.npy', q_table)
-        np.save('Sum_valu.npy.npy', sum_value)
+        np.save('Sum_valu.npy', sum_value)
         i = i+1
         print('counter:', i)
         print('max valu of sum_value', max(sum_value))
         print('sum_value: ', sum_value)
-        if i > 40:
-            continue_browsing = convergence_value(sum_value, max(sum_value))
+        # if i > 40:
+        #     continue_browsing = convergence_value(sum_value, max(sum_value))
 
     return q_table, i
-
-
-
-
-
 
 
 #-------------Report____________
@@ -2103,7 +2119,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-Q_Table, i = q_learning_base(1, 0.1, 0.5, 0.1, 0.9)
+Q_Table, i = q_learning_base(1, 0.1, 0.8, 0.1, 0.9)
 
 
 
