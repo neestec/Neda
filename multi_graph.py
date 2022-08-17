@@ -1464,7 +1464,7 @@ def epsilon_greedy(epsilon_prob, target_node, attack_list_pop_target):
 
 #---------------------------------------------Q-LEARNING-------------------------------------------------------
 
-def initiator(main_matrix, p, landa, gama, q_table, initiator_node):
+def q_initiator(main_matrix, p, landa, gama, q_table, initiator_node):
     main_conct = np.load('Main_Conct.npy')
     iner_main_conct = deepcopy(main_conct)
     cost = p
@@ -1518,20 +1518,6 @@ def value_count(old_value, next_value,  reward, landa, gama):
     new_value = old_value +landa*(reward - old_value) #+ landa*(gama*(next_value)  - old_value)
     return new_value
 
-
-# def convergence_value(sum_value, sum_max):
-#     dx_lst = []
-#     last = sum_value[-1]
-#     for i in range(30):
-#         dx = sum_value[-(i+1)] - sum_max
-#         if abs(dx) > 0.003:
-#             continue_browsing = True
-#             print('not convergence')
-#             return continue_browsing
-#
-#     continue_browsing = False
-#     print('********convergence********')
-#     return continue_browsing
 
 def q_learning_convergence(learning_rate):
     continue_browsing= True
@@ -1723,7 +1709,7 @@ def q_learning_base(p, landa, gama, epsilon_prob):
 
     while continue_browsing:
         q_table, init_s_lst , init_browse, init_value, init_reward, init_conct_lst, init_attack_list, iner_matrix, cost_init = \
-        initiator(main_matrix, p, landa, gama, q_table, initiator_node)
+        q_initiator(main_matrix, p, landa, gama, q_table, initiator_node)
         conct_lst, cost, sum_reward, q_table, browse, continue_browsing = q_learning(main_matrix, p,landa, gama, q_table,
         epsilon_prob, init_s_lst, init_browse , init_reward, init_conct_lst, init_attack_list, cost_init)
         sum_value.append(sum_reward)
@@ -1743,16 +1729,16 @@ def q_learning_base(p, landa, gama, epsilon_prob):
 
 #-----------------------Automata--------------------------------
 
-def h_value_count_update( current_state, target_node , h_table , a):
+def h_value_count_update( current_state, target_node, h_table, alfa):
     total_node = np.load('Total_Node.npy', allow_pickle= True)
     iner_total_node = deepcopy(total_node)
     Pi = h_table[current_state][target_node]
-    h_table[current_state][target_node] = Pi + a*(1-Pi)
+    h_table[current_state][target_node] = Pi + alfa*(1-Pi)
     i = current_state
     for j in range(iner_total_node):
         if j != target_node:
-            h_table[i][j] == (1 - a)* h_table[i][j]
-    print('h_table after update: ' ,h_table)
+            h_table[i][j] == (1 - alfa) * h_table[i][j]
+    print('h_table after update: ',h_table)
     return h_table
 
 
@@ -1760,9 +1746,44 @@ def automata_convergence(prob_lst):
     continue_browsing = True
     anthropy = 0
     for i in prob_lst:
-        temp = i *log(1/log(i))
-    return continue_browsing
+        temp = (i * math.log(1/i))
+        anthropy += temp
+    if anthropy > 0.02:
+        print('not converged')
+        print('anthropy:'  , anthropy)
+        return continue_browsing
+    else:
+        print('It is converged')
+        print('anthropy:'  , anthropy)
+        continue_browsing = False
+        return continue_browsing
 
+
+def h_initiator(main_matrix, p, alfa, h_table, initiator_node):
+    main_conct = np.load('Main_Conct.npy')
+    iner_main_conct = deepcopy(main_conct)
+    cost = p
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix)
+    active_lst = active_node(iner_matrix)
+    cost_lst = cost_count(main_graph, active_lst, p)
+    cost_init = cost_lst[initiator_node][1]
+    attack_list, iner_matrix= disintegration(initiator_node, iner_matrix, [])
+    main_graph = create_main_graph(iner_matrix)
+    conct_lst = []
+    connectivity = connectivity_count(main_graph)
+    conct_init = iner_main_conct - connectivity
+    new_reward = conct_init/cost_init
+    conct_lst.append(iner_main_conct)
+    conct_lst.append(connectivity)
+    browse = []
+    browse.append(initiator_node)
+    s_lst = []
+    s_lst.append(0)
+    prob = []
+    h_table = h_value_count_update( s_lst[-1], initiator_node, h_table, alfa)
+    prob.append(h_table[s_lst[-1]][initiator_node])
+    return h_table, s_lst, browse, conct_lst, attack_list, iner_matrix, cost_init, prob
 
 def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob):
     iner_matrix = deepcopy(matrix)
@@ -1829,9 +1850,7 @@ def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob):
         return target_epsilon
 
 
-def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse , init_prob, conct_lst, attack_list, cost):
-    prob_lst = []
-    prob_lst.append(init_prob)
+def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse , conct_lst, attack_list, cost, prob_lst):
     iner_matrix = deepcopy(main_matrix)
     active_nodes = active_node(iner_matrix)
     connectivity = conct_lst[-1]
@@ -1839,7 +1858,8 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
     prob = []
     while len(active_nodes) != 0:
         if len(active_nodes) == 0:
-            print ('Network has disintegrated successfuly in Q_learning')
+
+            print ('Network has disintegrated successfuly in automata_learning')
             continue_browsing = automata_convergence(prob_lst)
             return conct_lst, cost, h_table, browse, continue_browsing
         else:
@@ -1865,43 +1885,35 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
         connectivity = connectivity_count(main_graph)
         conct_lst.append(connectivity)
         if len(active_nodes) == 0:
-
-            print ('Network has been disintegrated successfuly in Q_learning')
-            continue_browsing = h_learning_convergence(delta)
+            print ('Network has been disintegrated successfuly in automata_learning')
+            continue_browsing = automata_convergence(prob_lst)
             return conct_lst, cost, h_table, browse, continue_browsing
     return conct_lst, cost, h_table, browse, continue_browsing
 
 
-def q_learning_base(p, landa, gama, epsilon_prob):
-    q_table = np.load('Q_table.npy', allow_pickle=True)
-    sum_value_nd = np.load('Sum_valu.npy' , allow_pickle= True)
-    sum_value = sum_value_nd.tolist()
+def h_learning_base(p, alfa, epsilon_prob):
+    h_table = np.load('H_Table.npy', allow_pickle=True)
     with open('Initiator_node.pkl', 'rb') as handle:
         initiator_node = pickle.load(handle)
     print('initiator node: ', initiator_node)
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_main_matrix = deepcopy(main_matrix)
     continue_browsing = True
-    i = 1480
-
+    i = 0
     while continue_browsing:
-        q_table, init_s_lst , init_browse, init_value, init_reward, init_conct_lst, init_attack_list, iner_matrix, cost_init = \
-        initiator(main_matrix, p, landa, gama, q_table, initiator_node)
-        conct_lst, cost, sum_reward, q_table, browse, continue_browsing = q_learning(main_matrix, p,landa, gama, q_table,
-        epsilon_prob, init_s_lst, init_browse , init_reward, init_conct_lst, init_attack_list, cost_init)
-        sum_value.append(sum_reward)
+        h_table, init_s_lst , init_browse, init_conct_lst, init_attack_list, iner_matrix, cost_init, prob_lst= \
+            h_initiator(main_matrix, p, alfa, h_table, initiator_node)
+        conct_lst, cost, h_table, browse, continue_browsing = automata_learning(main_matrix, p, alfa, h_table,
+        epsilon_prob, init_s_lst, init_browse, init_conct_lst, init_attack_list, cost_init, prob_lst)
         print('browse:', browse)
-        print('Q_Table', q_table)
-        np.save('Q_table.npy', q_table)
-        np.save('Sum_valu.npy', sum_value)
+        print('Q_Table', h_table)
+        np.save('H_Table.npy', h_table)
         i = i+1
         print('counter:', i)
-        print('max valu of sum_value', max(sum_value))
-        print('sum_value: ', sum_value)
         # if i > 40:
         #     continue_browsing = convergence_value(sum_value, max(sum_value))
 
-    return q_table, i
+    return h_table, i
 
 
 
@@ -2094,7 +2106,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
 # Q_Table, i = q_learning_base(1, 0.1, 0.5, 0.1)
-
+h_learning_base(1, 0.05, 0.1)
 
 
 
@@ -2127,6 +2139,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 #
 # q_table  = np.load('Q_table.npy' , allow_pickle= True)
 # print('q_table: ', q_table)
+
 
 
 
