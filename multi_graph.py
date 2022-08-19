@@ -1558,6 +1558,7 @@ def q_target_node(q_table,last_state, last_value, matrix,
     internal_main_graph = create_main_graph(iner_matrix)
     active = deepcopy(active_lst)
     attack = deepcopy(attack_list)
+    print('active: ' , active)
     print('attack: ' , attack)
     cost = cost_count(internal_main_graph, active_lst, p)# be ezaye hameye node haye graph, cost hesab mishe
     reward = []
