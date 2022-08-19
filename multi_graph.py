@@ -638,9 +638,10 @@ def h_table_initiator(total_node):
     #n = len(total_node)
     h_table = np.zeros((total_node, total_node), dtype="float", order='c')
     sum_valuen = []
+    last_browse = [0]
     print('h_table', h_table)
     np.save('H_Table.npy' , h_table)
-    np.save('Automata_Sum_value.npy', h_table)
+    np.save('Last_automata_brows.npy', last_browse)
     return h_table
 
 
@@ -1742,21 +1743,33 @@ def h_value_count_update( current_state, target_node, h_table, alfa):
     return h_table
 
 
-def automata_convergence(prob_lst):
+def automata_convergence(prob_lst, browse, last_brows):
     continue_browsing = True
     anthropy = 0
     for i in prob_lst:
         temp = (i * math.log(1/i))
         anthropy += temp
-    if anthropy > 0.02:
+    if anthropy > 0.002:
         print('not converged')
-        print('anthropy:'  , anthropy)
+        print('entropy:' , anthropy)
         return continue_browsing
     else:
-        print('It is converged')
-        print('anthropy:'  , anthropy)
-        continue_browsing = False
-        return continue_browsing
+        if len(browse) != len(last_brows):
+            print('not converged')
+            print('entropy:' , anthropy)
+            print('lenths are not equal')
+            return continue_browsing
+        else:
+            for i in range(len(browse)):
+                if browse[i] != last_brows[i]:
+                    print('not converged')
+                    print('entropy:' , anthropy)
+                    print('browses are not equal')
+                    return continue_browsing
+            continue_browsing = False
+            print('It is converged')
+            print('entropy:', anthropy)
+            return continue_browsing
 
 
 def h_initiator(main_matrix, p, alfa, h_table, initiator_node):
@@ -1858,9 +1871,9 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
     prob = []
     while len(active_nodes) != 0:
         if len(active_nodes) == 0:
-
             print ('Network has disintegrated successfuly in automata_learning')
-            continue_browsing = automata_convergence(prob_lst)
+            last_brows = np.load('Last_automata_brows.npy')
+            continue_browsing = automata_convergence(prob_lst, browse, last_brows)
             return conct_lst, cost, h_table, browse, continue_browsing
         else:
             #print('attack_list in else: ', attack_list)
@@ -1886,7 +1899,8 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
         conct_lst.append(connectivity)
         if len(active_nodes) == 0:
             print ('Network has been disintegrated successfuly in automata_learning')
-            continue_browsing = automata_convergence(prob_lst)
+            last_brows = np.load('Last_automata_brows.npy')
+            continue_browsing = automata_convergence(prob_lst, browse, last_brows)
             return conct_lst, cost, h_table, browse, continue_browsing
     return conct_lst, cost, h_table, browse, continue_browsing
 
@@ -1908,6 +1922,7 @@ def h_learning_base(p, alfa, epsilon_prob):
         print('browse:', browse)
         print('Q_Table', h_table)
         np.save('H_Table.npy', h_table)
+        np.save('Last_automata_brows.npy', browse)
         i = i+1
         print('counter:', i)
         # if i > 40:
@@ -2106,7 +2121,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
 # Q_Table, i = q_learning_base(1, 0.1, 0.5, 0.1)
-h_learning_base(1, 0.05, 0.1)
+H_Table, i = h_learning_base(1, 0.05, 0.1)
 
 
 
