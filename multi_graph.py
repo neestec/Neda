@@ -33,7 +33,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(10, 15)
+        node = np.random.randint(35, 50)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -1517,7 +1517,17 @@ def q_initiator(main_matrix, p, landa, gama, q_table, initiator_node):
 
 def softmax(vector):
     e = exp(vector)
-    v = e / e.sum()
+    print('e:' , e)
+    e_sum = e.sum()
+    print('e_sum:', e_sum)
+    if e_sum != 0:
+        v = e / e_sum
+        print('v1', v)
+    else:
+        v = 1/len(vector)
+        print('v2', v)
+
+    print('v3', v)
     return v
 
 
@@ -1714,6 +1724,7 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob, s_lst, browse
         active_num = len(active_nodes)
         portion = active_num/total_node
         conct_lst.append(portion)
+        connectivity = conct_lst[-1]
         if len(active_nodes) == 0:
             print('delta:' , delta)
             print ('Network has been disintegrated successfuly in Q_learning')
@@ -1944,11 +1955,10 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
         s_lst.append(s_lst[-1]+1)
         h_table = h_value_count_update(s_lst[-1], target_node, h_table, alfa)
         prob.append(h_table[s_lst[-1]][browse[-1]])
-        #print('h_table:' , h_table)
-        #connectivity = connectivity_count(main_graph)
         iner_conct = iner_active_num/total_node
         print ('iner_conedt:', iner_conct)
         conct_lst.append(iner_conct)
+        connectivity = conct_lst[-1]
         if len(active_nodes) == 0:
             print ('Network has been disintegrated successfuly in automata_learning')
             sum_conct_internal = sum_conct(conct_lst)
@@ -2176,8 +2186,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-Q_Table, i = q_learning_base(2, 0.1, 0.5, 0.1)
-# H_Table, i = h_learning_base(2, 0.05, 0.1)
+# Q_Table, i = q_learning_base(2, 0.1, 0.5, 0.1)
+H_Table, i = h_learning_base(2, 0.05, 0.1)
 
 
 
