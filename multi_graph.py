@@ -33,7 +33,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(35, 50)
+        node = np.random.randint(13, 15)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -59,7 +59,7 @@ def random_weighted_graph(n):
     """" create a random graph by n= nodes number, p = probability , lower and upper wight"""
 
     #print('in create weighted graph n: ', n)
-    p = np.random.uniform(0.1, 0.3)
+    p = np.random.uniform(0.2, 0.6)
     #p = 0.1
     z = nx.erdos_renyi_graph(n, p)
     g = nx.gnp_random_graph(n,p)
@@ -1553,7 +1553,7 @@ def q_learning_convergence(learning_rate):
     max_delta= 0.0
     max_delta = max(learning_rate)
     print('max_delta:' , max_delta)
-    if max_delta > 0.02:
+    if max_delta > 0.01:
         print('not converge')
         return continue_browsing, max_delta
     else:
@@ -1802,7 +1802,7 @@ def automata_convergence(prob_lst, browse, last_brows):
     for i in prob_lst:
         temp = (i * math.log(1/i))
         entropy += temp
-    if entropy > 0.02:
+    if entropy > 0.002:
         print('not converged')
         print('entropy:' , entropy)
         return continue_browsing, entropy
@@ -1810,7 +1810,7 @@ def automata_convergence(prob_lst, browse, last_brows):
         if len(browse) != len(last_brows):
             print('not converged')
             print('entropy:' , entropy)
-            print('lenths are not equal')
+            print('lenths are not equal' , 'last:', len(last_brows), 'current:', len(browse))
             return continue_browsing, entropy
         else:
             for i in range(len(browse)):
@@ -1990,14 +1990,15 @@ def h_learning_base(p, alfa, epsilon_prob):
         print('browse:', browse)
         print('H_Table', h_table)
         np.save('H_Table.npy', h_table)
+        np.save('Last_automata_brows.npy', browse)
         entropy_lst.append(entropy)
         if continue_browsing== False:
-            np.save('Entropy_p1_a01.npy', entropy)
-            np.save('Last_automata_brows_p1_a01.npy', browse)
-            np.save('conct_lst_automata_p1_a01.npy', conct_lst)
-            with open('cost_automata_p1_a01.pkl', 'wb') as f:
+            np.save('Entropy_p1_a4.npy', entropy)
+            np.save('Last_automata_brows_p1_a4.npy', browse)
+            np.save('conct_lst_automata_p1_a4.npy', conct_lst)
+            with open('cost_automata_p1_a5.pkl', 'wb') as f:
                 pickle.dump(cost, f, protocol=pickle.HIGHEST_PROTOCOL)
-            with open('sum_conct_automata_p1_a01.pkl', 'wb') as f:
+            with open('sum_conct_automata_p1_a05.pkl', 'wb') as f:
                 pickle.dump(sum_conct, f, protocol=pickle.HIGHEST_PROTOCOL)
         i = i+1
 
@@ -2171,7 +2172,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Initiator_Node = rand_node()
 # print('17')
 # print('initializing has finished successfully')
-
+#
 
 #-----------------methodes-------------------
 
@@ -2194,8 +2195,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-#Q_Table, i = q_learning_base(1, 0.1, 0.1, 0.1)
-H_Table, i = h_learning_base(2, 0.05, 0.1)
+Q_Table, i = q_learning_base(1, 0.3, 0.1, 0.05)
+#H_Table, i = h_learning_base(1, 0.01, 0.05)
 
 
 
