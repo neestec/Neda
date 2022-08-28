@@ -33,7 +33,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(13, 15)
+        node = np.random.randint(10, 14)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -173,11 +173,11 @@ def Create_List_of_Nodes(List_Struct):
 def random_atthck_nodes(list_of_nodes):
     #print('len(list_of_nodes):',len(list_of_nodes))
 
-    attacked_number = math.floor(len(list_of_nodes)/4)
+    attacked_number = math.floor(len(list_of_nodes)/5)
     #print('attacken number on nodes:', attacked_number)
     attacked_list = random.sample(list_of_nodes, attacked_number)
     #print('attacked nodes:', attacked_list)
-    np.save('Attack_Nodes' , attacked_list , allow_pickle=True)
+    #np.save('Attack_Nodes' , attacked_list , allow_pickle=True)
     return attacked_list
 
 
@@ -317,8 +317,8 @@ def create_main_graph(adjacency_matrix):
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
     gr.add_edges_from(edges)
-    #nx.draw(gr, node_size=500,  with_labels=True)
-    #plt.show()
+    # nx.draw(gr, node_size=500,  with_labels=True)
+    # plt.show()
     return gr
 
 
@@ -398,8 +398,12 @@ def disintegration (node, main_matrix, attack_list):
     for i in range(iner_total_node):
         if main_matrix[i][node] == 1:
             neigh.append(i)
+            # print('main_matrix[node][i]: ' , main_matrix[node][i])
+            # print('main_matrix[i][node]: ', main_matrix[i][node])
             main_matrix[node][i] = 0
             main_matrix[i][node] = 0
+            # print('main_matrix[node][i]: ' , main_matrix[node][i])
+            # print('main_matrix[i][node]: ', main_matrix[i][node])
 
 
     for n in neigh:
@@ -848,7 +852,7 @@ def normalize(abnormal_list):
 #------------------ GA-------------
 
 def fitness_count(Averg_Weight, main_graph , initiator ):
-
+    """just list normalize"""
     weight_list_avrg = deepcopy(Averg_Weight)
 
     bc = closeness_btw(main_graph)
@@ -893,6 +897,7 @@ def fitness_count(Averg_Weight, main_graph , initiator ):
 
 
 def fitness_arrenge(uw, dc, bc, initiator):
+    """arrange nodes by fitness value"""
     print('bc:', bc, "\n", 'dc:', dc, "\n", 'uw:', uw)
     bc_int = []
     for num in bc:
@@ -967,7 +972,8 @@ def fitness_arrenge(uw, dc, bc, initiator):
         return node_lst
 
 
-def split_initial_lst(initiate_lst, initial_len,  mutation_portion, crossover_portion):
+def list_split(initiate_lst, initial_len,  mutation_portion, crossover_portion):
+    """split list utilizing portions even with longe lenth. input is a sorted list& lent = initial"""
     print('initiated list in split:' , initiate_lst)
     print('type:', type(initiate_lst))
     iner_init_cross_lst = deepcopy(initiate_lst)
@@ -990,22 +996,31 @@ def split_initial_lst(initiate_lst, initial_len,  mutation_portion, crossover_po
             if node in iner_init_cross_lst:
                 index = iner_init_cross_lst.index(node)
                 iner_init_cross_lst.pop(index)
-    print('base: ', iner_init_cross_lst)
+    print('base after pop mut: ', iner_init_cross_lst)
 
-    # select cross
-    children = random.sample(iner_init_cross_lst, cross_count)
-    #children = random.randint(iner_init_cross_lst, cross_count)
+    #create parent list
     parent = []
-    for i in iner_init_cross_lst:
-        if i not in children:
-            parent.append(i)
-    parent_final = random.sample(parent , parent_count)
-    #parent_final = random.randint(parent , parent_count)
-
-    print('mut_cross_lst:' , mut_cross_lst , 'parent_final:', parent_final , 'children:' , children)
-
-
-    return mut_cross_lst , parent_final , children
+    for i in range(parent_count):
+        parent.append(iner_init_cross_lst[-(i)])
+    #pop parent from list
+        for node in parent:
+            if node in iner_init_cross_lst:
+                index = iner_init_cross_lst.index(node)
+                iner_init_cross_lst.pop(index)
+    print('base after pop parent: ', iner_init_cross_lst)
+    children = random.sample(iner_init_cross_lst, cross_count)
+    print('mut_cross_lst:' , mut_cross_lst , 'parent_final:', parent , 'children:' , children)
+    cross_mut_child = []
+    last_gen = []
+    for i in mut_cross_lst:
+        cross_mut_child.append(i)
+    for i in children:
+        cross_mut_child.append(i)
+    for i in cross_mut_child:
+        last_gen.append(i)
+    for i in parent:
+        last_gen.append(i)
+    return mut_cross_lst , parent , children , cross_mut_child, last_gen
 
 
 def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion):
@@ -1033,41 +1048,49 @@ def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, m
                 index = iner_init_cross_lst.index(node)
                 iner_init_cross_lst.pop(index)
 
+    #create parent list
+    parent = []
+    for i in range(parent_count):
+        parent.append(iner_init_cross_lst[-(i)])
+    #pop parent from list
+        for node in parent:
+            if node in iner_init_cross_lst:
+                index = iner_init_cross_lst.index(node)
+                iner_init_cross_lst.pop(index)
+    print('base after pop parent: ', iner_init_cross_lst)
+
     # parent and child len counting on cross
     cross_cross_len = math.ceil(crossover_portion * len(iner_init_cross_lst))
     parent_cross_len = len(iner_init_cross_lst) - cross_cross_len
     print('mut_cross_len:', mut_cross_len ,"\n",  'cross_cross_len:', cross_cross_len,"\n",  'parent_cross_len:', parent_cross_len)
-
-    # cross_cross_lst = []
-    # for i in range(cross_cross_len):
-    #     cross_cross_lst.append(crossover_lst_sorted[i+mut_cross_len-1])
-
-    # select cross
     print('mut_cross_lst:' , mut_cross_lst,"\n",  'mutation_count:' , mutation_count)
     print('iner_init_cross_lst:' ,iner_init_cross_lst, "\n", 'cross_count:', cross_count)
     print('parent_cross_len:' , parent_cross_len)
     mut_final = random.sample(mut_cross_lst, mutation_count)
     children = random.sample(iner_init_cross_lst, cross_count)
-    parent = []
-    for i in iner_init_cross_lst:
-        if i not in children:
-            parent.append(i)
-    parent_final = random.sample(parent, parent_count)
+    print('mut_final:' , mut_final , 'parent_final:', parent , 'children:' , children)
+    last_gen = []
+    for i in mut_final:
+        last_gen.append(i)
+    for i in children:
+        last_gen.append(i)
+    for i in parent:
+        last_gen.append(i)
+    return last_gen
 
-    print('mut_final:' , mut_final , 'parent_final:', parent_final , 'children:' , children)
-    return mut_final , parent_final , children
 
-
-def crossover(children, main_martix, last_gen):
+def crossover(cross_mut_child, main_martix, last_gen):
+    """hamsaye haye azaye list ra barmigardanad
+       liste voroodi mut+ child ast"""
     total_node = np.load('Total_Node.npy', allow_pickle= True)
     # for num in children:
     #     num = int(num)
-    print(children)
+    print('cross_mut_child:' , cross_mut_child)
     iner_total_node = deepcopy(total_node)
     neigh = []
     neigh_single = []
     neigh_final = []
-    for i in children:
+    for i in cross_mut_child:
         print('i in children: ', i)
         for j in range(iner_total_node):
             print('j in range(iner_total_node) : ', j)
@@ -1142,8 +1165,8 @@ def list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_childr
     return GA_initiator
 
 
-def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generation_size, main_graph, main_matrix, evolution,
-               weight_average, weight_triple ):
+def GA_target_node(mutation_portion , crossover_portion, initiate_lst,
+                   generation_size, main_graph, main_matrix, evolution, weight_triple):
     iner_init = deepcopy(initiate_lst)
     if len(iner_init)<5:
         print('list is shorter than generation')
@@ -1171,23 +1194,18 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst, generatio
         target_node = last_gen[-1]
         print('target_node on first step:', target_node)
         last_gen_len = len(last_gen)
-        mut , permanent_parent_lst , children = split_initial_lst(last_gen, generation_size,  mutation_portion, crossover_portion)
+        mut , permanent_parent_lst , children, cross_mut_child, last_gen = list_split(last_gen, generation_size,  mutation_portion, crossover_portion)
         print('children in target node: ', children)
         children_len = len(children)
-        crossover_lst = crossover(children, iner_matrix, last_gen)
+        crossover_lst = crossover(cross_mut_child, iner_matrix, last_gen)
         print('crossover before split in target_node methode: ', crossover_lst)
-        crossover_lst_sorted = list_sorting(weight_triple,iner_matrix, main_graph , crossover_lst)
+        for i in permanent_parent_lst:
+            crossover_lst.append(i)
+        crossover_lst_sorted = list_sorting(weight_triple, iner_matrix, main_graph, crossover_lst)
         crossover_lst_len = len(crossover_lst)
-        new_mut,new_per_par, new_children = split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion)
-        print('iner_init:' , iner_init)
-        print('mut:', mut, "\n", 'new_mut:',  new_mut, "\n", 'permanent_parent_lst:', permanent_parent_lst,"\n",
-              'new_per_par', new_per_par, "\n", 'new_children:' ,new_children)
-        generation = list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_children)
-        print('generation before while', initiate_lst)
-        print('generation after generation:', generation)
-        last_gen = generation
-        target_node = generation[-1]
-        print('target_node after generation, second step: ', target_node)
+        last_gen = split_crossover_lst(crossover_lst_sorted, crossover_lst_len,
+                                            children_len, mutation_portion, crossover_portion)
+        target_node = last_gen[-1]
         i = i+1
         print('i::::',  i)
     return target_node
@@ -1419,7 +1437,7 @@ def cost_count(main_graph , active_lst , p):
     sum_p = 0.0
     for i in iner_degree_lst: # makhraje kasr ro inja misazim va rooye hameye grapg hast
         sum_p += pow(i[1], p)
-    print('sum_p:' , sum_p)
+    #print('sum_p:' , sum_p)
 
     #print('sum_p: ' , sum_p)
     degree = closeness_deg(main_graph)
@@ -1565,9 +1583,9 @@ def q_target_node(q_table,last_state, last_value, matrix,
                   active_lst, attack_list, conct, p,landa,gama,epsilon_prob, total_node):
 
     iner_matrix = deepcopy(matrix)
-    internal_main_graph = create_main_graph(iner_matrix)
     active = deepcopy(active_lst)
     attack = deepcopy(attack_list)
+    internal_main_graph = create_main_graph((iner_matrix))
     print('active: ' , active)
     print('attack: ' , attack)
     cost = cost_count(internal_main_graph, active_lst, p)# be ezaye hameye node haye graph, cost hesab mishe
@@ -1775,21 +1793,85 @@ def q_learning_base(p, landa, gama, epsilon_prob):
         print('cost: ', cost)
         print('sum_conct:', sum_conct)
         print('conct_lst: ' , conct_lst)
-        # if i > 40:
-        #     continue_browsing = convergence_value(sum_value, max(sum_value))
+
+
+    return q_table, i
+
+def q_learning_base_epsilon_decrese(p, landa, gama, epsilon_prob):
+    max_delta = []
+    q_table = np.load('Q_table.npy', allow_pickle=True)
+    sum_value_nd = np.load('Sum_valu.npy' , allow_pickle= True)
+    sum_value = sum_value_nd.tolist()
+    with open('Initiator_node.pkl', 'rb') as handle:
+        initiator_node = pickle.load(handle)
+    print('initiator node: ', initiator_node)
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    iner_main_matrix = deepcopy(main_matrix)
+    continue_browsing = True
+    with open('max_sum_value.pkl', 'wb') as f:
+        pickle.dump(0, f, protocol=pickle.HIGHEST_PROTOCOL)
+    i = 0
+    j = 0
+    while continue_browsing:
+        q_table, init_s_lst , init_browse, init_value, init_reward, init_conct_lst, init_attack_list,\
+        iner_matrix, cost_init , total_node = q_initiator(main_matrix, p, landa, gama, q_table, initiator_node)
+
+        conct_lst, cost, sum_reward, q_table, browse, continue_browsing, sum_conct, max_del = q_learning(main_matrix, p,landa, gama, q_table,
+        epsilon_prob, init_s_lst, init_browse , init_reward, init_conct_lst, init_attack_list, cost_init, total_node)
+        max_delta.append(max_del)
+        sum_value.append(sum_reward)
+        #epsilon condition
+        with open('max_sum_value.pkl', 'rb') as handle:
+            max_sum_value = pickle.load(handle)
+        if max_sum_value >= sum_reward:
+            j+= 1
+            if j> 300 and j<500 :
+                epsilon_prob =0.04
+                print('epsilon has changed to 0.04 ')
+            if j>500 and j<800:
+                epsilon_prob =0.03
+                print('epsilon has changed to 0.03 ')
+            if j>1000 :
+                epsilon_prob =0.0
+                print('epsilon has changed to 0.0 ')
+        else:
+            j = 0
+            epsilon_prob = 0.05
+            print('epsilon has changed to 0.05 and j = 0  ')
+        print('browse:', browse)
+        print('Q_Table', q_table)
+        np.save('Q_table.npy', q_table)
+        np.save('Sum_valu.npy', sum_value)
+        with open('max_sum_value.pkl', 'wb') as f:
+                pickle.dump(max(sum_value), f, protocol=pickle.HIGHEST_PROTOCOL)
+        print('max valu of sum_value', max(sum_value))
+        print('sum_value: ', sum_value)
+        if continue_browsing==False :
+            np.save('Max_delta_p1_g1_npy', max_delta)
+            np.save('conct_lst_q_p1_g1.npy', conct_lst)
+            with open('cost_q_p1_g1.pkl', 'wb') as f:
+                pickle.dump(cost, f, protocol=pickle.HIGHEST_PROTOCOL)
+            with open('sum_conct_q_p1_g1.pkl', 'wb') as f:
+                pickle.dump(sum_conct, f, protocol=pickle.HIGHEST_PROTOCOL)
+        i = i+1
+        print('counter:', i)
+        print('cost: ', cost)
+        print('sum_conct:', sum_conct)
+        print('conct_lst: ' , conct_lst)
+
 
     return q_table, i
 
 
 #-----------------------Automata--------------------------------
 
-def h_value_count_update( current_state, target_node, h_table, alfa):
+def h_value_count_update( current_state, target_node, h_table, alfa, attack_lst):
     total_node = np.load('Total_Node.npy', allow_pickle= True)
     iner_total_node = deepcopy(total_node)
     Pi = h_table[current_state][target_node]
     h_table[current_state][target_node] = Pi + alfa*(1-Pi)
     i = current_state
-    for j in range(iner_total_node):
+    for j in attack_lst:
         if j != target_node:
             h_table[i][j] == (1 - alfa) * h_table[i][j]
     #print('h_table after update: ',h_table)
@@ -1832,33 +1914,43 @@ def h_initiator(main_matrix, p, alfa, h_table, initiator_node):
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix)
     active_lst = active_node(iner_matrix)
+    print('active_node before attack in init:', len(active_lst))
     cost_lst = cost_count(main_graph, active_lst, p)
     cost_init = cost_lst[initiator_node][1]
+    print('cost_init in init:' , cost_init)
     attack_list, iner_matrix= disintegration(initiator_node, iner_matrix, [])
     main_graph = create_main_graph(iner_matrix)
     active_lst = active_node(iner_matrix)
     active_num = len(active_lst)
+    print('active_num after attack in init:', active_num)
     conct_lst = []
     portion = active_num/iner_total_node
     conct_init = 1 - (portion)
     new_reward = conct_init/cost_init
     conct_lst.append(1)
     conct_lst.append(portion)
+    print('portion in init: ', portion)
+    print('reward in init: ', new_reward)
     browse = []
     browse.append(initiator_node)
     s_lst = []
     s_lst.append(0)
     prob = []
-    h_table = h_value_count_update( s_lst[-1], initiator_node, h_table, alfa)
+    h_table = h_value_count_update( s_lst[-1], initiator_node, h_table, alfa, [])
     prob.append(h_table[s_lst[-1]][initiator_node])
     return h_table, s_lst, browse, conct_lst, attack_list, iner_matrix, cost_init, prob, iner_total_node
 
 
 def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob, total_node):
     iner_matrix = deepcopy(matrix)
+    #active_from_matrix_in_target = active_node(matrix)
+    #print('active_from_matrix_in_target:', len(active_from_matrix_in_target))
     internal_main_graph = create_main_graph(iner_matrix)
     active = deepcopy(active_lst)
     attack = deepcopy(attack_list)
+    # print('active_lst in target from input : ', active)
+    # print('avtive_node in target:', len(active))
+    # print('total_node in target: ', total_node)
     print('attack: ' , attack)
     cost = cost_count(internal_main_graph, active_lst, p)# be ezaye hameye node haye graph, cost hesab mishe
     reward = []
@@ -1869,18 +1961,25 @@ def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob, total
         iner_matrix1 = deepcopy(iner_matrix)
         iner_attack, iner_matrix1 = disintegration(i, iner_matrix1, [])
         internal_main_graph = create_main_graph(iner_matrix1)
-        temp_active = active_node(iner_matrix)
+        temp_active = active_node(iner_matrix1)
         active_num = len(temp_active)
+        # print('avtive_node in target in for after attacks:', active_num)
+        # print('total_node in target in for after attacks: ', total_node)
         portion = active_num/total_node
         #connectivity = connectivity_count(internal_main_graph)
+        # print('conct: ', conct)
+        # print('portion:', portion)
         subtrac = conct - portion # soorate kasre reward baraye i
         temp_numer.append(i)
         temp_numer.append(subtrac)
         numerate.append(temp_numer) #yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
+    # print ('list of numerate: ', numerate)
     cost_for_attack = []
     for i in cost:
         if i[0] in attack:
             cost_for_attack.append(i)
+
+    print('cost list: ', cost)
     if len(cost_for_attack) != len(numerate):
         print('toolha yeki nist', "\n", 'len cost:',
               len(cost) ,'len numerate', len(numerate))
@@ -1892,6 +1991,7 @@ def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob, total
         r.append(temp) # in list dotayi hast. shomare node va reward
         reward.append(r)
     # print('reward list of attack list: ', reward)
+    # print('reward: ', reward)
     node = []
     final_r = []
     for f in reward:
@@ -1925,8 +2025,10 @@ def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob, total
 def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse , conct_lst, attack_list,
                       cost, prob_lst, total_node):
 
+    print('cost in input learning:', cost)
     iner_matrix = deepcopy(main_matrix)
     active_nodes = active_node(iner_matrix)
+    #print('active_node in learning: ', len(active_nodes))
     connectivity = conct_lst[-1]
     main_graph = create_main_graph(iner_matrix)
     prob = []
@@ -1947,17 +2049,20 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
             attack_list = deepcopy(temp_attack)
         target_node = h_target_node(iner_matrix, active_nodes, attack_list, connectivity, p, epsilon_prob, total_node)
         cost_internal = cost_count(main_graph, [target_node], p)
+        print('cost_internal: ' , cost_internal)
         #print('cost_internal : ', cost_internal)
         cost = cost + cost_internal[0][1]
+        print('cost = cost + cost_internal[0][1]', cost)
+        attack_befre_change = attack_list
         attack_list, iner_matrix_init = disintegration(target_node, iner_matrix, attack_list)
-        main_graph = create_main_graph(iner_matrix)
+        main_graph = create_main_graph(iner_matrix_init)
         active_nodes = active_node(iner_matrix_init)
         iner_active_num = len(active_nodes)
         print('total_node:' , total_node)
         print('node_numver after dis:' , iner_active_num )
         browse.append(target_node)
         s_lst.append(s_lst[-1]+1)
-        h_table = h_value_count_update(s_lst[-1], target_node, h_table, alfa)
+        h_table = h_value_count_update(s_lst[-1], target_node, h_table, alfa, attack_befre_change)
         prob.append(h_table[s_lst[-1]][browse[-1]])
         iner_conct = iner_active_num/total_node
         print ('iner_conedt:', iner_conct)
@@ -1980,13 +2085,20 @@ def h_learning_base(p, alfa, epsilon_prob):
     print('initiator node: ', initiator_node)
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_main_matrix = deepcopy(main_matrix)
+    #total_node_init = np.load('Total_Node.npy')
     continue_browsing = True
     i = 0
+
     while continue_browsing:
-        h_table, init_s_lst , init_browse, init_conct_lst, init_attack_list, iner_matrix, cost_init, prob_lst, total_node= \
+        h_table, init_s_lst , init_browse, init_conct_lst, init_attack_list, iner_matrix, cost_init,\
+        prob_lst, total_node= \
             h_initiator(main_matrix, p, alfa, h_table, initiator_node)
-        conct_lst, cost, h_table, browse, continue_browsing, sum_conct , entropy = automata_learning(main_matrix, p, alfa, h_table,
+        conct_lst, cost, h_table, browse, continue_browsing, sum_conct , entropy = \
+            automata_learning(iner_matrix, p, alfa, h_table,
         epsilon_prob, init_s_lst, init_browse, init_conct_lst, init_attack_list, cost_init, prob_lst, total_node)
+        if entropy < 0.002:
+            epsilon_prob = 0
+            print('epsilon prob is zero in automata')
         print('browse:', browse)
         print('H_Table', h_table)
         np.save('H_Table.npy', h_table)
@@ -2172,7 +2284,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Initiator_Node = rand_node()
 # print('17')
 # print('initializing has finished successfully')
-#
+
 
 #-----------------methodes-------------------
 
@@ -2195,8 +2307,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-Q_Table, i = q_learning_base(1, 0.3, 0.1, 0.05)
-#H_Table, i = h_learning_base(1, 0.01, 0.05)
+# Q_Table, i = q_learning_base(0.5, 0.1, 0.1, 0.05)
+Q_Table, i = q_learning_base_epsilon_decrese(2, 0.1, 0.1, 0.05)
+#H_Table, i = h_learning_base(2, 0.1, 0.05)
 
 
 
