@@ -33,7 +33,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(10, 14)
+        node = np.random.randint(45, 50)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -414,7 +414,7 @@ def disintegration (node, main_matrix, attack_list):
     return final_attack_list , main_matrix
 
 
-def closeness_dis(type):
+def closeness_dis_1(type):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
     p = [0.0, 0.5, 1, 1.5, 2]
@@ -441,6 +441,8 @@ def closeness_dis(type):
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
+            np.save('conct_btw_lst.npy', connectivity_lst)
+            np.save('cost_')
             return connectivity_lst, cost_lst
         else:
             if len(closeness) != 0 and len(attack_list)==0:
@@ -465,6 +467,61 @@ def closeness_dis(type):
             connectivity_lst.append(conct)
 
             print('connectivity_lst', connectivity_lst)
+
+
+def closeness_dis_2(type):
+    # aval bayad ye peygham neshoon bedim ke in che noe disi hast
+    cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
+    p = [0.0, 0.5, 1, 1.5, 2]
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    iner_main_conct = deepcopy(main_conct)
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix)
+    connectivity_lst = []
+    connectivity_lst.append(1)
+    attack_list = []
+    switcher={
+                1: closeness_btw(main_graph),
+                2: closeness_deg(main_graph),
+                }
+    closeness = switcher.get(type,"Invalid type")
+    while len(closeness) != 0:
+        switcher={
+                1: closeness_btw(main_graph),
+                2: closeness_deg(main_graph),
+                }
+        closeness = switcher.get(type,"Invalid type")
+        sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+        if len(closeness) == 0:
+            print('final main matrix for other methodes: ', iner_matrix)
+            print ('Network has disintegrated successfuly')
+            np.save()
+            return connectivity_lst, cost_lst
+        else:
+            if len(closeness) != 0 and len(attack_list)==0:
+                max_order_node = sort_order[0][0]
+            for node in attack_list:
+                if node not in closeness:
+                    index = attack_list.index(node)
+                    attack_list.pop(index)
+                    print('alone node hase deleted: ', node)
+
+            max_order_node = sort_order[0][0]
+            print('target node: ', max_order_node)
+            for i in range(len(p)):
+                cost = cost_count(main_graph, [max_order_node], p[i])
+                cost_lst[i] = cost_lst[i] + cost[0][1]
+
+            attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
+            print ('iner_matrix in closeness recursive dis:', "\n", iner_matrix)
+            main_graph = create_main_graph(iner_matrix)
+            connectivity = connectivity_count(main_graph)
+            conct = (connectivity/iner_main_conct)
+            connectivity_lst.append(conct)
+
+            print('connectivity_lst', connectivity_lst)
+
 
 
 def random_recursive_dis():
@@ -1579,6 +1636,7 @@ def q_learning_convergence(learning_rate):
         print('continue_browsing is False: ', continue_browsing )
         return continue_browsing, max_delta
 
+
 def q_target_node(q_table,last_state, last_value, matrix,
                   active_lst, attack_list, conct, p,landa,gama,epsilon_prob, total_node):
 
@@ -1704,7 +1762,6 @@ def q_learning(main_matrix, p, landa, gama, q_table, epsilon_prob, s_lst, browse
     main_graph = create_main_graph(iner_matrix)
     delta = []
     while len(active_nodes) != 0:
-
         if len(active_nodes) == 0:
             print('delta:' , delta)
             print ('Network has disintegrated successfuly in Q_learning')
@@ -1797,6 +1854,7 @@ def q_learning_base(p, landa, gama, epsilon_prob):
 
     return q_table, i
 
+
 def q_learning_base_epsilon_decrese(p, landa, gama, epsilon_prob):
     max_delta = []
     q_table = np.load('Q_table.npy', allow_pickle=True)
@@ -1825,13 +1883,13 @@ def q_learning_base_epsilon_decrese(p, landa, gama, epsilon_prob):
             max_sum_value = pickle.load(handle)
         if max_sum_value >= sum_reward:
             j+= 1
-            if j> 300 and j<500 :
+            if j> 100 and j<200 :
                 epsilon_prob =0.04
                 print('epsilon has changed to 0.04 ')
-            if j>500 and j<800:
+            if j>200 and j<400:
                 epsilon_prob =0.03
                 print('epsilon has changed to 0.03 ')
-            if j>1000 :
+            if j>400 :
                 epsilon_prob =0.0
                 print('epsilon has changed to 0.0 ')
         else:
@@ -1884,7 +1942,7 @@ def automata_convergence(prob_lst, browse, last_brows):
     for i in prob_lst:
         temp = (i * math.log(1/i))
         entropy += temp
-    if entropy > 0.002:
+    if entropy > 1:
         print('not converged')
         print('entropy:' , entropy)
         return continue_browsing, entropy
@@ -2031,7 +2089,7 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
     #print('active_node in learning: ', len(active_nodes))
     connectivity = conct_lst[-1]
     main_graph = create_main_graph(iner_matrix)
-    prob = []
+    #prob = []
     while len(active_nodes) != 0:
         if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly in automata_learning')
@@ -2063,7 +2121,7 @@ def automata_learning(main_matrix, p, alfa, h_table, epsilon_prob, s_lst, browse
         browse.append(target_node)
         s_lst.append(s_lst[-1]+1)
         h_table = h_value_count_update(s_lst[-1], target_node, h_table, alfa, attack_befre_change)
-        prob.append(h_table[s_lst[-1]][browse[-1]])
+        prob_lst.append(h_table[s_lst[-1]][browse[-1]])
         iner_conct = iner_active_num/total_node
         print ('iner_conedt:', iner_conct)
         conct_lst.append(iner_conct)
@@ -2096,7 +2154,7 @@ def h_learning_base(p, alfa, epsilon_prob):
         conct_lst, cost, h_table, browse, continue_browsing, sum_conct , entropy = \
             automata_learning(iner_matrix, p, alfa, h_table,
         epsilon_prob, init_s_lst, init_browse, init_conct_lst, init_attack_list, cost_init, prob_lst, total_node)
-        if entropy < 0.002:
+        if entropy < 1:
             epsilon_prob = 0
             print('epsilon prob is zero in automata')
         print('browse:', browse)
@@ -2228,7 +2286,7 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 #-------------MAIN------------------------------------------------------------------
 
 #-------------initiator--------------
-#
+# # #
 # list_node_initial , Layen_Count = list_node_init()
 # # np.save('list_node_initial' , list_node , allow_pickle=True)
 # # np.save('Layen_Count' , layer_n , allow_pickle=True)
@@ -2289,9 +2347,9 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 #-----------------methodes-------------------
 
 # Rand_Node = rand_node()
-# Connectivity_BTW, Cost_BTW = closeness_dis(1)
+# Connectivity_BTW, Cost_BTW = closeness_dis_1(1)
 # print('cost_btw:' , Cost_BTW)
-# Connectivity_DEG, Cost_DEG = closeness_dis(2)
+# Connectivity_DEG, Cost_DEG = closeness_dis_2(2)
 # print('cost_DEG:' , Cost_DEG)
 # Connectivity_Random , Cost_Rand = random_recursive_dis()
 # print('cost_Rand:' , Cost_Rand)
@@ -2308,8 +2366,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
 # Q_Table, i = q_learning_base(0.5, 0.1, 0.1, 0.05)
-Q_Table, i = q_learning_base_epsilon_decrese(2, 0.1, 0.1, 0.05)
-#H_Table, i = h_learning_base(2, 0.1, 0.05)
+#Q_Table, i = q_learning_base_epsilon_decrese(2, 0.1, 0.1, 0.05)
+H_Table, i = h_learning_base(1, 0.4, 0.05)
 
 
 
