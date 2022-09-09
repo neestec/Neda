@@ -375,7 +375,9 @@ def attack_Node_Mapping(attack_list):
     return index_list
 
 
-def connectivity_count_init(main_graph):
+def connectivity_count_init():
+    main_matrix = np.load('Main_Matrix.npy')
+    main_graph = create_main_graph_init(main_matrix)
     connectivity = nx.average_node_connectivity(main_graph)
     np.save('Main_Conct' , connectivity , allow_pickle=True)
     return connectivity
@@ -427,6 +429,9 @@ def closeness_dis_1(type):
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
+    c_lst = []
+    c_lst.append(1)
+    main_c = connectivity_count(main_graph)
     attack_list = []
     switcher={
                 1: closeness_btw(main_graph),
@@ -445,6 +450,7 @@ def closeness_dis_1(type):
             print ('Network has disintegrated successfuly')
             np.save('conct_btw_lst.npy', connectivity_lst)
             np.save('cost_btw.npy', cost_lst)
+            np.save('cc_btw.npy', c_lst)
             return connectivity_lst, cost_lst
         else:
             if len(closeness) != 0 and len(attack_list)==0:
@@ -466,6 +472,8 @@ def closeness_dis_1(type):
             main_graph = create_main_graph(iner_matrix)
             active_nodes = active_node(iner_matrix)
             connectivity = len(active_nodes)/init_tota_node
+            c = connectivity_count(main_graph)
+            c_lst.append(c/main_c)
             connectivity_lst.append(connectivity)
 
             print('connectivity_lst', connectivity_lst)
@@ -1078,7 +1086,7 @@ def list_split(initiate_lst, initial_len,  mutation_portion, crossover_portion):
             iner_init_cross_lst.pop(index)
     if len(iner_init_cross_lst)> cross_count:
         children = random.sample(iner_init_cross_lst, cross_count)
-    else: 
+    else:
         children = iner_init_cross_lst
     print('mut_cross_lst:' , mut_lst , 'parent_final:', parent , 'children:' , children)
     cross_mut_child = []
@@ -1412,6 +1420,8 @@ def Greedy_disintegration():
              active_nodes = active_node(iner_matrix)
              if len(active_nodes)== 0:
                  print ('Network has disintegrated successfuly in Greedy')
+                 np.save('conct_Greedy_lst.npy', connectivity_lst)
+                 np.save('cost_Greedy.npy', cost_lst)
                  return connectivity_lst, cost_lst
              for node in attack_lst:
                 if node not in active_nodes:
@@ -1475,7 +1485,7 @@ def cost_count(main_graph , active_lst , p):
             internal_cost.append(i) # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
             internal_cost.append(c)
             cost.append(internal_cost)
-    np.save('Cost_lst.npy', cost)
+    #np.save('Cost_lst.npy', cost)
     return cost
 
 
@@ -2209,7 +2219,23 @@ def h_learning_base(p, alfa, epsilon_prob):
 
 
 #-------------Report____________
-def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,con_DSA):
+def plot_connect():
+    con_rand = np.load('conct_rand_lst.npy')
+    con_rand = con_rand.tolist()
+    con_DC = np.load('conct_deg_lst.npy')
+    con_DC = con_DC.tolist()
+    con_BC = np.load('cc_rand.npy')
+    con_BC = con_BC.tolist()
+    con_UW = np.load('conct_weight_lst.npy')
+    con_UW = con_UW.tolist()
+    con_Greedy= np.load('conct_Greedy_lst.npy')
+    con_Greedy = con_Greedy.tolist()
+    con_GA = np.load('conct_GA_lst.npy')
+    con_GA = con_GA.tolist()
+    con_DSQ = np.load('Q_exploitation_conct_lst.npy')
+    con_DSQ = con_DSQ.tolist()
+    con_DSA = np.load('conct_lst_automata_p1_a4.npy')
+    con_DSA = con_DSA.tolist()
 
     list_name = []
     list_name.append('Random')
@@ -2221,18 +2247,18 @@ def plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy, con_GA, con_DSQ ,
     list_name.append('DSQ')
     list_name.append('DSA')
     episode = [len(con_rand), len(con_DC),len(con_BC), len(con_UW), len(con_Greedy), len(con_GA),len(con_DSQ) ,len(con_DSA)]
-    min_episode = min(episode)
-    order = []
-    for i in range(min_episode):
-        order.append(i)
-    del con_rand[min_episode: len(con_rand)]
-    del con_DC[min_episode: len(con_DC)]
-    del con_BC[min_episode: len(con_BC)]
-    del con_UW[min_episode: len(con_UW)]
-    del con_Greedy[min_episode: len(con_Greedy)]
-    del con_GA[min_episode: len(con_GA)]
-    del con_DSQ[min_episode: len(con_DSQ)]
-    del con_DSA[min_episode: len(con_DSA)]
+    # min_episode = min(episode)
+    # order = []
+    # for i in range(min_episode):
+    #     order.append(i)
+    # del con_rand[min_episode: len(con_rand)]
+    # del con_DC[min_episode: len(con_DC)]
+    # del con_BC[min_episode: len(con_BC)]
+    # del con_UW[min_episode: len(con_UW)]
+    # del con_Greedy[min_episode: len(con_Greedy)]
+    # del con_GA[min_episode: len(con_GA)]
+    # del con_DSQ[min_episode: len(con_DSQ)]
+    # del con_DSA[min_episode: len(con_DSA)]
 
     plt.plot(con_rand, label = 'Rand', lw=2, marker='s', ms=6) # square
     plt.plot(con_DC, label = 'DC', lw=2, marker='^', ms=6) # triangle
@@ -2346,8 +2372,8 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Main_Graph = create_main_graph_init(Main_Matrix)
 # # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
 # print('10')
-# #Main_Conct = connectivity_count_init(Main_Graph)
-# # # np.save('Main_Conct' , Main_Conct , allow_pickle=True)
+# Main_Conct = connectivity_count_init(Main_Graph)
+# #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
 # print('11')
 # Triple_Weight  = weight_def (Main_Matrix)
 # # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
@@ -2367,11 +2393,18 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Initiator_Node = rand_node()
 # print('17')
 # print('initializing has finished successfully')
+#connectivity_count_init()
 
+
+#--------------learning----------------------
+
+#Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
+#Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
+#H_Table, i = h_learning_base(1, 0.4, 0.05)
 
 #-----------------methodes-------------------
 
-# Rand_Node = rand_node()
+
 # Connectivity_BTW, Cost_BTW = closeness_dis_1(1)
 # print('cost_btw:' , Cost_BTW)
 # print('conct: ', Connectivity_BTW)
@@ -2387,50 +2420,19 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration()
 # print('cost_greedy:', Cost_Greedy)
 # print('Greedy_conct:', Connectivity_Greedy)
-Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 5)
-print('cost_GA:' , Cost_GA)
-print('GA_conct:', Connectivity_GA)
-#q_dis ()
-# Connctivity_Q, Cost_Q = Q_cost_creation( [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
-# print('cost_Q' , Cost_Q)
-# Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
-# print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
-
-#Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
-#Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
-#H_Table, i = h_learning_base(1, 0.4, 0.05)
-
-
-
-
-# H_Table , i  = automata_learn_convergence( 1, 0.3)
-# conct_lst, cost, Target_Node_Lst_AUT = automata_dis(Rand_Node, 0.0)
-# Connctivity_aut, Cost_aut = automata_cost_creation(  [0.0, 0.5, 1.0, 1.5, 2.0])
-# print('cost_aut' , Cost_aut)
-# print('Target_Node_Lst_Q: ' , Target_Node_Lst_Q)
-# print ('Target_Node_Lst_AUT: ', Target_Node_Lst_AUT)
-
-
-
-
-
-
-
-
+# Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 5)
+# print('cost_GA:' , Cost_GA)
+# print('GA_conct:', Connectivity_GA)
+# q_dis ()
 
 
 #--------------------Reports-----------------------
-#plot_connect(Connectivity_Random, Connectivity_DEG, Connectivity_BTW, Connectivity_Weight, Connectivity_Greedy, Connectivity_GA, Connctivity_Q ,Connctivity_aut)
+plot_connect()
 #table_view(Cost_BTW, Cost_DEG, Cost_Rand, Cost_Weight, Cost_GA, Cost_Greedy, Cost_Q, Cost_aut)
 #plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
 
 
 
-# total_sum = np.load('Sum_valu_list.npy' , allow_pickle= True)
-# print('sum_reward' , total_sum)
-#
-# q_table  = np.load('Q_table.npy' , allow_pickle= True)
-# print('q_table: ', q_table)
 
 
 
