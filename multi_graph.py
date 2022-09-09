@@ -173,9 +173,11 @@ def Create_List_of_Nodes(List_Struct):
 def random_atthck_nodes(list_of_nodes):
     #print('len(list_of_nodes):',len(list_of_nodes))
 
-    attacked_number = math.floor(len(list_of_nodes)/5)
+    attacked_number = math.floor(len(list_of_nodes)/10)
     #print('attacken number on nodes:', attacked_number)
     attacked_list = random.sample(list_of_nodes, attacked_number)
+    if len(attacked_list) <1:
+        return list_of_nodes
     #print('attacked nodes:', attacked_list)
     #np.save('Attack_Nodes' , attacked_list , allow_pickle=True)
     return attacked_list
@@ -380,6 +382,7 @@ def connectivity_count_init(main_graph):
 
 
 def connectivity_count(main_graph):
+
     iner_connectivity = nx.average_node_connectivity(main_graph)
     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
     connectivity = iner_connectivity/main_conct
@@ -416,11 +419,10 @@ def disintegration (node, main_matrix, attack_list):
 
 def closeness_dis_1(type):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
-    cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-    p = [0.0, 0.5, 1, 1.5, 2]
+    cost_lst = [ 0.0, 0.0, 0.0, 0.0]
+    p = [ 0.5, 1, 1.5, 2]
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
-    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-    iner_main_conct = deepcopy(main_conct)
+    init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
@@ -442,7 +444,7 @@ def closeness_dis_1(type):
             print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
             np.save('conct_btw_lst.npy', connectivity_lst)
-            np.save('cost_')
+            np.save('cost_btw.npy', cost_lst)
             return connectivity_lst, cost_lst
         else:
             if len(closeness) != 0 and len(attack_list)==0:
@@ -462,20 +464,19 @@ def closeness_dis_1(type):
             attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
             print ('iner_matrix in closeness recursive dis:', "\n", iner_matrix)
             main_graph = create_main_graph(iner_matrix)
-            connectivity = connectivity_count(main_graph)
-            conct = (connectivity/iner_main_conct)
-            connectivity_lst.append(conct)
+            active_nodes = active_node(iner_matrix)
+            connectivity = len(active_nodes)/init_tota_node
+            connectivity_lst.append(connectivity)
 
             print('connectivity_lst', connectivity_lst)
 
 
 def closeness_dis_2(type):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
-    cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-    p = [0.0, 0.5, 1, 1.5, 2]
+    cost_lst = [0.0, 0.0, 0.0, 0.0]
+    p = [0.5, 1, 1.5, 2]
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
-    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-    iner_main_conct = deepcopy(main_conct)
+    init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
@@ -496,7 +497,8 @@ def closeness_dis_2(type):
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
-            np.save()
+            np.save('conct_deg_lst.npy', connectivity_lst)
+            np.save('cost_deg.npy', cost_lst)
             return connectivity_lst, cost_lst
         else:
             if len(closeness) != 0 and len(attack_list)==0:
@@ -516,8 +518,9 @@ def closeness_dis_2(type):
             attack_list , iner_matrix = disintegration(max_order_node, iner_matrix, attack_list)
             print ('iner_matrix in closeness recursive dis:', "\n", iner_matrix)
             main_graph = create_main_graph(iner_matrix)
-            connectivity = connectivity_count(main_graph)
-            conct = (connectivity/iner_main_conct)
+            active_nodes= active_node(iner_matrix)
+            connectivity = len(active_nodes)
+            conct = (connectivity/init_tota_node)
             connectivity_lst.append(conct)
 
             print('connectivity_lst', connectivity_lst)
@@ -525,12 +528,11 @@ def closeness_dis_2(type):
 
 
 def random_recursive_dis():
-     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-     p = [0.0, 0.5, 1.0, 1.5, 2]
+     cost_lst = [0.0, 0.0, 0.0, 0.0]
+     p = [0.5, 1.0, 1.5, 2]
      main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
      iner_matrix = deepcopy(main_matrix)
-     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-     iner_main_conct = deepcopy(main_conct)
+     init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
      main_graph = create_main_graph(iner_matrix)
      connectivity_lst = []
      connectivity_lst.append(1)
@@ -544,6 +546,8 @@ def random_recursive_dis():
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', iner_matrix)
             print ('Network has disintegrated successfuly')
+            np.save('conct_rand_lst.npy', connectivity_lst)
+            np.save('cost_rand.npy', cost_lst)
             return connectivity_lst , cost_lst
         else:
             if len(closeness) != 0 and len(attack_list)==0:
@@ -563,8 +567,9 @@ def random_recursive_dis():
                 cost_lst[i] = cost_lst[i] + cost[0][1]
             attack_list , iner_matrix = disintegration(rand_order_node, iner_matrix, attack_list)
             main_graph = create_main_graph(iner_matrix)
-            connectivity = connectivity_count(main_graph)
-            conct = (connectivity/iner_main_conct)
+            active_nodes = active_node(iner_matrix)
+            connectivity = len(active_nodes)
+            conct = (connectivity/init_tota_node)
             connectivity_lst.append(conct)
 
 
@@ -804,12 +809,11 @@ def attack_weight_sort_copy(attack_node , node_avrg):
 def weight_recursive_dis():
      # recursive disintegration ro anjam mide
      #iner_main_matrix = [row[:] for row in main_matrix]
-     cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-     p = [0.0, 0.5, 1.0, 1.5, 2]
+     cost_lst = [0.0, 0.0, 0.0, 0.0]
+     p = [0.5, 1.0, 1.5, 2]
      main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
      iner_main_matrix = deepcopy(main_matrix)
-     main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-     iner_main_conct = deepcopy(main_conct)
+     init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
      main_graph = create_main_graph(iner_main_matrix)
      connectivity_lst = []
      connectivity_lst.append(1)
@@ -845,8 +849,9 @@ def weight_recursive_dis():
                     cost_lst[i] = cost_lst[i] + cost[0][1]
                 attack_list , iner_main_matrix = disintegration(target_node, iner_main_matrix, attack_list)
                 main_graph = create_main_graph(iner_main_matrix)
-                connectivity = connectivity_count(main_graph)
-                conct = (connectivity/iner_main_conct)
+                active_nodes = active_node(iner_main_matrix)
+                connectivity = len(active_nodes)
+                conct = (connectivity/init_tota_node)
                 connectivity_lst.append(conct)
                 #print('attack_list', attack_list)
                 #list_of_weight  = weight_def (iner_main_matrix)
@@ -855,6 +860,8 @@ def weight_recursive_dis():
                 attack_list = attack_weight_sort(attack_list , node_averg)
      if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly by wight method ')
+            np.save('conct_weight_lst.npy', connectivity_lst)
+            np.save('cost_weight.npy', cost_lst)
             return connectivity_lst , cost_lst
 
 
@@ -970,13 +977,13 @@ def fitness_arrenge(uw, dc, bc, initiator):
         uw_int.append(num)
     create_dataset = False
     for i in range(len(bc_int)):
-        print('i:', i)
-        print('bc_int[i][0] : ', bc_int[i][0])
-        print('dc_int[i][0] : ', dc_int[i][0])
-        print('uw_int[i][0] : ', uw_int[i][0])
-        print('bc len: ', len(bc_int))
-        print('dc len: ', len(dc_int))
-        print('uw len: ', len(uw_int))
+        # print('i:', i)
+        # print('bc_int[i][0] : ', bc_int[i][0])
+        # print('dc_int[i][0] : ', dc_int[i][0])
+        # print('uw_int[i][0] : ', uw_int[i][0])
+        # print('bc len: ', len(bc_int))
+        # print('dc len: ', len(dc_int))
+        # print('uw len: ', len(uw_int))
         if bc_int[i][0] == dc_int[i][0] and bc_int[i][0] == uw_int[i][0]:
             create_dataset = True
         # else:
@@ -1032,44 +1039,51 @@ def fitness_arrenge(uw, dc, bc, initiator):
 def list_split(initiate_lst, initial_len,  mutation_portion, crossover_portion):
     """split list utilizing portions even with longe lenth. input is a sorted list& lent = initial"""
     print('initiated list in split:' , initiate_lst)
-    print('type:', type(initiate_lst))
     iner_init_cross_lst = deepcopy(initiate_lst)
 
-    #portion counting
+    #be dast avardane tedade har ghesmat az toole jhen (initial_len)
     mutation_count = math.ceil(mutation_portion*initial_len)
-    cross_count = (math.ceil(crossover_portion* (initial_len-mutation_count))-1)
-    parent_count = initial_len - mutation_count-cross_count
+    parent_count = 1 # initial_len - mutation_count-cross_count
+    cross_count = (initial_len-(mutation_count-parent_count)-2)
     print('mutation_count:' , mutation_count)
     print('cross_count:' ,cross_count)
     print('parent_count:', parent_count)
 
-    #create lists
-    mut_cross_lst = []
-    for i in range(mutation_count):
-        mut_cross_lst.append(initiate_lst[i])
 
+    # be dast avardane tedad har ghesmat az toole reshteye voroodi (initial_lst)
+    mutation_of_inpunt_lst = math.ceil(mutation_portion*len(initiate_lst))
+    parent_of_input_lst = 1
+    cross_of_input_lst = math.ceil(crossover_portion*len(initiate_lst))
+
+
+
+    #create lists
+    mut_lst = []
+    for i in range(mutation_of_inpunt_lst):
+        mut_lst.append(initiate_lst[i])
+    print('mut_lst:', mut_lst)
     # create cross members after pop mut and befor pop parent
-    for node in mut_cross_lst:
+    for node in mut_lst:
             if node in iner_init_cross_lst:
                 index = iner_init_cross_lst.index(node)
                 iner_init_cross_lst.pop(index)
     print('base after pop mut: ', iner_init_cross_lst)
-
-    #create parent list
+    mut = random.sample(mut_lst, mutation_count)
     parent = []
-    for i in range(parent_count):
-        parent.append(iner_init_cross_lst[-(i)])
-    #pop parent from list
-        for node in parent:
-            if node in iner_init_cross_lst:
-                index = iner_init_cross_lst.index(node)
-                iner_init_cross_lst.pop(index)
-    print('base after pop parent: ', iner_init_cross_lst)
-    children = random.sample(iner_init_cross_lst, cross_count)
-    print('mut_cross_lst:' , mut_cross_lst , 'parent_final:', parent , 'children:' , children)
+    parent.append(iner_init_cross_lst[-1])
+    print('parent:', parent)
+    for node in parent:
+        if node in iner_init_cross_lst:
+            index = iner_init_cross_lst.index(node)
+            iner_init_cross_lst.pop(index)
+    if len(iner_init_cross_lst)> cross_count:
+        children = random.sample(iner_init_cross_lst, cross_count)
+    else: 
+        children = iner_init_cross_lst
+    print('mut_cross_lst:' , mut_lst , 'parent_final:', parent , 'children:' , children)
     cross_mut_child = []
     last_gen = []
-    for i in mut_cross_lst:
+    for i in mut:
         cross_mut_child.append(i)
     for i in children:
         cross_mut_child.append(i)
@@ -1077,63 +1091,7 @@ def list_split(initiate_lst, initial_len,  mutation_portion, crossover_portion):
         last_gen.append(i)
     for i in parent:
         last_gen.append(i)
-    return mut_cross_lst , parent , children , cross_mut_child, last_gen
-
-
-def split_crossover_lst(crossover_lst_sorted, crossover_lst_len, children_len, mutation_portion, crossover_portion):
-
-    print('the ininiate list of children for crossover in crossover method:', crossover_lst_sorted)
-    iner_init_cross_lst = deepcopy(crossover_lst_sorted)
-    #children counting
-    mutation_count = math.ceil(mutation_portion*children_len)
-    cross_count = math.ceil(crossover_portion* (children_len-mutation_count))
-    parent_count = children_len - mutation_count-cross_count
-    print('mutation_count:' , mutation_count , 'cross_count:' , cross_count, 'parent_count:', parent_count)
-
-    #mut len counting in cross
-    mut_cross_len =math.ceil( mutation_portion* crossover_lst_len)
-
-
-    # create seperatedl list of cross_lst_sorted
-    mut_cross_lst = []
-    for i in range(mut_cross_len):
-        mut_cross_lst.append(crossover_lst_sorted[i])
-
-    # create cross members after pop mut and befor pop parent
-    for node in mut_cross_lst:
-            if node in iner_init_cross_lst:
-                index = iner_init_cross_lst.index(node)
-                iner_init_cross_lst.pop(index)
-
-    #create parent list
-    parent = []
-    for i in range(parent_count):
-        parent.append(iner_init_cross_lst[-(i)])
-    #pop parent from list
-        for node in parent:
-            if node in iner_init_cross_lst:
-                index = iner_init_cross_lst.index(node)
-                iner_init_cross_lst.pop(index)
-    print('base after pop parent: ', iner_init_cross_lst)
-
-    # parent and child len counting on cross
-    cross_cross_len = math.ceil(crossover_portion * len(iner_init_cross_lst))
-    parent_cross_len = len(iner_init_cross_lst) - cross_cross_len
-    print('mut_cross_len:', mut_cross_len ,"\n",  'cross_cross_len:', cross_cross_len,"\n",  'parent_cross_len:', parent_cross_len)
-    print('mut_cross_lst:' , mut_cross_lst,"\n",  'mutation_count:' , mutation_count)
-    print('iner_init_cross_lst:' ,iner_init_cross_lst, "\n", 'cross_count:', cross_count)
-    print('parent_cross_len:' , parent_cross_len)
-    mut_final = random.sample(mut_cross_lst, mutation_count)
-    children = random.sample(iner_init_cross_lst, cross_count)
-    print('mut_final:' , mut_final , 'parent_final:', parent , 'children:' , children)
-    last_gen = []
-    for i in mut_final:
-        last_gen.append(i)
-    for i in children:
-        last_gen.append(i)
-    for i in parent:
-        last_gen.append(i)
-    return last_gen
+    return mut, parent , children , cross_mut_child, last_gen
 
 
 def crossover(cross_mut_child, main_martix, last_gen):
@@ -1148,9 +1106,9 @@ def crossover(cross_mut_child, main_martix, last_gen):
     neigh_single = []
     neigh_final = []
     for i in cross_mut_child:
-        print('i in children: ', i)
+        #print('i in children: ', i)
         for j in range(iner_total_node):
-            print('j in range(iner_total_node) : ', j)
+            #print('j in range(iner_total_node) : ', j)
             if main_martix[j][i] == 1:
                 neigh.append(j)
 
@@ -1225,33 +1183,25 @@ def list_constructor(mut, new_mut, permanent_parent_lst, new_per_par, new_childr
 def GA_target_node(mutation_portion , crossover_portion, initiate_lst,
                    generation_size, main_graph, main_matrix, evolution, weight_triple):
     iner_init = deepcopy(initiate_lst)
-    if len(iner_init)<5:
+    if len(iner_init)<3:
         print('list is shorter than generation')
         target_node = iner_init[-1]
         return target_node
-
     iner_matrix = deepcopy(main_matrix)
-    print('sorted_lst in GA_target_node:', initiate_lst)
-    print('iner_init: ', iner_init)
-    print('sorted_lst type: ', type(initiate_lst))
-    print('evolution: ', evolution)
-    print('generation_size:' , generation_size)
-    i = 0
-    while i < evolution:
+    z = 0
+    while z < evolution:
         if len(iner_init) < generation_size:
             print('list is shorter than generation')
             target_node = iner_init[-1]
             return target_node
         # gen avaliya ro dorost mikone
         last_gen = list_sorting(weight_triple, iner_matrix, main_graph , iner_init)
-        if len(last_gen) < 3:
-            target_node = last_gen[-1]
-            return target_node
         print('last_gen in first step:', last_gen)
         target_node = last_gen[-1]
         print('target_node on first step:', target_node)
-        last_gen_len = len(last_gen)
-        mut , permanent_parent_lst , children, cross_mut_child, last_gen = list_split(last_gen, generation_size,  mutation_portion, crossover_portion)
+
+        mut , permanent_parent_lst , children, cross_mut_child, last_gen =\
+            list_split(last_gen, generation_size,  mutation_portion, crossover_portion)
         print('children in target node: ', children)
         children_len = len(children)
         crossover_lst = crossover(cross_mut_child, iner_matrix, last_gen)
@@ -1260,25 +1210,26 @@ def GA_target_node(mutation_portion , crossover_portion, initiate_lst,
             crossover_lst.append(i)
         crossover_lst_sorted = list_sorting(weight_triple, iner_matrix, main_graph, crossover_lst)
         crossover_lst_len = len(crossover_lst)
-        last_gen = split_crossover_lst(crossover_lst_sorted, crossover_lst_len,
-                                            children_len, mutation_portion, crossover_portion)
+        mut , permanent_parent_lst , children, cross_mut_child,last_gen =\
+            list_split(crossover_lst_sorted, generation_size, mutation_portion, crossover_portion)
+        print('last_gen:',last_gen)
         target_node = last_gen[-1]
-        i = i+1
-        print('i::::',  i)
+        z +=1
+        print('z::::',  z)
+        print('target_node:', target_node)
     return target_node
 
 
-def GA_dis( crossover, mutation_portion, evolution):
-    cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-    p = [0.0, 0.5, 1.0, 1.5, 2]
+def GA_dis( cross_portion , mutation_portion, evolution):
+    cost_lst = [0.0, 0.0, 0.0, 0.0]
+    p = [0.5, 1.0, 1.5, 2]
     #initiator = deepcopy(primitive)
     #init_len = len(initiator)
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
-    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
+    init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
     Averg_Weight = np.load('Averg_Weight.npy' , allow_pickle= True)
     Triple_Weight = np.load('Triple_Weight.npy', allow_pickle=True)
-    iner_main_conct = deepcopy(main_conct)
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
@@ -1287,11 +1238,15 @@ def GA_dis( crossover, mutation_portion, evolution):
 
         if len(active_nodes) == 0:
             print ('Network has disintegrated successfuly in GA')
+            np.save('conct_GA_lst.npy', connectivity_lst)
+            np.save('cost_GA.npy', cost_lst)
             return connectivity_lst, cost_lst
 
-        initiate_lst , generation_size = list_initiate(iner_matrix)
+        initiate_lst, generation_size = list_initiate(iner_matrix)
         if len(initiate_lst) == 0:
             print ('Network has disintegrated successfuly in GA')
+            np.save('conct_GA_lst.npy', connectivity_lst)
+            np.save('cost_GA.npy', cost_lst)
             return connectivity_lst, cost_lst
 
         for node in initiate_lst:
@@ -1299,7 +1254,7 @@ def GA_dis( crossover, mutation_portion, evolution):
                 index = initiate_lst.index(node)
                 initiate_lst.pop(index)
                 print('alone node hase deleted: ', node)
-        if len(initiate_lst)<5  :
+        if len(initiate_lst)<6 :
             print('list is shorter than generation')
             target_node =initiate_lst[-1]
             print('target_node in GA_dis:', target_node)
@@ -1310,16 +1265,18 @@ def GA_dis( crossover, mutation_portion, evolution):
             active_nodes = active_node(iner_matrix)
             print('active_node after dis:', active_nodes)
             main_graph = create_main_graph(iner_matrix)
-            connectivity = connectivity_count(main_graph)
-            conct = (connectivity/iner_main_conct)
+            connectivity = len(active_nodes)
+            conct = (connectivity/init_tota_node)
             connectivity_lst.append(conct)
             if len(active_nodes)== 0:
                 print ('Network has disintegrated successfuly in GA')
+                np.save('conct_GA_lst.npy', connectivity_lst)
+                np.save('cost_GA.npy', cost_lst)
                 return connectivity_lst, cost_lst
         else:
 
-            target_node = GA_target_node(mutation_portion , crossover, initiate_lst, generation_size , main_graph, iner_matrix, evolution,
-               Averg_Weight, Triple_Weight )
+            target_node = GA_target_node(mutation_portion , cross_portion, initiate_lst, generation_size , main_graph,
+                                         iner_matrix, evolution, Triple_Weight)
             print('target_node in GA_dis:', target_node)
             for i in range(len(p)):
                 cost = cost_count(main_graph, [target_node], p[i])
@@ -1328,11 +1285,13 @@ def GA_dis( crossover, mutation_portion, evolution):
             active_nodes = active_node(iner_matrix)
             print('active_node after dis:', active_nodes)
             main_graph = create_main_graph(iner_matrix)
-            connectivity = connectivity_count(main_graph)
-            conct = (connectivity/iner_main_conct)
+            connectivity = len(active_nodes)
+            conct = (connectivity/init_tota_node)
             connectivity_lst.append(conct)
             if len(active_nodes)== 0:
                 print ('Network has disintegrated successfuly in GA')
+                np.save('conct_GA_lst.npy', connectivity_lst)
+                np.save('cost_GA.npy', cost_lst)
                 return connectivity_lst, cost_lst
     return connectivity_lst, cost_lst
 
@@ -1415,12 +1374,11 @@ def target_choose(bc, dc, uw):
 
 
 def Greedy_disintegration():
-    cost_lst = [0.0, 0.0, 0.0, 0.0, 0.0]
-    p = [0.0, 0.5, 1.0, 1.5, 2]
+    cost_lst = [0.0, 0.0, 0.0, 0.0]
+    p = [0.5, 1.0, 1.5, 2]
     main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
     iner_matrix = deepcopy(main_matrix)
-    main_conct = np.load('Main_Conct.npy', allow_pickle= True)
-    iner_main_conct = deepcopy(main_conct)
+    init_tota_node = np.load('Total_Node.npy' , allow_pickle= True)
     main_graph = create_main_graph(iner_matrix)
     connectivity_lst = []
     connectivity_lst.append(1)
@@ -1439,6 +1397,8 @@ def Greedy_disintegration():
          if len(active_nodes) == 0:
              print('Network has disintegrated successfuly in Greedy')
              print('connectivity in return: ', connectivity_lst)
+             np.save('conct_Greedy_lst.npy', connectivity_lst)
+             np.save('cost_Greedy.npy', cost_lst)
              return connectivity_lst, cost_lst
          else:
 
@@ -1459,8 +1419,9 @@ def Greedy_disintegration():
                     attack_lst.pop(index)
                     print('alone node hase deleted: ', node)
              main_graph = create_main_graph(iner_matrix)
-             connectivity = connectivity_count(main_graph)
-             conct = (connectivity/iner_main_conct)
+             active_nodes = active_node(iner_matrix)
+             connectivity = len(active_nodes)
+             conct = (connectivity/init_tota_node)
              connectivity_lst.append(conct)
              print('connectivity in while: ', connectivity_lst)
              node_avrg = weight_account_copy(weight_list_triple, active_nodes)
@@ -1921,6 +1882,70 @@ def q_learning_base_epsilon_decrese(p, landa, gama, epsilon_prob):
     return q_table, i
 
 
+def q_read_table(table , total_node):
+    browse = []
+    q_table = deepcopy(table)
+    maxz = 0.0
+    for i in range(total_node):
+        temp = []
+        for j in range(total_node):
+            temp.append(q_table[i][j])
+        print('temp: ', temp)
+        maxz = max(temp)
+        print('maxz:', maxz)
+        if maxz != 0:
+            index = temp.index(maxz)
+            browse.append(index)
+            for z in range(total_node):
+                q_table[z][index] = 0
+        else:
+           return browse
+    return browse
+
+def q_dis ():
+    table = np.load('Q_table.npy')
+    q_table = deepcopy(table)
+    print(q_table)
+    total_node = np.load('Total_Node.npy')
+    browse = q_read_table(q_table , total_node)
+    print('browse: ', browse)
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle= True)
+    iner_matrix = deepcopy(main_matrix)
+    active_nodes = active_node(iner_matrix)
+    conct_lst = []
+    conct_lst.append(1)
+    attack_list = []
+    for i in browse:
+        print('i:', i)
+        if len(active_nodes) != 0:
+            attack_list ,iner_matrix = disintegration(i, iner_matrix, attack_list)
+            main_graph = create_main_graph(iner_matrix)
+            active_nodes = active_node(iner_matrix)
+            print('active_nodes:' , active_nodes)
+            connectivity = len(active_nodes)
+            conct = (connectivity/total_node)
+            conct_lst.append(conct)
+
+    deg_lst = closeness_deg(main_graph)
+    sort_order = sorted(deg_lst.items(), key=lambda x: x[1], reverse=True)
+    for i in sort_order:
+        print('i:', i)
+        if len(active_nodes) != 0:
+            attack_list ,iner_matrix = disintegration(i[0], iner_matrix, attack_list)
+            main_graph = create_main_graph(iner_matrix)
+            active_nodes = active_node(iner_matrix)
+            print('active_nodes:' , active_nodes)
+            connectivity = len(active_nodes)
+            conct = (connectivity/total_node)
+            conct_lst.append(conct)
+
+    np.save('Q_exploitation_conct_lst.npy', conct_lst)
+    print('Q_exploitation_conct_lst: ', conct_lst)
+    return
+
+
+
+
 #-----------------------Automata--------------------------------
 
 def h_value_count_update( current_state, target_node, h_table, alfa, attack_lst):
@@ -2349,25 +2374,31 @@ def table_view(cost_btw, cost_deg, cost_Rand, cost_weight, cost_GA, cost_greedy,
 # Rand_Node = rand_node()
 # Connectivity_BTW, Cost_BTW = closeness_dis_1(1)
 # print('cost_btw:' , Cost_BTW)
+# print('conct: ', Connectivity_BTW)
 # Connectivity_DEG, Cost_DEG = closeness_dis_2(2)
 # print('cost_DEG:' , Cost_DEG)
+# print('conct: ', Connectivity_DEG)
 # Connectivity_Random , Cost_Rand = random_recursive_dis()
 # print('cost_Rand:' , Cost_Rand)
+# print('rand_conct:', Connectivity_Random)
 # Connectivity_Weight, Cost_Weight = weight_recursive_dis()
 # print('cost_weight:' , Cost_Weight)
+# print('weight_conct:', Connectivity_Weight)
 # Connectivity_Greedy, Cost_Greedy = Greedy_disintegration()
 # print('cost_greedy:', Cost_Greedy)
-# Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 30)
-# print('cost_GA:' , Cost_GA)
-
+# print('Greedy_conct:', Connectivity_Greedy)
+Connectivity_GA, Cost_GA = GA_dis( 0.9, 0.05, 5)
+print('cost_GA:' , Cost_GA)
+print('GA_conct:', Connectivity_GA)
+#q_dis ()
 # Connctivity_Q, Cost_Q = Q_cost_creation( [0.0, 0.5, 1.0, 1.5, 2.0], 0.1, 0.9)
 # print('cost_Q' , Cost_Q)
 # Connctivity_Q, Cost_q , Q_value, Target_Node_Lst_Q = q_learning(Main_Matrix , 0.0 , 0.1 , 0.9)
 # print('Connctivity_q:' , Connctivity_Q,'Cost_q:',  Cost_q ,'Q_value:',  Q_value)
 
-# Q_Table, i = q_learning_base(0.5, 0.1, 0.1, 0.05)
-#Q_Table, i = q_learning_base_epsilon_decrese(2, 0.1, 0.1, 0.05)
-H_Table, i = h_learning_base(1, 0.4, 0.05)
+#Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
+#Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
+#H_Table, i = h_learning_base(1, 0.4, 0.05)
 
 
 
