@@ -26,13 +26,14 @@ def list_node_init():
     """gets layers count as an int variation layer_n
     for each layer creates a random int number of nodes as a member of list_node
     returns list of layer nodes as list_node"""
-    layer_n = int(input("input a number as number of layers: "))
+    inpt = input("input a number as number of layers: ")
+    layer_n = int(inpt)
     temp = itertools.count(1)
     index = [next(temp) for i in range(layer_n)]
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(70, 90)
+        node = np.random.randint(15, 20)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -58,13 +59,13 @@ def random_weighted_graph(n):
     """" create a random graph by n= nodes number, p = probability , lower and upper weight"""
     """n = number of nodes in each layer """
     # Erdos renyi graph by poisson degree distribution
-    p = np.random.uniform(0.2, 0.6)
-    z = nx.erdos_renyi_graph(n, p)
-    g = nx.gnp_random_graph(n, p)
+    # p = np.random.uniform(0.2, 0.6)
+    # z = nx.erdos_renyi_graph(n, p)
+    # g = nx.gnp_random_graph(n, p)
 
     # Barabasi albert graph by power law distribution
-    # m = np.random.randint(1, 5)
-    # g = nx.generators.barabasi_albert_graph( n, m )
+    m = np.random.randint(1, 5)
+    g = nx.generators.barabasi_albert_graph( n, m )
     # m = g.number_of_edges()
     # print('number of edge:', m)
     # weights = [np.random.randint(5, 10) for r in range(m)]
@@ -97,9 +98,9 @@ def create_comb_array(list_node):
     # print('comb:', comb)
     comb_array = []
     for p in comb:
+        print('p:', p)
         comb_array_temp = []
-        comb_array_temp.append(p)
-        # print (p)
+        # comb_array_temp.append(p)
         B0 = p[0][0]
         B1 = p[0][1]
         B2 = p[1][0]
@@ -113,6 +114,7 @@ def create_comb_array(list_node):
         comb_array_temp.append(B1 + B3)
         comb_array.append(comb_array_temp)
     # print('comb_array:', comb_array)
+    print('comb_dis', comb_array)
     np.save('comb_dis', comb_array, allow_pickle=True)
     return comb_array  # for each member of combarray: 0.comb, 1.B0, 2.B1, 3.B2, 4.B3, 5.R(edge_number), 6.n(lenth)
 
@@ -141,8 +143,9 @@ def create_matrix(list_node):
     comb = create_comb_array(list_node)
     """for each member of combarray: 0.comb, 1.B0, 2.B1, 3.B2, 4.B3, 5.R(edge_number), 6.n(lenth)"""
     for p in comb:
-        G = nx.bipartite.gnmk_random_graph(p[2], p[4], p[5])
-        G_lenth = (p[6])
+        print('p in comb: ', p)
+        G = nx.bipartite.gnmk_random_graph(p[1], p[3], p[4])
+        G_lenth = (p[5])
         Row_order = range(G_lenth)
         G_adj = nx.bipartite.biadjacency_matrix(G, row_order=Row_order, column_order=Row_order)
         G_array = csr_matrix.toarray(G_adj)
@@ -154,8 +157,8 @@ def create_matrix(list_node):
             for j in range(0, G_lenth):
                 if dens_matrx[i][j] == 1:
                     dens_matrx[j][i] = 1
-        total_mtrx[p[1]][p[3]] = dens_matrx
-        total_mtrx[p[3]][p[1]] = dens_matrx
+        total_mtrx[p[0]][p[2]] = dens_matrx
+        total_mtrx[p[2]][p[0]] = dens_matrx
     print('total_mtrx', total_mtrx)
     return total_mtrx
 
@@ -315,8 +318,12 @@ def create_main_graph_init(adjacency_matrix):
     edges = zip(rows.tolist(), cols.tolist())
     gr = nx.Graph()
     gr.add_edges_from(edges)
+    #nx.draw(gr, pos= None, edge_kabel = True)
     nx.draw(gr, node_size=500, with_labels=True)
-    plt.show()
+    #nx.draw(gr, pos= None, ax= None)
+    #plt.show()
+
+
     np.save('Main_Graph', gr, allow_pickle=True)
     return gr
 
@@ -328,7 +335,7 @@ def create_main_graph(adjacency_matrix):
     gr = nx.Graph()
     gr.add_edges_from(edges)
     nx.draw(gr, node_size=500, with_labels=True)
-    plt.show()
+    #plt.show()
     return gr
 
 
@@ -513,6 +520,7 @@ def closeness_dis_2(type):
             print('final main matrix for other methodes: ', iner_matrix)
             print('Network has disintegrated successfuly')
             np.save('conct_deg_lst.npy', connectivity_lst)
+            print('cost_list: ', cost_lst)
             np.save('cost_deg.npy', cost_lst)
             np.save('cc_deg.npy', c_lst)
             return connectivity_lst, cost_lst
@@ -2553,67 +2561,67 @@ def table_view():
 
 # -------------initiator--------------
 # # #
-list_node_initial, Layen_Count = list_node_init()
-# np.save('list_node_initial' , list_node , allow_pickle=True)
-# np.save('Layen_Count' , layer_n , allow_pickle=True)
-print('1')
-Total_Matrix = create_matrix(list_node_initial)
-# #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
+# list_node_initial, Layen_Count = list_node_init()
+# # np.save('list_node_initial' , list_node , allow_pickle=True)
+# # np.save('Layen_Count' , layer_n , allow_pickle=True)
+# print('1')
+# Total_Matrix = create_matrix(list_node_initial)
+# # #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
 # print('2')
-List_Struct = list_struc(list_node_initial)
-# #np.save('List_Struct' , List_Struct , allow_pickle=True)
+# List_Struct = list_struc(list_node_initial)
+# # #np.save('List_Struct' , List_Struct , allow_pickle=True)
 # print('3')
-comb_dis = create_comb_array(list_node_initial)
-# #np.save('comb_dis' , List_Struct , allow_pickle=True)
-print('4')
-list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
-# # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
-# # np.save('Label' , Label , allow_pickle=True)
-print('5')
-Map_dic, Total_Node = node_Mapping(list_of_nodes)
-print('total_node', Total_Node)
-# # np.save('Map_dic' , map_dic , allow_pickle=True)
-# # np.save('Total_Node' , i , allow_pickle=True)
-print('6')
-Attack_Nodes = random_atthck_nodes(list_of_nodes)
-# #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
-print('7')
-Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-# # np.save('Attack_Map' , map_dic , allow_pickle=True)
-print('8')
-Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
-# #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
-print('9')
-Main_Graph = create_main_graph_init(Main_Matrix)
-# # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
-print('10')
+# comb_dis = create_comb_array(list_node_initial)
+# # #np.save('comb_dis' , List_Struct , allow_pickle=True)
+# print('4')
+# list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
+# # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
+# # # np.save('Label' , Label , allow_pickle=True)
+# print('5')
+# Map_dic, Total_Node = node_Mapping(list_of_nodes)
+# print('total_node', Total_Node)
+# # # np.save('Map_dic' , map_dic , allow_pickle=True)
+# # # np.save('Total_Node' , i , allow_pickle=True)
+# print('6')
+# Attack_Nodes = random_atthck_nodes(list_of_nodes)
+# # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
+# print('7')
+# Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+# # # np.save('Attack_Map' , map_dic , allow_pickle=True)
+# print('8')
+# Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
+# # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
+# print('9')
+# Main_Graph = create_main_graph_init(Main_Matrix)
+# # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
+# print('10')
 # Main_Conct = connectivity_count_init()
-# #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
-print('11')
-Triple_Weight = weight_def(Main_Matrix)
-# # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
-print('12')
-Active_Node = active_node_init(Main_Matrix)
-# print('Active_node', Active_Node)
-# #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
-print('13')
-Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
-# print('Averg_Weight' , Averg_Weight)
-# # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
-print('14')
-Q_Table = table_initiator_Q(Total_Node)
-print('15')
-H_Table = h_table_initiator(Total_Node)
-print('16')
-Initiator_Node = rand_node()
-print('17')
-print('initializing has finished successfully')
+# # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
+# print('11')
+# Triple_Weight = weight_def(Main_Matrix)
+# # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
+# print('12')
+# Active_Node = active_node_init(Main_Matrix)
+# # print('Active_node', Active_Node)
+# # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
+# print('13')
+# Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
+# # print('Averg_Weight' , Averg_Weight)
+# # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
+# print('14')
+# Q_Table = table_initiator_Q(Total_Node)
+# print('15')
+# H_Table = h_table_initiator(Total_Node)
+# print('16')
+# Initiator_Node = rand_node()
+# print('17')
+# print('initializing has finished successfully')
 
 # --------------learning----------------------
 
 # Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
 # Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
-# H_Table, i = h_learning_base(1, 0.05, 0.05)
+H_Table, i = h_learning_base(1, 0.05, 0.05)
 
 # -----------------methodes-------------------
 
