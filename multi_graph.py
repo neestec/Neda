@@ -12,6 +12,7 @@ import random
 from copy import deepcopy
 from itertools import combinations
 from operator import itemgetter
+
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -27,7 +28,6 @@ def list_node_init():
     returns list of layer nodes as list_node"""
     inpt = input("input a number as number of layers: ")
     layer_n = int(inpt)
-
     temp = itertools.count(1)
     index = [next(temp) for i in range(layer_n)]
     # print('index:', index)
