@@ -33,7 +33,7 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(15, 20)
+        node = np.random.randint(160, 170)
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -321,7 +321,7 @@ def create_main_graph_init(adjacency_matrix):
     #nx.draw(gr, pos= None, edge_kabel = True)
     nx.draw(gr, node_size=500, with_labels=True)
     #nx.draw(gr, pos= None, ax= None)
-    #plt.show()
+    plt.show()
 
 
     np.save('Main_Graph', gr, allow_pickle=True)
@@ -2129,8 +2129,7 @@ def h_target_node(matrix, active_lst, attack_list, conct, p, epsilon_prob, total
         subtrac = conct - portion  # soorate kasre reward baraye i
         temp_numer.append(i)
         temp_numer.append(subtrac)
-        numerate.append(
-            temp_numer)  # yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
+        numerate.append(temp_numer)  # yek list az azaye dotayi sakhte mishe ke har ozv mige kodoom node ro age hamle konim soorate kasr chi mishe
     # print ('list of numerate: ', numerate)
     cost_for_attack = []
     for i in cost:
@@ -2561,47 +2560,52 @@ def table_view():
 
 # -------------initiator--------------
 # # #
-# list_node_initial, Layen_Count = list_node_init()
-# # np.save('list_node_initial' , list_node , allow_pickle=True)
+list_node_initial, Layen_Count = list_node_init()
+# np.save('list_node_initial' , list_node , allow_pickle=True)
 # # np.save('Layen_Count' , layer_n , allow_pickle=True)
-# print('1')
-# Total_Matrix = create_matrix(list_node_initial)
-# # #np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
-# print('2')
-# List_Struct = list_struc(list_node_initial)
-# # #np.save('List_Struct' , List_Struct , allow_pickle=True)
-# print('3')
-# comb_dis = create_comb_array(list_node_initial)
+print('1')
+Total_Matrix = create_matrix(list_node_initial)
+# np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
+print('2')
+List_Struct = list_struc(list_node_initial)
+# np.save('List_Struct' , List_Struct , allow_pickle=True)
+print (List_Struct)
+print('3')
+comb_dis = create_comb_array(list_node_initial)
 # # #np.save('comb_dis' , List_Struct , allow_pickle=True)
-# print('4')
-# list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
+print ('comb_ out', comb_dis)
+print('4')
+list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
 # # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
 # # # np.save('Label' , Label , allow_pickle=True)
-# print('5')
-# Map_dic, Total_Node = node_Mapping(list_of_nodes)
-# print('total_node', Total_Node)
+print ('lissst' , list_of_nodes)
+print('5')
+Map_dic, Total_Node = node_Mapping(list_of_nodes)
+print('total_node', Total_Node, "Map_dic", Map_dic)
 # # # np.save('Map_dic' , map_dic , allow_pickle=True)
 # # # np.save('Total_Node' , i , allow_pickle=True)
-# print('6')
-# Attack_Nodes = random_atthck_nodes(list_of_nodes)
+print('6')
+# Attack_Nodes = random_atthck_nodes(list_of_nodes) // this is for GA
 # # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
-# print('7')
+# print ('Attack Node: ', Attack_Nodes)
+print('7')
 # Attack_Map = attack_maping(Attack_Nodes, Map_dic)
 # # # np.save('Attack_Map' , map_dic , allow_pickle=True)
 # print('8')
-# Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
+Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
 # # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
-# print('9')
-# Main_Graph = create_main_graph_init(Main_Matrix)
+print ("Main Matrix", Main_Matrix)
+print('9')
+Main_Graph = create_main_graph_init(Main_Matrix)
 # # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
-# print('10')
-# Main_Conct = connectivity_count_init()
+print('10')
+Main_Conct = connectivity_count_init()
 # # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
 # print('11')
 # Triple_Weight = weight_def(Main_Matrix)
 # # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
 # print('12')
-# Active_Node = active_node_init(Main_Matrix)
+Active_Node = active_node_init(Main_Matrix)
 # # print('Active_node', Active_Node)
 # # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
 # print('13')
@@ -2611,17 +2615,17 @@ def table_view():
 # print('14')
 # Q_Table = table_initiator_Q(Total_Node)
 # print('15')
-# H_Table = h_table_initiator(Total_Node)
+H_Table = h_table_initiator(Total_Node)
 # print('16')
-# Initiator_Node = rand_node()
+Initiator_Node = rand_node()
 # print('17')
-# print('initializing has finished successfully')
+print('initializing has finished successfully')
 
 # --------------learning----------------------
 
 # Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
 # Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
-H_Table, i = h_learning_base(1, 0.05, 0.05)
+# H_Table, i = h_learning_base(1, 0.05, 0.05)
 
 # -----------------methodes-------------------
 
