@@ -12,7 +12,6 @@ import random
 from copy import deepcopy
 from itertools import combinations
 from operator import itemgetter
-
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -1505,8 +1504,8 @@ def cost_count(main_graph, active_lst, p):
     iner_degree = closeness_deg(iner_graph)
     iner_degree_lst = sorted(iner_degree.items(), key=lambda x: x[1], reverse=True)
     sum_p = 0.0
-    for i in iner_degree_lst:  # makhraje kasr ro inja misazim va rooye hameye grapg hast
-        sum_p += pow(i[1], p)
+    # for i in iner_degree_lst:  # makhraje kasr ro inja misazim va rooye hameye grapg hast
+    #     sum_p += pow(i[1], p)
     # print('sum_p:' , sum_p)
 
     # print('sum_p: ' , sum_p)
@@ -1522,7 +1521,7 @@ def cost_count(main_graph, active_lst, p):
                 cost_p = pow(j[1], p)
                 # print('cost for case: ', cost_p)
                 # print('cost_p: ', cost_p)
-                c = ((cost_p * 100) / sum_p)  # mohasebeye kasr be ezaye p haye mokhtalef
+                c = (cost_p * 100)   # mohasebeye kasr be ezaye p haye mokhtalef
                 # print('final cost of 20:', c)
                 internal_cost.append(
                     i)  # sakhte yek list ke har ozv an yek  node az attack_lst ast va hazine ba p haye mokhtalef
@@ -2625,7 +2624,7 @@ print('initializing has finished successfully')
 
 # Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
 # Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
-# H_Table, i = h_learning_base(1, 0.05, 0.05)
+H_Table, i = h_learning_base(1, 0.05, 0.05)
 
 # -----------------methodes-------------------
 
