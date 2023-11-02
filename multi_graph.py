@@ -32,7 +32,8 @@ def list_node_init():
     # print('index:', index)
     list_node = []
     for i in index:
-        node = np.random.randint(160, 170)
+        #node = np.random.randint(150, 155)
+        node = 200
         print('nodes in layer: ', node)
         list_node.append(node)
     print('list_node:', list_node)
@@ -58,13 +59,16 @@ def random_weighted_graph(n):
     """" create a random graph by n= nodes number, p = probability , lower and upper weight"""
     """n = number of nodes in each layer """
     # Erdos renyi graph by poisson degree distribution
-    # p = np.random.uniform(0.2, 0.6)
-    # z = nx.erdos_renyi_graph(n, p)
-    # g = nx.gnp_random_graph(n, p)
+    #p = np.random.uniform(0.02, 0.01)
+    p = 0.0495
+    g = nx.erdos_renyi_graph(n, p)
+
 
     # Barabasi albert graph by power law distribution
-    m = np.random.randint(1, 5)
-    g = nx.generators.barabasi_albert_graph( n, m )
+    # m = np.random.randint(1,2)
+    # print('neda addade ine:', 1)
+    # g = nx.generators.barabasi_albert_graph( n, 5)
+
     # m = g.number_of_edges()
     # print('number of edge:', m)
     # weights = [np.random.randint(5, 10) for r in range(m)]
@@ -85,6 +89,7 @@ def random_weighted_graph(n):
 def plot_degree_dist(G):
     degrees = [G.degree(n) for n in G.nodes()]
     plt.hist(degrees)
+    print ('its just here')
     plt.show()
     return
 
@@ -318,11 +323,16 @@ def create_main_graph_init(adjacency_matrix):
     gr = nx.Graph()
     gr.add_edges_from(edges)
     #nx.draw(gr, pos= None, edge_kabel = True)
-    nx.draw(gr, node_size=500, with_labels=True)
+    #colore_map = []
+    # for node in gr:
+    #     if node> 10:
+    #         colore_map.append('green')
+    #     else:
+    #         colore_map.append('orange')
+    colore_map = ('green')
+    nx.draw(gr, node_color = colore_map, node_size=40, with_labels=False)
     #nx.draw(gr, pos= None, ax= None)
     plt.show()
-
-
     np.save('Main_Graph', gr, allow_pickle=True)
     return gr
 
@@ -489,6 +499,24 @@ def closeness_dis_1(type):
             print('connectivity_lst', connectivity_lst)
 
 
+def degree_average ():
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
+    init_tota_node = np.load('Total_Node.npy', allow_pickle=True)
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix)
+    degree_closeness = closeness_deg(main_graph)
+    sort_order = sorted(degree_closeness.items(), key=lambda x: x[1], reverse=True)
+    print('degree_closeness: ', degree_closeness)
+    print ('sort_rder : ', sort_order)
+    print ('index: ', sort_order[0][1])
+    print (len (sort_order))
+    sum= 0
+    for i in sort_order:
+        sum = sum + i[1]
+    avrg = sum / len(sort_order)
+    print ('avrage = ', avrg)
+    return degree_closeness
+
 def closeness_dis_2(type):
     # aval bayad ye peygham neshoon bedim ke in che noe disi hast
     cost_lst = [0.0, 0.0, 0.0, 0.0]
@@ -501,6 +529,7 @@ def closeness_dis_2(type):
     connectivity_lst.append(1)
     c_lst = []
     c_lst.append(1)
+    attack_nodes_serie = []
     main_c = connectivity_count(main_graph)
     attack_list = []
     switcher = {
@@ -515,10 +544,14 @@ def closeness_dis_2(type):
         }
         closeness = switcher.get(type, "Invalid type")
         sort_order = sorted(closeness.items(), key=lambda x: x[1], reverse=True)
+        print ('@@@@@@@@@ : ' , sort_order)
         if len(closeness) == 0:
             print('final main matrix for other methodes: ', iner_matrix)
             print('Network has disintegrated successfuly')
+            print('attack_node_serie: ', attack_nodes_serie)
             np.save('conct_deg_lst.npy', connectivity_lst)
+            np.save('attack_node_series', attack_nodes_serie)
+            print('attack_len: ', len(attack_nodes_serie), 'conectivity_len: ', len(connectivity_lst))
             print('cost_list: ', cost_lst)
             np.save('cost_deg.npy', cost_lst)
             np.save('cc_deg.npy', c_lst)
@@ -533,6 +566,7 @@ def closeness_dis_2(type):
                     print('alone node hase deleted: ', node)
 
             max_order_node = sort_order[0][0]
+            attack_nodes_serie.append(max_order_node)
             print('target node: ', max_order_node)
             for i in range(len(p)):
                 cost = cost_count(main_graph, [max_order_node], p[i])
@@ -2559,72 +2593,72 @@ def table_view():
 
 # -------------initiator--------------
 # # #
-list_node_initial, Layen_Count = list_node_init()
-# np.save('list_node_initial' , list_node , allow_pickle=True)
-# # np.save('Layen_Count' , layer_n , allow_pickle=True)
-print('1')
-Total_Matrix = create_matrix(list_node_initial)
-# np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
-print('2')
-List_Struct = list_struc(list_node_initial)
-# np.save('List_Struct' , List_Struct , allow_pickle=True)
-print (List_Struct)
-print('3')
-comb_dis = create_comb_array(list_node_initial)
-# # #np.save('comb_dis' , List_Struct , allow_pickle=True)
-print ('comb_ out', comb_dis)
-print('4')
-list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
-# # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
-# # # np.save('Label' , Label , allow_pickle=True)
-print ('lissst' , list_of_nodes)
-print('5')
-Map_dic, Total_Node = node_Mapping(list_of_nodes)
-print('total_node', Total_Node, "Map_dic", Map_dic)
-# # # np.save('Map_dic' , map_dic , allow_pickle=True)
-# # # np.save('Total_Node' , i , allow_pickle=True)
-print('6')
-# Attack_Nodes = random_atthck_nodes(list_of_nodes) // this is for GA
-# # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
-# print ('Attack Node: ', Attack_Nodes)
-print('7')
-# Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-# # # np.save('Attack_Map' , map_dic , allow_pickle=True)
-# print('8')
-Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
-# # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
-print ("Main Matrix", Main_Matrix)
-print('9')
-Main_Graph = create_main_graph_init(Main_Matrix)
-# # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
-print('10')
+# list_node_initial, Layen_Count = list_node_init()
+# # np.save('list_node_initial' , list_node , allow_pickle=True)
+# # # np.save('Layen_Count' , layer_n , allow_pickle=True)
+# print('1')
+# Total_Matrix = create_matrix(list_node_initial)
+# # np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
+# print('2')
+# List_Struct = list_struc(list_node_initial)
+# # np.save('List_Struct' , List_Struct , allow_pickle=True)
+# print (List_Struct)
+# print('3')
+# comb_dis = create_comb_array(list_node_initial)
+# # # #np.save('comb_dis' , List_Struct , allow_pickle=True)
+# print ('comb_ out', comb_dis)
+# print('4')
+# list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
+# # # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
+# # # # np.save('Label' , Label , allow_pickle=True)
+# print ('lissst' , list_of_nodes)
+# print('5')
+# Map_dic, Total_Node = node_Mapping(list_of_nodes)
+# print('total_node', Total_Node, "Map_dic", Map_dic)
+# # # # np.save('Map_dic' , map_dic , allow_pickle=True)
+# # # # np.save('Total_Node' , i , allow_pickle=True)
+# print('6')
+# # Attack_Nodes = random_atthck_nodes(list_of_nodes) // this is for GA
+# # # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
+# # print ('Attack Node: ', Attack_Nodes)
+# print('7')
+# # Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+# # # # np.save('Attack_Map' , map_dic , allow_pickle=True)
+# # print('8')
+# Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
+# # # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
+# print ("Main Matrix", Main_Matrix)
+# print('9')
+# Main_Graph = create_main_graph_init(Main_Matrix)
+# # # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
+# print('10')
 Main_Conct = connectivity_count_init()
-# # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
-# print('11')
-# Triple_Weight = weight_def(Main_Matrix)
-# # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
-# print('12')
-Active_Node = active_node_init(Main_Matrix)
-# # print('Active_node', Active_Node)
-# # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
-# print('13')
-# Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
-# # print('Averg_Weight' , Averg_Weight)
-# # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
-# print('14')
-# Q_Table = table_initiator_Q(Total_Node)
-# print('15')
-H_Table = h_table_initiator(Total_Node)
-# print('16')
-Initiator_Node = rand_node()
-# print('17')
-print('initializing has finished successfully')
+# # # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
+# # print('11')
+# # Triple_Weight = weight_def(Main_Matrix)
+# # # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
+# # print('12')
+# Active_Node = active_node_init(Main_Matrix)
+# # # print('Active_node', Active_Node)
+# # # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
+# # print('13')
+# # Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
+# # # print('Averg_Weight' , Averg_Weight)
+# # # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
+# # print('14')
+# # Q_Table = table_initiator_Q(Total_Node)
+# # print('15')
+# H_Table = h_table_initiator(Total_Node)
+# # print('16')
+# Initiator_Node = rand_node()
+# # print('17')
+# print('initializing has finished successfully')
 
 # --------------learning----------------------
 
 # Q_Table, i = q_learning_base(1, 0.5, 0.1, 0.05)
 # Q_Table, i = q_learning_base_epsilon_decrese(1, 0.1, 0.5, 0.05)
-H_Table, i = h_learning_base(1, 0.05, 0.05)
+# H_Table, i = h_learning_base(1, 0.05, 0.05)
 
 # -----------------methodes-------------------
 
@@ -2632,8 +2666,10 @@ H_Table, i = h_learning_base(1, 0.05, 0.05)
 # Connectivity_BTW, Cost_BTW = closeness_dis_1(1)
 # print('cost_btw:' , Cost_BTW)
 # print('conct: ', Connectivity_BTW)
-# Connectivity_DEG, Cost_DEG = closeness_dis_2(2)
-# print('cost_DEG:' , Cost_DEG)
+Connectivity_DEG, Cost_DEG = closeness_dis_2(2)
+print('cost_DEG:' , Cost_DEG)
+# degree_closeness = degree_average()
+
 # print('conct: ', Connectivity_DEG)
 # Connectivity_Random , Cost_Rand = random_recursive_dis()
 # print('cost_Rand:' , Cost_Rand)
@@ -2651,13 +2687,13 @@ H_Table, i = h_learning_base(1, 0.05, 0.05)
 # h_dis()
 
 
-# --------------------Reports-----------------------
+#--------------------Reports-----------------------
 # plot_connect()
-
+#
 # plot_entropy()
-
+#
 # plot_sum_value()
-
-
+#
+#
 # table_view()
 # plot_connect(con_rand, con_DC, con_BC, con_UW, con_Greedy,con_GA , con_Q ,con_DSA)
