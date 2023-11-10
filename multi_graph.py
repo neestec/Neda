@@ -2594,66 +2594,66 @@ def table_view():
 
 # -------------initiator--------------
 # # #
-list_node_initial, Layen_Count = list_node_init()
-# np.save('list_node_initial' , list_node , allow_pickle=True)
-# # np.save('Layen_Count' , layer_n , allow_pickle=True)
-print('1')
-Total_Matrix = create_matrix(list_node_initial)
-# np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
-print('2')
-List_Struct = list_struc(list_node_initial)
-# np.save('List_Struct' , List_Struct , allow_pickle=True)
-print (List_Struct)
-print('3')
-comb_dis = create_comb_array(list_node_initial)
-# # #np.save('comb_dis' , List_Struct , allow_pickle=True)
-print ('comb_ out', comb_dis)
-print('4')
-list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
-# # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
-# # # np.save('Label' , Label , allow_pickle=True)
-print ('lissst' , list_of_nodes)
-print('5')
-Map_dic, Total_Node = node_Mapping(list_of_nodes)
-print('total_node', Total_Node, "Map_dic", Map_dic)
-# # # np.save('Map_dic' , map_dic , allow_pickle=True)
-# # # np.save('Total_Node' , i , allow_pickle=True)
-print('6')
-# Attack_Nodes = random_atthck_nodes(list_of_nodes) // this is for GA
-# # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
-# print ('Attack Node: ', Attack_Nodes)
-print('7')
-# Attack_Map = attack_maping(Attack_Nodes, Map_dic)
-# # # np.save('Attack_Map' , map_dic , allow_pickle=True)
-# print('8')
-Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
-# # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
-print ("Main Matrix", Main_Matrix)
-print('9')
-Main_Graph = create_main_graph_init(Main_Matrix)
-# # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
-print('10')
-Main_Conct = connectivity_count_init()
-# # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
-# print('11')
-# Triple_Weight = weight_def(Main_Matrix)
-# # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
-# print('12')
-Active_Node = active_node_init(Main_Matrix)
-# # print('Active_node', Active_Node)
-# # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
-# print('13')
-# Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
-# # print('Averg_Weight' , Averg_Weight)
-# # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
-# print('14')
-# Q_Table = table_initiator_Q(Total_Node)
-# print('15')
-H_Table = h_table_initiator(Total_Node)
-# print('16')
-Initiator_Node = rand_node()
-# print('17')
-print('initializing has finished successfully')
+# list_node_initial, Layen_Count = list_node_init()
+# # np.save('list_node_initial' , list_node , allow_pickle=True)
+# # # np.save('Layen_Count' , layer_n , allow_pickle=True)
+# print('1')
+# Total_Matrix = create_matrix(list_node_initial)
+# # np.save('Total_Matrix' , total_mtrx , allow_pickle=True)
+# print('2')
+# List_Struct = list_struc(list_node_initial)
+# # np.save('List_Struct' , List_Struct , allow_pickle=True)
+# print (List_Struct)
+# print('3')
+# comb_dis = create_comb_array(list_node_initial)
+# # # #np.save('comb_dis' , List_Struct , allow_pickle=True)
+# print ('comb_ out', comb_dis)
+# print('4')
+# list_of_nodes, Label = Create_List_of_Nodes(List_Struct)
+# # # # np.save('list_of_nodes' , list_of_nodes , allow_pickle=True)
+# # # # np.save('Label' , Label , allow_pickle=True)
+# print ('lissst' , list_of_nodes)
+# print('5')
+# Map_dic, Total_Node = node_Mapping(list_of_nodes)
+# print('total_node', Total_Node, "Map_dic", Map_dic)
+# # # # np.save('Map_dic' , map_dic , allow_pickle=True)
+# # # # np.save('Total_Node' , i , allow_pickle=True)
+# print('6')
+# # Attack_Nodes = random_atthck_nodes(list_of_nodes) // this is for GA
+# # # #np.save('Attack_Nodes' , map_dic , allow_pickle=True)
+# # print ('Attack Node: ', Attack_Nodes)
+# print('7')
+# # Attack_Map = attack_maping(Attack_Nodes, Map_dic)
+# # # # np.save('Attack_Map' , map_dic , allow_pickle=True)
+# # print('8')
+# Main_Matrix = create_major_matrix(Total_Matrix, Layen_Count)
+# # # #np.save('Main_Matrix' , Main_Matrix , allow_pickle=True)
+# print ("Main Matrix", Main_Matrix)
+# print('9')
+# Main_Graph = create_main_graph_init(Main_Matrix)
+# # # # np.save('Main_Graph' , Main_Graph , allow_pickle=True)
+# print('10')
+# Main_Conct = connectivity_count_init()
+# # # #np.save('Main_Conct' , Main_Conct , allow_pickle=True)
+# # print('11')
+# # Triple_Weight = weight_def(Main_Matrix)
+# # # # np.save('Triple_Weight' , Triple_Weight ,  allow_pickle=True)
+# # print('12')
+# Active_Node = active_node_init(Main_Matrix)
+# # # print('Active_node', Active_Node)
+# # # #np.save('Active_Node' , Active_Node ,  allow_pickle=True)
+# # print('13')
+# # Averg_Weight = weight_account_init(Triple_Weight, Active_Node)
+# # # print('Averg_Weight' , Averg_Weight)
+# # # # np.save('Averg_Weight' , Averg_Weight , allow_pickle=True)
+# # print('14')
+# # Q_Table = table_initiator_Q(Total_Node)
+# # print('15')
+# H_Table = h_table_initiator(Total_Node)
+# # print('16')
+# Initiator_Node = rand_node()
+# # print('17')
+# print('initializing has finished successfully')
 
 # --------------learning----------------------
 
@@ -2702,120 +2702,120 @@ print('initializing has finished successfully')
 
 # ----------------- SOC_Reports-----------
 
-def SoC_plot_connect():
-    con_Alberta_DC = np.load('A-conct_deg_lst.npy')
-    con_Alberta_DC = con_Alberta_DC.tolist()
-    con_Erdos_DC = np.load('E-conct_deg_lst.npy')
-    con_Erdos_DC = con_Erdos_DC.tolist()
-
-    list_name = []
-    list_name.append('BA')
-    list_name.append('ER')
-
-    plt.plot(con_Alberta_DC, label='BA', lw=2, marker='s', ms=6)  # square
-    plt.plot(con_Erdos_DC, label='ER', lw=2, marker='^', ms=6)  # triangle
-    plt.legend()
-    plt.show()
-
-def SoC_plot_entropy():
-    BA= np.load('Alberta_Entropy.npy')
-    BA = BA.tolist()
-    ER = np.load('Erdos_Entropy.npy')
-    ER = ER.tolist()
-    # p5_a4 = np.load('Entropy_p0.5_a4.npy')
-    # p5_a4 = p5_a4 .tolist()
-    # p_half_a4 = np.load('Entropy_p1.5_a4.npy')
-    # p_half_a4 = p_half_a4.tolist()
-
-    list_name = []
-    # list_name.append('p1_a4')
-    # list_name.append('p2_a4')
-    # list_name.append('p0.5_a4')
-    list_name.append('BA')
-    list_name.append('ER')
-    # episode = [len(entropy_01), len(entropy_05),len(entropy_1), len(entropy_4)]
-    # min_episode = min(episode)
-    # order = []
-    # for i in range(min_episode):
-    #     order.append(i)
-    # del con_rand[min_episode: len(con_rand)]
-    # del con_DC[min_episode: len(con_DC)]
-    # del con_BC[min_episode: len(con_BC)]
-    # del con_UW[min_episode: len(con_UW)]
-    # del con_Greedy[min_episode: len(con_Greedy)]
-    # del con_GA[min_episode: len(con_GA)]
-    # del con_DSQ[min_episode: len(con_DSQ)]
-    # del con_DSA[min_episode: len(con_DSA)]
-
-    # plt.plot(p1_a4, label = 'P:1, a:0.4', lw=2, marker='s', ms=6) # square
-    # plt.plot(p2_a4, label = 'P:2, a:0.4', lw=2, marker='^', ms=6) # triangle
-    # plt.plot(p5_a4, label = 'P:0.5, a:0.4', lw=2, marker='o', ms=6) # circle
-    plt.plot(ER, label='ER Entropy, a:0.05', lw=2, marker='o', ms=6)
-    plt.plot(BA, label='BA Entropy, a:0.05', lw=2, marker='D', ms=6)  # diamond
-
-    plt.legend()
-    plt.show()
-
-def SoC_Entropy_correction():
-    lst = np.load('Alberta_Entropy.npy')
-    lst = lst.tolist()
-    print(len(lst))
-    print('lst' , lst)
-    lst_insert = []
-    # for i in lst:
-    #     print(i)
-    #     inx  = lst.index(i)
-    #     print ('inx: ' , inx)
-    #     if inx < 1800:
-    #         val = (i + 0.2)
-    #         print('val: ' , val)
-    #         lst_insert.append(val)
-    #         print('lst_insert in loop : ', lst_insert)
-    #     print('in first step len lst_insert: ', len(lst_insert))
-    #     # if inx >1000 & inx <1900:
-    #     #     val = (i + 0.09)
-    #     #     print('val: ', val)
-    #     #     lst_insert.append(val)
-    #     # print('in secound step len lst_insert: ', len(lst_insert))
-    #     print('lst_insert: ', lst_insert)
-    #     print('len_lst_insert: ', len(lst_insert))
-    # lst = np.array(lst)
-    # counter = 1
-    # for j in range (len(lst_insert)):
-    #     z = j+counter
-    #     if z <len(lst):
-    #          lst = np.insert(lst,z,lst_insert[j] )
-    #          counter = counter+1
-    #          print('insert: ',z,': ', lst[j])
-    #     np.save('Erdos_Entropy.npy', lst)
-    #
-    # print(len(lst))
-    # print('lst', lst)
-
-
-def show_main_graph_init():
-    main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
-    iner_matrix = deepcopy(main_matrix)
-    # main_graph = create_main_graph(iner_matrix)
-    rows, cols = np.where(iner_matrix == 1)
-    edges = zip(rows.tolist(), cols.tolist())
-    gr = nx.Graph()
-    gr.add_edges_from(edges)
-    #nx.draw(gr, pos= None, edge_kabel = True)
-    #colore_map = []
-    # for node in gr:
-    #     if node> 10:
-    #         colore_map.append('green')
-    #     else:
-    #         colore_map.append('orange')
-
-    colore_map = ('green')
-
-    nx.draw(gr, node_color = colore_map, node_size=250, with_labels=True)
-    #nx.draw(gr, pos= None, ax= None)
-    plt.show()
-    np.save('Main_Graph', gr, allow_pickle=True)
-    return gr
+# def SoC_plot_connect():
+#     con_Alberta_DC = np.load('A-conct_deg_lst.npy')
+#     con_Alberta_DC = con_Alberta_DC.tolist()
+#     con_Erdos_DC = np.load('E-conct_deg_lst.npy')
+#     con_Erdos_DC = con_Erdos_DC.tolist()
+#
+#     list_name = []
+#     list_name.append('BA')
+#     list_name.append('ER')
+#
+#     plt.plot(con_Alberta_DC, label='BA', lw=2, marker='s', ms=6)  # square
+#     plt.plot(con_Erdos_DC, label='ER', lw=2, marker='^', ms=6)  # triangle
+#     plt.legend()
+#     plt.show()
+#
+# def SoC_plot_entropy():
+#     BA= np.load('Alberta_Entropy.npy')
+#     BA = BA.tolist()
+#     ER = np.load('Erdos_Entropy.npy')
+#     ER = ER.tolist()
+#     # p5_a4 = np.load('Entropy_p0.5_a4.npy')
+#     # p5_a4 = p5_a4 .tolist()
+#     # p_half_a4 = np.load('Entropy_p1.5_a4.npy')
+#     # p_half_a4 = p_half_a4.tolist()
+#
+#     list_name = []
+#     # list_name.append('p1_a4')
+#     # list_name.append('p2_a4')
+#     # list_name.append('p0.5_a4')
+#     list_name.append('BA')
+#     list_name.append('ER')
+#     # episode = [len(entropy_01), len(entropy_05),len(entropy_1), len(entropy_4)]
+#     # min_episode = min(episode)
+#     # order = []
+#     # for i in range(min_episode):
+#     #     order.append(i)
+#     # del con_rand[min_episode: len(con_rand)]
+#     # del con_DC[min_episode: len(con_DC)]
+#     # del con_BC[min_episode: len(con_BC)]
+#     # del con_UW[min_episode: len(con_UW)]
+#     # del con_Greedy[min_episode: len(con_Greedy)]
+#     # del con_GA[min_episode: len(con_GA)]
+#     # del con_DSQ[min_episode: len(con_DSQ)]
+#     # del con_DSA[min_episode: len(con_DSA)]
+#
+#     # plt.plot(p1_a4, label = 'P:1, a:0.4', lw=2, marker='s', ms=6) # square
+#     # plt.plot(p2_a4, label = 'P:2, a:0.4', lw=2, marker='^', ms=6) # triangle
+#     # plt.plot(p5_a4, label = 'P:0.5, a:0.4', lw=2, marker='o', ms=6) # circle
+#     plt.plot(ER, label='ER Entropy, a:0.05', lw=2, marker='o', ms=6)
+#     plt.plot(BA, label='BA Entropy, a:0.05', lw=2, marker='D', ms=6)  # diamond
+#
+#     plt.legend()
+#     plt.show()
+#
+# def SoC_Entropy_correction():
+#     lst = np.load('Alberta_Entropy.npy')
+#     lst = lst.tolist()
+#     print(len(lst))
+#     print('lst' , lst)
+#     lst_insert = []
+#     # for i in lst:
+#     #     print(i)
+#     #     inx  = lst.index(i)
+#     #     print ('inx: ' , inx)
+#     #     if inx < 1800:
+#     #         val = (i + 0.2)
+#     #         print('val: ' , val)
+#     #         lst_insert.append(val)
+#     #         print('lst_insert in loop : ', lst_insert)
+#     #     print('in first step len lst_insert: ', len(lst_insert))
+#     #     # if inx >1000 & inx <1900:
+#     #     #     val = (i + 0.09)
+#     #     #     print('val: ', val)
+#     #     #     lst_insert.append(val)
+#     #     # print('in secound step len lst_insert: ', len(lst_insert))
+#     #     print('lst_insert: ', lst_insert)
+#     #     print('len_lst_insert: ', len(lst_insert))
+#     # lst = np.array(lst)
+#     # counter = 1
+#     # for j in range (len(lst_insert)):
+#     #     z = j+counter
+#     #     if z <len(lst):
+#     #          lst = np.insert(lst,z,lst_insert[j] )
+#     #          counter = counter+1
+#     #          print('insert: ',z,': ', lst[j])
+#     #     np.save('Erdos_Entropy.npy', lst)
+#     #
+#     # print(len(lst))
+#     # print('lst', lst)
+#
+#
+# def show_main_graph_init():
+#     main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
+#     iner_matrix = deepcopy(main_matrix)
+#     # main_graph = create_main_graph(iner_matrix)
+#     rows, cols = np.where(iner_matrix == 1)
+#     edges = zip(rows.tolist(), cols.tolist())
+#     gr = nx.Graph()
+#     gr.add_edges_from(edges)
+#     #nx.draw(gr, pos= None, edge_kabel = True)
+#     #colore_map = []
+#     # for node in gr:
+#     #     if node> 10:
+#     #         colore_map.append('green')
+#     #     else:
+#     #         colore_map.append('orange')
+#
+#     colore_map = ('green')
+#
+#     nx.draw(gr, node_color = colore_map, node_size=250, with_labels=True)
+#     #nx.draw(gr, pos= None, ax= None)
+#     plt.show()
+#     np.save('Main_Graph', gr, allow_pickle=True)
+#     return gr
 
 
 #---------- Repairing----------------
@@ -2823,32 +2823,25 @@ def Attack_Repairing():
     target_list = np.load('attack_node_series.npy')
     main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
     iner_main_matrix = deepcopy(main_matrix)
-    for i in target_list:
-        i = 1
+    active_list = SoC_active_node(iner_main_matrix)
+    for node in target_list:
+       neigh, matrix_after_attack = SoC_disintegration(node, main_matrix)
+       live_neigh, dead_neigh = neigh_type(active_list , neigh)
+       matrix_after_bandage = bandage(node, live_neigh, dead_neigh, matrix_after_attack, main_matrix)
     return
 
 def SoC_disintegration (node, main_matrix):
-    # node: the first index of attack node list
-    # main_matrix: matrix should updated by each disintegration step
-    # attack_List: should update by each disintegration step
-    # type = 1: Random / type = 2: DEG / Type = 3: BWN / Type = 4: WGHT
-    attack_list = []
-    total_node = np.load('Total_Node.npy', allow_pickle=True)
+
+    total_node = np.load('attack_node_series.npy', allow_pickle=True)
     iner_total_node = deepcopy(total_node)
-    neigh = []
+    neighboure = []
     print('node: ', node)
-    for i in range(iner_total_node):
+    for i in iner_total_node:
         if main_matrix[i][node] == 1:
-            neigh.append(i)
+            neighboure.append(i)
             main_matrix[node][i] = 0
             main_matrix[i][node] = 0
-
-    for n in neigh:
-        if n not in attack_list:
-            attack_list.append(n)
-    final_attack_list = list(set(attack_list))
-    print('diiiiiiiiiiiiiiissssssssssssssssssssss')
-    return final_attack_list, main_matrix
+    return neighboure , main_matrix
 
 
 def SoC_active_node(main_matrix):
@@ -2870,9 +2863,64 @@ def SoC_active_node(main_matrix):
     # np.save('Active_Node' , active_node_list ,  allow_pickle=True)
     return active_node_list
 
-def bandage():
 
-    return
+def neigh_type(active_node , neigh_node):
+    live_neigh = []
+    dead_neigh = []
+    for i in neigh_node:
+        if i not in active_node:
+            dead_neigh.append(i)
+        else:
+            live_neigh.append(i)
+
+    print('live_neigh', live_neigh)
+    print('dead_neigh', dead_neigh)
+
+    return live_neigh, dead_neigh
+
+
+
+def bandage(node, live_neigh, dead_neigh, matrix_after_attack, main_matrix):
+    print('live in bandage: ', live_neigh)
+    graph = create_main_graph(main_matrix)
+    degree_closeness = SoC_closeness_deg(graph)
+    print ('degree_closeness', degree_closeness)
+    sort_order = sorted(degree_closeness.items(), key=lambda x: x[1], reverse=False)
+    print ('sort_order', sort_order)
+    live_degree_lst = live_sorting(live_neigh, sort_order)
+    matrix_after_bandage = []
+    # live_deg = []
+    # for i in live_neigh:
+    #     if matrix_after_attack[i][node] == 1:
+    #         matrix_after_attack.append(i)
+    #         matrix_after_attack[node][i] = 0
+    #         matrix_after_attack[i][node] = 0
+
+    return matrix_after_bandage
+
+def live_sorting (live_neigh, sort_order):
+    live_degree_lst = []
+    for i in live_neigh:
+        temp_lst = []
+        for j in sort_order:
+            if j[0] == i:
+                temp_lst.append(i)
+                temp_lst.append(j[1])
+                live_degree_lst.append(temp_lst)
+    print('list of live degree: ', live_degree_lst)
+    return live_degree_lst
+
+
+def SoC_closeness_deg(main_graph):
+    deg_temp = nx.degree(main_graph)
+    deg = {}
+    for pair in deg_temp:
+        deg[pair[0]] = pair[1]
+    return deg
+
+
+
+Attack_Repairing()
 
 
 # ----------------------------
