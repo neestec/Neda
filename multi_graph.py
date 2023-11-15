@@ -379,6 +379,8 @@ def closeness_deg(main_graph):
     deg = {}
     for pair in deg_temp:
         deg[pair[0]] = pair[1]
+
+    print ('degree list', deg)
     return deg
 
 
@@ -515,6 +517,7 @@ def degree_average ():
         sum = sum + i[1]
     avrg = sum / len(sort_order)
     print ('avrage = ', avrg)
+
     return degree_closeness
 
 def closeness_dis_2(type):
@@ -530,7 +533,7 @@ def closeness_dis_2(type):
     c_lst = []
     c_lst.append(1)
     attack_nodes_serie = []
-    main_c = connectivity_count(main_graph)
+    # main_c = connectivity_count(main_graph)
     attack_list = []
     switcher = {
         1: closeness_btw(main_graph),
@@ -568,6 +571,7 @@ def closeness_dis_2(type):
             max_order_node = sort_order[0][0]
             attack_nodes_serie.append(max_order_node)
             print('target node: ', max_order_node)
+            print ('attack_nodes_serie ', attack_nodes_serie)
             for i in range(len(p)):
                 cost = cost_count(main_graph, [max_order_node], p[i])
                 cost_lst[i] = cost_lst[i] + cost[0][1]
@@ -578,8 +582,8 @@ def closeness_dis_2(type):
             active_nodes = active_node(iner_matrix)
             connectivity = len(active_nodes)
             conct = (connectivity / init_tota_node)
-            c = connectivity_count(main_graph)
-            c_lst.append(c / main_c)
+            # c = connectivity_count(main_graph)
+            # c_lst.append(c / main_c)
             connectivity_lst.append(conct)
 
             print('connectivity_lst', connectivity_lst)
@@ -2702,141 +2706,148 @@ def table_view():
 
 # ----------------- SOC_Reports-----------
 
-# def SoC_plot_connect():
-#     con_Alberta_DC = np.load('A-conct_deg_lst.npy')
-#     con_Alberta_DC = con_Alberta_DC.tolist()
-#     con_Erdos_DC = np.load('E-conct_deg_lst.npy')
-#     con_Erdos_DC = con_Erdos_DC.tolist()
-#
-#     list_name = []
-#     list_name.append('BA')
-#     list_name.append('ER')
-#
-#     plt.plot(con_Alberta_DC, label='BA', lw=2, marker='s', ms=6)  # square
-#     plt.plot(con_Erdos_DC, label='ER', lw=2, marker='^', ms=6)  # triangle
-#     plt.legend()
-#     plt.show()
-#
-# def SoC_plot_entropy():
-#     BA= np.load('Alberta_Entropy.npy')
-#     BA = BA.tolist()
-#     ER = np.load('Erdos_Entropy.npy')
-#     ER = ER.tolist()
-#     # p5_a4 = np.load('Entropy_p0.5_a4.npy')
-#     # p5_a4 = p5_a4 .tolist()
-#     # p_half_a4 = np.load('Entropy_p1.5_a4.npy')
-#     # p_half_a4 = p_half_a4.tolist()
-#
-#     list_name = []
-#     # list_name.append('p1_a4')
-#     # list_name.append('p2_a4')
-#     # list_name.append('p0.5_a4')
-#     list_name.append('BA')
-#     list_name.append('ER')
-#     # episode = [len(entropy_01), len(entropy_05),len(entropy_1), len(entropy_4)]
-#     # min_episode = min(episode)
-#     # order = []
-#     # for i in range(min_episode):
-#     #     order.append(i)
-#     # del con_rand[min_episode: len(con_rand)]
-#     # del con_DC[min_episode: len(con_DC)]
-#     # del con_BC[min_episode: len(con_BC)]
-#     # del con_UW[min_episode: len(con_UW)]
-#     # del con_Greedy[min_episode: len(con_Greedy)]
-#     # del con_GA[min_episode: len(con_GA)]
-#     # del con_DSQ[min_episode: len(con_DSQ)]
-#     # del con_DSA[min_episode: len(con_DSA)]
-#
-#     # plt.plot(p1_a4, label = 'P:1, a:0.4', lw=2, marker='s', ms=6) # square
-#     # plt.plot(p2_a4, label = 'P:2, a:0.4', lw=2, marker='^', ms=6) # triangle
-#     # plt.plot(p5_a4, label = 'P:0.5, a:0.4', lw=2, marker='o', ms=6) # circle
-#     plt.plot(ER, label='ER Entropy, a:0.05', lw=2, marker='o', ms=6)
-#     plt.plot(BA, label='BA Entropy, a:0.05', lw=2, marker='D', ms=6)  # diamond
-#
-#     plt.legend()
-#     plt.show()
-#
-# def SoC_Entropy_correction():
-#     lst = np.load('Alberta_Entropy.npy')
-#     lst = lst.tolist()
-#     print(len(lst))
-#     print('lst' , lst)
-#     lst_insert = []
-#     # for i in lst:
-#     #     print(i)
-#     #     inx  = lst.index(i)
-#     #     print ('inx: ' , inx)
-#     #     if inx < 1800:
-#     #         val = (i + 0.2)
-#     #         print('val: ' , val)
-#     #         lst_insert.append(val)
-#     #         print('lst_insert in loop : ', lst_insert)
-#     #     print('in first step len lst_insert: ', len(lst_insert))
-#     #     # if inx >1000 & inx <1900:
-#     #     #     val = (i + 0.09)
-#     #     #     print('val: ', val)
-#     #     #     lst_insert.append(val)
-#     #     # print('in secound step len lst_insert: ', len(lst_insert))
-#     #     print('lst_insert: ', lst_insert)
-#     #     print('len_lst_insert: ', len(lst_insert))
-#     # lst = np.array(lst)
-#     # counter = 1
-#     # for j in range (len(lst_insert)):
-#     #     z = j+counter
-#     #     if z <len(lst):
-#     #          lst = np.insert(lst,z,lst_insert[j] )
-#     #          counter = counter+1
-#     #          print('insert: ',z,': ', lst[j])
-#     #     np.save('Erdos_Entropy.npy', lst)
-#     #
-#     # print(len(lst))
-#     # print('lst', lst)
-#
-#
-# def show_main_graph_init():
-#     main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
-#     iner_matrix = deepcopy(main_matrix)
-#     # main_graph = create_main_graph(iner_matrix)
-#     rows, cols = np.where(iner_matrix == 1)
-#     edges = zip(rows.tolist(), cols.tolist())
-#     gr = nx.Graph()
-#     gr.add_edges_from(edges)
-#     #nx.draw(gr, pos= None, edge_kabel = True)
-#     #colore_map = []
-#     # for node in gr:
-#     #     if node> 10:
-#     #         colore_map.append('green')
-#     #     else:
-#     #         colore_map.append('orange')
-#
-#     colore_map = ('green')
-#
-#     nx.draw(gr, node_color = colore_map, node_size=250, with_labels=True)
-#     #nx.draw(gr, pos= None, ax= None)
-#     plt.show()
-#     np.save('Main_Graph', gr, allow_pickle=True)
-#     return gr
+def SoC_plot_connect():
+    con_Alberta_DC = np.load('A-conct_deg_lst.npy')
+    con_Alberta_DC = con_Alberta_DC.tolist()
+    con_Erdos_DC = np.load('E-conct_deg_lst.npy')
+    con_Erdos_DC = con_Erdos_DC.tolist()
+
+    list_name = []
+    list_name.append('BA')
+    list_name.append('ER')
+
+    plt.plot(con_Alberta_DC, label='BA', lw=2, marker='s', ms=6)  # square
+    plt.plot(con_Erdos_DC, label='ER', lw=2, marker='^', ms=6)  # triangle
+    plt.legend()
+    plt.show()
+
+def SoC_plot_entropy():
+    BA= np.load('Alberta_Entropy.npy')
+    BA = BA.tolist()
+    ER = np.load('Erdos_Entropy.npy')
+    ER = ER.tolist()
+    # p5_a4 = np.load('Entropy_p0.5_a4.npy')
+    # p5_a4 = p5_a4 .tolist()
+    # p_half_a4 = np.load('Entropy_p1.5_a4.npy')
+    # p_half_a4 = p_half_a4.tolist()
+
+    list_name = []
+    # list_name.append('p1_a4')
+    # list_name.append('p2_a4')
+    # list_name.append('p0.5_a4')
+    list_name.append('BA')
+    list_name.append('ER')
+    # episode = [len(entropy_01), len(entropy_05),len(entropy_1), len(entropy_4)]
+    # min_episode = min(episode)
+    # order = []
+    # for i in range(min_episode):
+    #     order.append(i)
+    # del con_rand[min_episode: len(con_rand)]
+    # del con_DC[min_episode: len(con_DC)]
+    # del con_BC[min_episode: len(con_BC)]
+    # del con_UW[min_episode: len(con_UW)]
+    # del con_Greedy[min_episode: len(con_Greedy)]
+    # del con_GA[min_episode: len(con_GA)]
+    # del con_DSQ[min_episode: len(con_DSQ)]
+    # del con_DSA[min_episode: len(con_DSA)]
+
+    # plt.plot(p1_a4, label = 'P:1, a:0.4', lw=2, marker='s', ms=6) # square
+    # plt.plot(p2_a4, label = 'P:2, a:0.4', lw=2, marker='^', ms=6) # triangle
+    # plt.plot(p5_a4, label = 'P:0.5, a:0.4', lw=2, marker='o', ms=6) # circle
+    plt.plot(ER, label='ER Entropy, a:0.05', lw=2, marker='o', ms=6)
+    plt.plot(BA, label='BA Entropy, a:0.05', lw=2, marker='D', ms=6)  # diamond
+
+    plt.legend()
+    plt.show()
+
+def SoC_Entropy_correction():
+    lst = np.load('Alberta_Entropy.npy')
+    lst = lst.tolist()
+    print(len(lst))
+    print('lst' , lst)
+    lst_insert = []
+    # for i in lst:
+    #     print(i)
+    #     inx  = lst.index(i)
+    #     print ('inx: ' , inx)
+    #     if inx < 1800:
+    #         val = (i + 0.2)
+    #         print('val: ' , val)
+    #         lst_insert.append(val)
+    #         print('lst_insert in loop : ', lst_insert)
+    #     print('in first step len lst_insert: ', len(lst_insert))
+    #     # if inx >1000 & inx <1900:
+    #     #     val = (i + 0.09)
+    #     #     print('val: ', val)
+    #     #     lst_insert.append(val)
+    #     # print('in secound step len lst_insert: ', len(lst_insert))
+    #     print('lst_insert: ', lst_insert)
+    #     print('len_lst_insert: ', len(lst_insert))
+    # lst = np.array(lst)
+    # counter = 1
+    # for j in range (len(lst_insert)):
+    #     z = j+counter
+    #     if z <len(lst):
+    #          lst = np.insert(lst,z,lst_insert[j] )
+    #          counter = counter+1
+    #          print('insert: ',z,': ', lst[j])
+    #     np.save('Erdos_Entropy.npy', lst)
+    #
+    # print(len(lst))
+    # print('lst', lst)
+
+
+def show_main_graph_init():
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
+    iner_matrix = deepcopy(main_matrix)
+    # main_graph = create_main_graph(iner_matrix)
+    rows, cols = np.where(iner_matrix == 1)
+    edges = zip(rows.tolist(), cols.tolist())
+    gr = nx.Graph()
+    gr.add_edges_from(edges)
+    #nx.draw(gr, pos= None, edge_kabel = True)
+    #colore_map = []
+    # for node in gr:
+    #     if node> 10:
+    #         colore_map.append('green')
+    #     else:
+    #         colore_map.append('orange')
+
+    colore_map = ('green')
+
+    nx.draw(gr, node_color = colore_map, node_size=250, with_labels=True)
+    #nx.draw(gr, pos= None, ax= None)
+    plt.show()
+    np.save('Main_Graph', gr, allow_pickle=True)
+    return gr
 
 
 #---------- Repairing----------------
 def Attack_Repairing():
+    avrg = SoC_degree_average()
     target_list = np.load('attack_node_series.npy')
+    print ('attack_node_series.npy', target_list)
     main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
     iner_main_matrix = deepcopy(main_matrix)
     active_list = SoC_active_node(iner_main_matrix)
+    SoC_degree_average()
     for node in target_list:
        neigh, matrix_after_attack = SoC_disintegration(node, main_matrix)
-       live_neigh, dead_neigh = neigh_type(active_list , neigh)
-       matrix_after_bandage = bandage(node, live_neigh, dead_neigh, matrix_after_attack, main_matrix)
+       print ('neigh list: ', neigh)
+       print('attach has done ')
+       Active_node_after_attack = SoC_active_node(matrix_after_attack)
+       print ('Active_node_after_attack : ' , Active_node_after_attack)
+       live_neigh, dead_neigh = neigh_type(Active_node_after_attack , neigh)
+       matrix_after_bandage = bandage(avrg, node, live_neigh, dead_neigh, matrix_after_attack, main_matrix)
     return
 
 def SoC_disintegration (node, main_matrix):
 
-    total_node = np.load('attack_node_series.npy', allow_pickle=True)
+    total_node = np.load('Total_Node.npy', allow_pickle=True)
     iner_total_node = deepcopy(total_node)
     neighboure = []
     print('node: ', node)
-    for i in iner_total_node:
+    for i in range(iner_total_node):
         if main_matrix[i][node] == 1:
             neighboure.append(i)
             main_matrix[node][i] = 0
@@ -2865,6 +2876,7 @@ def SoC_active_node(main_matrix):
 
 
 def neigh_type(active_node , neigh_node):
+    # print ('active node after attack: ', active_node)
     live_neigh = []
     dead_neigh = []
     for i in neigh_node:
@@ -2879,24 +2891,108 @@ def neigh_type(active_node , neigh_node):
     return live_neigh, dead_neigh
 
 
+def bandage(avrage, node, live_neigh, dead_neigh, matrix_after_attack):
 
-def bandage(node, live_neigh, dead_neigh, matrix_after_attack, main_matrix):
-    print('live in bandage: ', live_neigh)
-    graph = create_main_graph(main_matrix)
-    degree_closeness = SoC_closeness_deg(graph)
-    print ('degree_closeness', degree_closeness)
-    sort_order = sorted(degree_closeness.items(), key=lambda x: x[1], reverse=False)
-    print ('sort_order', sort_order)
-    live_degree_lst = live_sorting(live_neigh, sort_order)
-    matrix_after_bandage = []
-    # live_deg = []
-    # for i in live_neigh:
-    #     if matrix_after_attack[i][node] == 1:
-    #         matrix_after_attack.append(i)
-    #         matrix_after_attack[node][i] = 0
-    #         matrix_after_attack[i][node] = 0
+    live_degree_list = live_degree(matrix_after_attack , live_neigh)
+    live_rel = live_relation(live_neigh, matrix_after_attack)
+    matrix_after_live_attech = live_attach(avrage, live_neigh, matrix_after_attack)
+    live_neigh.append(node)
+    matrix_after_dead_attech = dead_attach(avrage, dead_neigh, matrix_after_live_attech, live_neigh)
 
-    return matrix_after_bandage
+    return matrix_after_dead_attech
+
+def live_degree(matrix , live_neigh):
+    degree_list = []
+    for i in live_neigh:
+        temp = []
+        deg = node_degree(i, matrix)
+        temp.append(i)
+        temp.append(deg)
+        degree_list.append(temp)
+    print('live_neigh_degree_list: ', degree_list)
+
+    return matrix
+
+
+def live_relation(live_neigh , matrix ):
+    total_node = np.load('Total_Node.npy', allow_pickle=True)
+    live_rel = []
+    j = len(live_neigh)
+    for i in live_neigh:
+        for j in live_neigh:
+            temp = []
+            temp.append(i)
+            if matrix[i][j] == 1:
+                temp.append(j)
+            live_rel.append(temp)
+
+    return live_rel
+
+
+def live_attach(avrage, live_neigh, live_rel, matrix, node ):
+    internal_live_neigh = deepcopy(live_neigh)
+    while len(internal_live_neigh) != 0:
+        for i in live_neigh:
+             deg = node_degree(i, matrix)
+             if deg < avrage:
+                matrix[node][i] = 1
+                matrix[i][node] = 1
+             for j in live_rel:
+                if j[0] == i:
+                    pop_lst = j
+                    for k in pop_lst:
+                        if k in internal_live_neigh:
+                            internal_live_neigh.pop(k)
+    return matrix
+
+
+def dead_attach(avrage, dead_lst , matrix , live_neigh):
+    live_deg_lst = []
+    for i in live_neigh:
+        temp = []
+        deg = node_degree(i, matrix)
+        temp.append(i)
+        temp.append(deg)
+        live_deg_lst.append(temp)
+    sorted_live = sorted(live_deg_lst, key=lambda x: x[1])
+    for i in dead_lst:
+        for j in sorted_live:
+            if j[1] < avrage:
+                matrix[i][j[0]] = 1
+                matrix[j[0]][i] = 1
+                break
+    return matrix
+
+def SoC_degree_average():
+    main_matrix = np.load('Main_Matrix.npy', allow_pickle=True)
+    init_tota_node = np.load('Total_Node.npy', allow_pickle=True)
+    iner_matrix = deepcopy(main_matrix)
+    main_graph = create_main_graph(iner_matrix)
+    degree_closeness = closeness_deg(main_graph)
+    sort_order = sorted(degree_closeness.items(), key=lambda x: x[1], reverse=True)
+    print('degree_closeness: ', degree_closeness)
+    print('sort_rder : ', sort_order)
+    print('index: ', sort_order[0][1])
+    print(len(sort_order))
+    sum = 0
+    for i in sort_order:
+        sum = sum + i[1]
+    avrg = sum / len(sort_order)
+    np.save('graph_degree_average.npy', avrg, allow_pickle=True)
+    print('avrage = ', avrg)
+
+    return avrg
+
+def node_degree(node, matrix):
+    main_graph = create_main_graph(matrix)
+    degree_closeness = closeness_deg(main_graph)
+    sort_order = sorted(degree_closeness.items(), key=lambda x: x[1], reverse=True)
+
+    for i in sort_order:
+        if node == i[0]:
+            degree = i[1]
+    print('Node degree =  ', degree)
+    return degree
 
 def live_sorting (live_neigh, sort_order):
     live_degree_lst = []
@@ -2920,8 +3016,9 @@ def SoC_closeness_deg(main_graph):
 
 
 
-Attack_Repairing()
+# Attack_Repairing()
 
+# SoC_degree_average()
 
 # ----------------------------
 
