@@ -380,7 +380,7 @@ def closeness_deg(main_graph):
     for pair in deg_temp:
         deg[pair[0]] = pair[1]
 
-    print ('degree list', deg)
+    # print ('degree list', deg)
     return deg
 
 
@@ -2832,13 +2832,20 @@ def Attack_Repairing():
     active_list = SoC_active_node(iner_main_matrix)
     SoC_degree_average()
     for node in target_list:
-       neigh, matrix_after_attack = SoC_disintegration(node, main_matrix)
-       print ('neigh list: ', neigh)
-       print('attach has done ')
-       Active_node_after_attack = SoC_active_node(matrix_after_attack)
-       print ('Active_node_after_attack : ' , Active_node_after_attack)
-       live_neigh, dead_neigh = neigh_type(Active_node_after_attack , neigh)
-       matrix_after_bandage = bandage(avrg, node, live_neigh, dead_neigh, matrix_after_attack, main_matrix)
+        neigh, matrix_after_attack = SoC_disintegration(node, main_matrix)
+        print ('neigh list: ', neigh)
+        print('attach has done ')
+        Active_node_after_attack = SoC_active_node(matrix_after_attack)
+        print ('Active_node_after_attack : ' , Active_node_after_attack)
+        live_neigh, dead_neigh = neigh_type(Active_node_after_attack , neigh)
+        matrix_after_bandage = bandage(avrg, node, live_neigh, dead_neigh, matrix_after_attack)
+        np.save('matrix_after_bandage.npy', matrix_after_bandage, allow_pickle=True)
+        final_graph = create_main_graph(matrix_after_bandage)
+        np.save ('filal_graph.npy',final_graph , allow_pickle= True)
+        # colore_map = ('green')
+        # nx.draw(final_graph, node_color=colore_map, node_size=50, with_labels=False)
+        # plt.show()
+
     return
 
 def SoC_disintegration (node, main_matrix):
@@ -2895,7 +2902,7 @@ def bandage(avrage, node, live_neigh, dead_neigh, matrix_after_attack):
 
     live_degree_list = live_degree(matrix_after_attack , live_neigh)
     live_rel = live_relation(live_neigh, matrix_after_attack)
-    matrix_after_live_attech = live_attach(avrage, live_neigh, matrix_after_attack)
+    matrix_after_live_attech = live_attach(avrage, live_neigh,live_rel, matrix_after_attack, node)
     live_neigh.append(node)
     matrix_after_dead_attech = dead_attach(avrage, dead_neigh, matrix_after_live_attech, live_neigh)
 
@@ -2916,33 +2923,79 @@ def live_degree(matrix , live_neigh):
 
 def live_relation(live_neigh , matrix ):
     total_node = np.load('Total_Node.npy', allow_pickle=True)
+    print('live_neigh: ', live_neigh )
     live_rel = []
     j = len(live_neigh)
+    print('len live_neigh: ', j)
     for i in live_neigh:
+        temp = []
+        temp.append(i)
+        # print('temp in the first step: ', temp)
         for j in live_neigh:
-            temp = []
-            temp.append(i)
-            if matrix[i][j] == 1:
+            if matrix[i][j] == 1 and i != j:
                 temp.append(j)
-            live_rel.append(temp)
+                # print('temp in the secound step: ', temp)
+        live_rel.append(temp)
+
+    print('live_rel: ', live_rel )
 
     return live_rel
 
 
-def live_attach(avrage, live_neigh, live_rel, matrix, node ):
+def live_attach(avrage, live_neigh, live_rel, matrix, node):
+    iner_matrix = deepcopy(matrix)
     internal_live_neigh = deepcopy(live_neigh)
     while len(internal_live_neigh) != 0:
         for i in live_neigh:
-             deg = node_degree(i, matrix)
-             if deg < avrage:
+            print(' i in neigh : ', i)
+            deg = node_degree(i, matrix)
+            print('i deg in neigh: ', deg)
+            if deg < avrage:
                 matrix[node][i] = 1
                 matrix[i][node] = 1
-             for j in live_rel:
-                if j[0] == i:
-                    pop_lst = j
-                    for k in pop_lst:
-                        if k in internal_live_neigh:
-                            internal_live_neigh.pop(k)
+                for j in live_rel:
+                    if j[0] == i and len(j) != 0:
+                        pop_lst = j
+                        print ('pop_lst::::::::::::', pop_lst)
+                        for z in live_rel:
+                            for k in pop_lst:
+                                print(' pop target: ', k)
+                                if k in z:
+                                    index = z.index(k)
+                                    print('target index: ', index)
+                                    z.pop(index)
+                                    print('pop ', k , 'has done successful' )
+
+                        print('live_rel: ', live_rel)
+            else:
+                for j in live_rel:
+                    if j[0] == i:
+                        pop_lst = j
+                        print ('we have found a bad construct')
+                        for i in pop_lst:
+                            print(' i in neigh : ', i)
+                            deg = node_degree(i, matrix)
+                            print('i deg in neigh: ', deg)
+                            if deg < avrage:
+                                matrix[node][i] = 1
+                                matrix[i][node] = 1
+                                print('we found a node for relation')
+                                for z in live_rel[1:-1]:
+                                    for k in pop_lst:
+                                         print(' pop target: ', k)
+                                         if k in z:
+                                            index = z.index(k)
+                                            print('target index: ', index)
+                                            z.pop(index)
+                                            print('pop ', k, 'has done successful')
+
+                                break
+
+                            else:
+
+
+
+
     return matrix
 
 
@@ -2991,7 +3044,7 @@ def node_degree(node, matrix):
     for i in sort_order:
         if node == i[0]:
             degree = i[1]
-    print('Node degree =  ', degree)
+    # print('Node degree =  ', degree)
     return degree
 
 def live_sorting (live_neigh, sort_order):
@@ -3016,7 +3069,7 @@ def SoC_closeness_deg(main_graph):
 
 
 
-# Attack_Repairing()
+Attack_Repairing()
 
 # SoC_degree_average()
 
